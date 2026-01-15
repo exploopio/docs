@@ -90,26 +90,36 @@ cmd/
 
 internal/
 ├── domain/               # Core Business Logic (innermost layer)
-│   ├── asset/           # Asset domain
-│   │   ├── entity.go    # Asset entity
-│   │   ├── repository.go # Repository interface
-│   │   └── service.go   # Domain service interface
-│   └── shared/          # Shared domain types
-│       ├── id.go        # ID value object
-│       └── errors.go    # Domain errors
+│   ├── shared/          # Shared domain types (ID, errors)
+│   ├── asset/           # Asset management
+│   ├── assetgroup/      # Asset grouping/organization
+│   ├── assettype/       # Asset type definitions
+│   ├── audit/           # Audit logging
+│   ├── branch/          # Git branch management
+│   ├── component/       # Software components (SBOM)
+│   ├── permission/      # Permission definitions
+│   ├── scmconnection/   # SCM integrations (GitHub, GitLab)
+│   ├── scope/           # Scope configuration (targets, exclusions)
+│   ├── session/         # User sessions
+│   ├── sla/             # SLA management
+│   ├── tenant/          # Multi-tenancy
+│   ├── user/            # User management
+│   └── vulnerability/   # Vulnerability tracking
 │
 ├── app/                  # Application Layer (use cases)
-│   └── asset/
-│       └── service.go   # Application service (orchestrates domain)
+│   ├── asset_service.go
+│   ├── asset_group_service.go
+│   ├── scope_service.go
+│   ├── vulnerability_service.go
+│   └── ...              # 18 services total
 │
 └── infra/               # Infrastructure Layer (outermost layer)
     ├── http/            # HTTP adapter
     │   ├── server.go    # HTTP server
     │   ├── router.go    # Route definitions
-    │   ├── handler/     # HTTP handlers
+    │   ├── handler/     # HTTP handlers (15+)
     │   └── middleware/  # HTTP middleware
-    ├── postgres/        # PostgreSQL adapter
-    │   └── asset_repo.go
+    ├── postgres/        # PostgreSQL adapter (15+ repositories)
     └── redis/           # Redis adapter
         └── cache.go
 

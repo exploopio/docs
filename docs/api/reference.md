@@ -155,6 +155,8 @@ Authorization: Bearer <access_token>
 | POST | `/{id}/activate` | `assets:write` | Activate asset |
 | POST | `/{id}/deactivate` | `assets:write` | Deactivate asset |
 | POST | `/{id}/archive` | `assets:write` | Archive asset |
+| POST | `/{id}/sync` | `assets:write` | Sync repository from SCM |
+| POST | `/{id}/scan` | `assets:write` | Trigger security scan |
 | DELETE | `/{id}` | `assets:delete` | Delete asset |
 
 ### Branch Endpoints
@@ -283,11 +285,13 @@ Asset-scoped:
 | Method | Endpoint | Permission | Description |
 |--------|----------|------------|-------------|
 | GET | `/` | `scm-connections:read` | List connections |
-| GET | `/{id}` | `scm-connections:read` | Get connection |
 | POST | `/` | `scm-connections:write` | Create connection |
+| POST | `/test-credentials` | `scm-connections:write` | Test credentials (before create) |
+| GET | `/{id}` | `scm-connections:read` | Get connection |
 | PUT | `/{id}` | `scm-connections:write` | Update connection |
 | DELETE | `/{id}` | `scm-connections:delete` | Delete connection |
-| POST | `/{id}/test` | `scm-connections:write` | Test connection |
+| POST | `/{id}/test` | `scm-connections:write` | Test existing connection |
+| GET | `/{id}/repositories` | `scm-connections:read` | List repositories from SCM |
 
 ---
 
