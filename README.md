@@ -100,6 +100,7 @@ If you find ReDiver useful, consider supporting the project:
 |------------|-------------|
 | [rediver-api](https://github.com/rediverio/rediver-api) | Backend REST API (Go) |
 | [rediver-ui](https://github.com/rediverio/rediver-ui) | Frontend Application (Next.js) |
+| [rediver-setup](https://github.com/rediverio/rediver-setup) | Deployment & Docker Compose |
 | [rediver-keycloak](https://github.com/rediverio/rediver-keycloak) | Keycloak Configuration |
 | [rediver-schemas](https://github.com/rediverio/rediver-schemas) | Database Schemas |
 | [rediver-docs](https://github.com/rediverio/rediver-docs) | Documentation |

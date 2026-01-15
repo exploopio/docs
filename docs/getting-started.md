@@ -70,6 +70,31 @@ Expected health response:
 {"status":"healthy","timestamp":"2025-01-12T00:00:00Z"}
 ```
 
+### Step 5: Database Migration & Seed
+
+```bash
+cd rediver-api
+
+# Run database migrations
+make docker-migrate-up
+
+# Seed required data (permissions, roles)
+make docker-seed-required
+
+# Seed test data (optional - for development)
+make docker-seed-test
+
+# Or seed all data at once
+make docker-seed-all
+```
+
+**Seed options:**
+| Command | Description |
+|---------|-------------|
+| `make docker-seed-required` | Required data only (permissions) |
+| `make docker-seed-test` | Test users and teams |
+| `make docker-seed-all` | All seed data including sample assets |
+
 ## Option 2: Manual Setup
 
 For development with hot-reload capabilities.
@@ -97,6 +122,12 @@ make install-tools
 
 # Run database migrations
 make migrate-up
+
+# Seed required data
+make seed-required
+
+# Seed test data (optional)
+make seed-test
 
 # Start with hot reload
 make dev
