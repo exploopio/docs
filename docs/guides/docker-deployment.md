@@ -50,8 +50,8 @@ docker run --rm -v /path/to/project:/scan rediverio/agent:latest \
 
 # Push results to Rediver platform
 docker run --rm -v $(pwd):/scan \
-    -e REDIVER_API_URL=https://api.rediver.io \
-    -e REDIVER_API_KEY=your-api-key \
+    -e API_URL=https://api.rediver.io \
+    -e API_KEY=your-api-key \
     rediverio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 
@@ -165,8 +165,8 @@ services:
       - ./:/scan:ro
       - scan-cache:/cache
     environment:
-      - REDIVER_API_URL=${REDIVER_API_URL:-}
-      - REDIVER_API_KEY=${REDIVER_API_KEY:-}
+      - API_URL=${API_URL:-}
+      - API_KEY=${API_KEY:-}
     working_dir: /scan
     command: ["-tools", "semgrep,gitleaks,trivy", "-target", "/scan", "-verbose"]
 
@@ -177,8 +177,8 @@ services:
       - ./config.yaml:/config/config.yaml:ro
       - scan-cache:/cache
     environment:
-      - REDIVER_API_URL=${REDIVER_API_URL}
-      - REDIVER_API_KEY=${REDIVER_API_KEY}
+      - API_URL=${API_URL}
+      - API_KEY=${API_KEY}
     restart: unless-stopped
     command: ["-daemon", "-config", "/config/config.yaml"]
 
@@ -247,8 +247,8 @@ jobs:
             -sarif-output /github/workspace/results.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REDIVER_API_URL: ${{ secrets.REDIVER_API_URL }}
-          REDIVER_API_KEY: ${{ secrets.REDIVER_API_KEY }}
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
 
       - name: Upload SARIF to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
@@ -278,8 +278,8 @@ security-scan:
   variables:
     GIT_DEPTH: 0
     GITLAB_TOKEN: $CI_JOB_TOKEN
-    REDIVER_API_URL: $REDIVER_API_URL
-    REDIVER_API_KEY: $REDIVER_API_KEY
+    API_URL: $API_URL
+    API_KEY: $API_KEY
   script:
     - |
       agent \
@@ -316,8 +316,8 @@ pipeline {
     }
 
     environment {
-        REDIVER_API_URL = credentials('api-url')
-        REDIVER_API_KEY = credentials('api-key')
+        API_URL = credentials('api-url')
+        API_KEY = credentials('api-key')
     }
 
     stages {
@@ -351,9 +351,9 @@ pipeline {
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `REDIVER_API_URL` | Rediver platform API URL | - |
-| `REDIVER_API_KEY` | API key for authentication | - |
-| `REDIVER_WORKER_ID` | Worker identifier | auto-generated |
+| `API_URL` | Rediver platform API URL | - |
+| `API_KEY` | API key for authentication | - |
+| `WORKER_ID` | Worker identifier | auto-generated |
 | `GITHUB_TOKEN` | GitHub token for PR comments | - |
 | `GITLAB_TOKEN` | GitLab token for MR comments | - |
 | `SEMGREP_SEND_METRICS` | Semgrep telemetry | `off` |
@@ -377,9 +377,9 @@ docker run --rm \
     -v $(pwd)/config.yaml:/config/config.yaml:ro \
     -v app-cache:/cache \
     -v $(pwd)/output:/output \
-    -e REDIVER_API_URL=https://api.rediver.io \
-    -e REDIVER_API_KEY=your-api-key \
-    -e REDIVER_WORKER_ID=scanner-001 \
+    -e API_URL=https://api.rediver.io \
+    -e API_KEY=your-api-key \
+    -e WORKER_ID=scanner-001 \
     ghcr.io/rediverio/agent:latest \
     -config /config/config.yaml \
     -target /scan \

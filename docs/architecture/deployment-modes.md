@@ -78,8 +78,8 @@ This document describes the different ways to deploy and use the Rediver SDK bas
       --tool semgrep \
       --target . \
       --api-url https://api.rediver.io \
-      --api-key ${{ secrets.REDIVER_API_KEY }} \
-      --source-id ${{ secrets.REDIVER_SOURCE_ID }} \
+      --api-key ${{ secrets.API_KEY }} \
+      --source-id ${{ secrets.SOURCE_ID }} \
       --push
 
 # GitLab CI
@@ -190,8 +190,8 @@ collectors:
 
 rediver:
   base_url: https://api.rediver.io
-  api_key: ${REDIVER_API_KEY}
-  source_id: ${REDIVER_SOURCE_ID}
+  api_key: ${API_KEY}
+  source_id: ${SOURCE_ID}
 ```
 
 **When to use:**

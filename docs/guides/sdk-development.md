@@ -474,7 +474,7 @@ func main() {
     // Create API client for pushing results
     pusher := client.New(&client.Config{
         BaseURL: "https://api.rediver.io",
-        APIKey:  os.Getenv("REDIVER_API_KEY"),
+        APIKey:  os.Getenv("API_KEY"),
     })
 
     // Create agent
@@ -548,7 +548,7 @@ agent:
 
 rediver:
   base_url: https://api.rediver.io
-  api_key: ${REDIVER_API_KEY}
+  api_key: ${API_KEY}
   timeout: 30s
 
 scanners:
@@ -733,7 +733,7 @@ import "github.com/rediverio/sdk/pkg/client"
 // Create API client
 c := client.New(&client.Config{
     BaseURL: "https://api.rediver.io",
-    APIKey:  os.Getenv("REDIVER_API_KEY"),
+    APIKey:  os.Getenv("API_KEY"),
     Timeout: 30 * time.Second,
     Verbose: true,
 })
@@ -860,8 +860,8 @@ func main() {
     // Create API client (implements core.CommandClient)
     apiClient := client.New(&client.Config{
         BaseURL:  "https://api.rediver.io",
-        APIKey:   os.Getenv("REDIVER_API_KEY"),
-        SourceID: os.Getenv("REDIVER_SOURCE_ID"), // For tenant tracking
+        APIKey:   os.Getenv("API_KEY"),
+        SourceID: os.Getenv("SOURCE_ID"), // For tenant tracking
         Verbose:  true,
     })
 
@@ -930,7 +930,7 @@ import (
 // Create API client
 pusher := client.New(&client.Config{
     BaseURL:  "https://api.rediver.io",
-    APIKey:   os.Getenv("REDIVER_API_KEY"),
+    APIKey:   os.Getenv("API_KEY"),
     SourceID: "src_abc123",
 })
 
@@ -1330,7 +1330,7 @@ import (
 // Create API client
 pusher := client.New(&client.Config{
     BaseURL: "https://api.rediver.io",
-    APIKey:  os.Getenv("REDIVER_API_KEY"),
+    APIKey:  os.Getenv("API_KEY"),
 })
 
 // Create remote handler with PR comment support
@@ -1674,7 +1674,7 @@ func main() {
     // 3. Initialize handler
     pusher := client.New(&client.Config{
         BaseURL: "https://api.rediver.io",
-        APIKey:  os.Getenv("REDIVER_API_KEY"),
+        APIKey:  os.Getenv("API_KEY"),
     })
     h := handler.NewRemoteHandler(&handler.RemoteHandlerConfig{
         Pusher:         pusher,
@@ -1736,7 +1736,7 @@ import (
 // Create client with retry enabled
 c := client.New(&client.Config{
     BaseURL:       "https://api.rediver.io",
-    APIKey:        os.Getenv("REDIVER_API_KEY"),
+    APIKey:        os.Getenv("API_KEY"),
     RetryEnabled:  true,                        // Enable retry queue
     RetryQueueDir: "/var/lib/rediver/queue",    // Queue storage path
 })

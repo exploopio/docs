@@ -171,19 +171,19 @@ scanners:
 Configuration values can use environment variables with `${VAR_NAME}` syntax:
 
 ```yaml
-rediver:
-  base_url: ${REDIVER_API_URL}
-  api_key: ${REDIVER_API_KEY}
-  worker_id: ${REDIVER_WORKER_ID}
+server:
+  base_url: ${API_URL}
+  api_key: ${API_KEY}
+  worker_id: ${WORKER_ID}
 ```
 
 ### Supported Environment Variables
 
 | Variable | Description |
 |----------|-------------|
-| `REDIVER_API_URL` | Rediver platform API URL |
-| `REDIVER_API_KEY` | API key for authentication |
-| `REDIVER_WORKER_ID` | Worker identifier |
+| `API_URL` | Platform API URL |
+| `API_KEY` | API key for authentication |
+| `WORKER_ID` | Worker identifier |
 | `GITHUB_TOKEN` | GitHub token for PR comments |
 | `GITLAB_TOKEN` | GitLab token for MR comments |
 
@@ -227,8 +227,8 @@ docker run --rm \
 # With environment variables
 docker run --rm \
   -v $(pwd):/scan \
-  -e REDIVER_API_URL=https://api.rediver.io \
-  -e REDIVER_API_KEY=your-key \
+  -e API_URL=https://api.rediver.io \
+  -e API_KEY=your-key \
   rediverio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push
 ```
@@ -247,7 +247,7 @@ Configuration is applied in this order (later overrides earlier):
 **Example:**
 ```bash
 # api_key from config file is overridden by environment variable
-REDIVER_API_KEY=new-key agent -config agent.yaml
+API_KEY=new-key agent -config agent.yaml
 ```
 
 ---

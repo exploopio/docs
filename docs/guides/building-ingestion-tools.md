@@ -845,7 +845,7 @@ import (
 )
 
 func main() {
-    apiKey := os.Getenv("REDIVER_API_KEY")
+    apiKey := os.Getenv("API_KEY")
     contractPath := os.Args[1]
     contractAddress := os.Args[2]
     chainID := 1 // Ethereum mainnet

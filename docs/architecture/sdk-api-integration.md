@@ -178,8 +178,8 @@ agent:
 
 rediver:
   base_url: https://api.rediver.io
-  api_key: ${REDIVER_API_KEY}      # Source API key
-  source_id: ${REDIVER_SOURCE_ID}  # Registered source ID
+  api_key: ${API_KEY}      # Source API key
+  source_id: ${SOURCE_ID}  # Registered source ID
   timeout: 30s
   max_retries: 3
 

@@ -155,9 +155,9 @@ targets:
 You can also use environment variables:
 
 ```bash
-export REDIVER_API_URL=https://api.rediver.io
-export REDIVER_API_KEY=rdw_xxxxxxxxxxxxxxxxxx
-export REDIVER_WORKER_ID=76d81868-25cd-45e6-ba66-6adfda4d0573
+export API_URL=https://api.rediver.io
+export API_KEY=rdw_xxxxxxxxxxxxxxxxxx
+export WORKER_ID=76d81868-25cd-45e6-ba66-6adfda4d0573
 ```
 
 ---
@@ -212,7 +212,7 @@ docker run -d \
   --name agent \
   -v /opt/code:/code:ro \
   -v ./agent.yaml:/app/agent.yaml \
-  -e REDIVER_API_KEY=rdw_xxx \
+  -e API_KEY=rdw_xxx \
   rediver/agent:latest \
   -daemon -config /app/agent.yaml
 ```
@@ -233,7 +233,7 @@ WorkingDirectory=/opt/rediver
 ExecStart=/opt/rediver/agent -daemon -config /opt/rediver/agent.yaml
 Restart=always
 RestartSec=10
-Environment=REDIVER_API_KEY=rdw_xxx
+Environment=API_KEY=rdw_xxx
 
 [Install]
 WantedBy=multi-user.target
