@@ -148,6 +148,7 @@ internal/
 │   ├── command/         # Remote commands for agents
 │   ├── pipeline/        # Workflow pipelines
 │   ├── datasource/      # Data ingestion sources
+│   ├── rule/            # Custom rules/templates management
 │   │
 │   │ # Platform
 │   ├── tenant/          # Multi-tenancy
@@ -158,7 +159,7 @@ internal/
 │   ├── sla/             # SLA management
 │   └── audit/           # Audit logging
 │
-├── app/                  # Application Layer (use cases) - 28 services
+├── app/                  # Application Layer (use cases) - 29 services
 │   ├── asset_service.go
 │   ├── asset_group_service.go
 │   ├── asset_type_service.go
@@ -174,6 +175,7 @@ internal/
 │   ├── ingest_service.go
 │   ├── oauth_service.go
 │   ├── pipeline_service.go
+│   ├── rule_service.go
 │   ├── scan_service.go
 │   ├── scanprofile_service.go
 │   ├── scansession_service.go
@@ -391,9 +393,209 @@ HTTP Request
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## Rule Management Workflow
+
+The Rule Management system allows tenants to add custom security rules/templates for scanning tools.
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Rule Management System                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  ┌───────────────┐   ┌───────────────┐   ┌───────────────┐                 │
+│  │  Git Repos    │   │  HTTP URLs    │   │  Local Files  │                 │
+│  │  (custom)     │   │  (vendor)     │   │  (testing)    │                 │
+│  └───────┬───────┘   └───────┬───────┘   └───────┬───────┘                 │
+│          │                   │                   │                          │
+│          └───────────────────┼───────────────────┘                          │
+│                              │                                               │
+│                              ▼                                               │
+│          ┌─────────────────────────────────────────┐                        │
+│          │            Rule Sources                  │                        │
+│          │  - Sync scheduler (cron-based)           │                        │
+│          │  - Content hash change detection         │                        │
+│          │  - YAML rule parsing                     │                        │
+│          └───────────────────┬─────────────────────┘                        │
+│                              │                                               │
+│                              ▼                                               │
+│          ┌─────────────────────────────────────────┐                        │
+│          │            Rules Database                │                        │
+│          │  - Rule metadata extraction              │                        │
+│          │  - Severity, category, tags              │                        │
+│          │  - CWE/OWASP mapping                     │                        │
+│          └───────────────────┬─────────────────────┘                        │
+│                              │                                               │
+│              ┌───────────────┴───────────────┐                              │
+│              │                               │                               │
+│              ▼                               ▼                               │
+│  ┌─────────────────────┐       ┌─────────────────────┐                     │
+│  │   Rule Overrides    │       │   Rule Bundles      │                     │
+│  │ - Enable/disable    │       │ - Compiled tar.gz   │                     │
+│  │ - Severity change   │       │ - manifest.json     │                     │
+│  │ - Pattern matching  │       │ - Version tracking  │                     │
+│  │ - Asset group scope │       │ - Content hash      │                     │
+│  └─────────────────────┘       └──────────┬──────────┘                     │
+│                                           │                                  │
+│                                           ▼                                  │
+│                            ┌─────────────────────────┐                      │
+│                            │    Object Storage       │                      │
+│                            │    (S3/MinIO)           │                      │
+│                            │    Workers download     │                      │
+│                            └─────────────────────────┘                      │
+│                                                                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Rule Sync Flow
+
+```
+1. Sync Trigger (scheduled or manual)
+       │
+       ▼
+2. Fetch Source Content
+   ├── Git: clone/pull with auth
+   ├── HTTP: download archive
+   └── Local: read filesystem
+       │
+       ▼
+3. Calculate Content Hash
+   ├── Compare with previous hash
+   └── Skip if unchanged
+       │
+       ▼
+4. Parse YAML Rules
+   ├── Extract metadata (id, name, severity)
+   ├── Extract category, tags
+   └── Map CWE/OWASP references
+       │
+       ▼
+5. Update Database
+   ├── Add new rules
+   ├── Update changed rules
+   └── Mark removed rules
+       │
+       ▼
+6. Record Sync History
+   └── rules_added, rules_updated, rules_removed
+```
+
+### Bundle Build Flow
+
+```
+1. Trigger Build (post-sync or manual)
+       │
+       ▼
+2. Gather Enabled Sources
+   ├── Filter by tool_id
+   └── Sort by priority (higher = precedence)
+       │
+       ▼
+3. Merge Rules
+   ├── Higher priority sources override
+   └── Apply tenant overrides
+       │
+       ▼
+4. Create Archive
+   ├── rules/ directory with all rules
+   ├── manifest.json with metadata
+   └── config.yaml with tool settings
+       │
+       ▼
+5. Upload to Object Storage
+   └── bundles/{tenant}/{tool}-{version}.tar.gz
+       │
+       ▼
+6. Update Bundle Record
+   └── status: ready, storage_path, content_hash
+```
+
+### Worker Download Flow
+
+```
+1. Worker Starts Scan
+       │
+       ▼
+2. Check Bundle Version
+   ├── GET /api/v1/rules/bundles/latest?tool_id=xxx
+   └── Compare content_hash with cached bundle
+       │
+       ▼
+3. Download if Changed
+   ├── GET {storage_path} from S3
+   └── Extract to local rules directory
+       │
+       ▼
+4. Apply Overrides
+   ├── Load tenant-specific overrides
+   └── Enable/disable rules as configured
+       │
+       ▼
+5. Execute Scan with Custom Rules
+```
+
+### Database Tables
+
+```sql
+-- Rule Sources (Git repos, HTTP URLs, etc.)
+CREATE TABLE rule_sources (
+    id UUID PRIMARY KEY,
+    tenant_id UUID REFERENCES tenants(id),
+    tool_id UUID REFERENCES tools(id),
+    name VARCHAR(255) NOT NULL,
+    source_type VARCHAR(20) NOT NULL,
+    config JSONB NOT NULL,
+    sync_enabled BOOLEAN DEFAULT true,
+    sync_interval_minutes INTEGER DEFAULT 60,
+    priority INTEGER DEFAULT 100,
+    last_sync_at TIMESTAMPTZ,
+    content_hash VARCHAR(64)
+);
+
+-- Parsed Rules
+CREATE TABLE rules (
+    id UUID PRIMARY KEY,
+    source_id UUID REFERENCES rule_sources(id),
+    tenant_id UUID REFERENCES tenants(id),
+    tool_id UUID REFERENCES tools(id),
+    rule_id VARCHAR(255) NOT NULL,
+    name VARCHAR(255),
+    severity VARCHAR(20),
+    category VARCHAR(100),
+    content_hash VARCHAR(64)
+);
+
+-- Rule Overrides
+CREATE TABLE rule_overrides (
+    id UUID PRIMARY KEY,
+    tenant_id UUID REFERENCES tenants(id),
+    tool_id UUID REFERENCES tools(id),
+    rule_pattern VARCHAR(500) NOT NULL,
+    is_pattern BOOLEAN DEFAULT false,
+    enabled BOOLEAN DEFAULT true,
+    severity_override VARCHAR(20),
+    expires_at TIMESTAMPTZ
+);
+
+-- Compiled Bundles
+CREATE TABLE rule_bundles (
+    id UUID PRIMARY KEY,
+    tenant_id UUID REFERENCES tenants(id),
+    tool_id UUID REFERENCES tools(id),
+    version VARCHAR(50),
+    content_hash VARCHAR(64),
+    rule_count INTEGER,
+    storage_path VARCHAR(500),
+    status VARCHAR(20)
+);
+```
+
+---
+
 ## Database Schema
 
-### Table Overview (31 Migrations)
+### Table Overview (39+ Migrations)
 
 | Category | Tables |
 |----------|--------|
@@ -405,6 +607,7 @@ HTTP Request
 | **Scans** | scans, scan_profiles, scan_sessions |
 | **Tools** | tools, tool_categories |
 | **Workers** | workers, commands, data_sources |
+| **Rules** | rule_sources, rules, rule_overrides, rule_bundles, rule_sync_history |
 | **Workflows** | pipelines, pipeline_stages, pipeline_runs, pipeline_stage_runs |
 | **Configuration** | scope_configurations, scm_connections, sla_policies |
 | **Audit** | audit_logs |

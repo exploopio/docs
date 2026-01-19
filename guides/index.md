@@ -27,6 +27,7 @@ Comprehensive guides for using the Rediver CTEM Platform.
 |-------|-------------|
 | [Running Workers](running-workers.md) | Setup scanning agents |
 | [Scan Management](scan-management.md) | Tools, profiles, pipelines |
+| [Rule Management](rule-management.md) | Custom rules and templates |
 | [Agent Usage](agent-usage.md) | CLI agent for scanning |
 
 ---

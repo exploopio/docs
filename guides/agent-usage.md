@@ -106,6 +106,17 @@ export API_KEY=rdw_your_api_key_here
 | `trivy-image` | Container | Container image scanning |
 | `trivy-full` | All | vuln + misconfig + secret |
 
+### Software Bill of Materials (SBOM)
+
+When you run a vulnerability scan with Trivy, the agent automatically collects a Software Bill of Materials (SBOM). This inventory is stored in the `components` table (global library) and linked to your asset in `asset_components`.
+
+- **Coverage**: Application dependencies (npm, pip, go.mod, etc.) and OS packages (apk, dpkg, rpm).
+- **Global View**: Components are normalized globally, allowing you to track usage of a specific library version across all assets.
+- **Snapshot Refresh**: Each scan refreshes the asset's dependency list, removing stale links and adding new ones, ensuring the "Vulnerable" status is always up-to-date with the latest scan.
+
+To view the SBOM for an asset, use the API endpoint:
+`GET /api/v1/assets/{id}/components`
+
 ### Check Tool Status
 
 ```bash

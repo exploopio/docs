@@ -209,6 +209,40 @@ Asset-scoped:
 
 ---
 
+## Exposure Event Endpoints (CTEM Discovery)
+
+**Prefix:** `/api/v1/exposures`
+
+Exposure events track non-CVE attack surface changes (port opens, misconfigs, etc.).
+
+### Exposure CRUD
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `findings:read` | List exposure events |
+| GET | `/stats` | `findings:read` | Exposure statistics |
+| GET | `/{id}` | `findings:read` | Get exposure event |
+| POST | `/` | `findings:write` | Create exposure event |
+| DELETE | `/{id}` | `findings:delete` | Delete exposure event |
+
+### State Management
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| POST | `/{id}/resolve` | `findings:write` | Mark as resolved |
+| POST | `/{id}/accept` | `findings:write` | Accept risk |
+| POST | `/{id}/false-positive` | `findings:write` | Mark false positive |
+| POST | `/{id}/reactivate` | `findings:write` | Reactivate exposure |
+| GET | `/{id}/history` | `findings:read` | State change history |
+
+### Bulk Operations
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| POST | `/ingest` | `findings:write` | Bulk ingest exposures |
+
+---
+
 ## Finding Endpoints (CTEM Prioritization)
 
 **Prefix:** `/api/v1/findings`
@@ -338,6 +372,208 @@ Scan configurations bind asset groups with scanners/workflows and schedules.
 | GET | `/` | `scans:read` | List runs for scan |
 | GET | `/latest` | `scans:read` | Get latest run |
 | GET | `/{runId}` | `scans:read` | Get specific run |
+
+---
+
+## Rule Management Endpoints (Custom Rules/Templates)
+
+**Prefix:** `/api/v1/rules`
+
+Rule management allows tenants to add custom rules/templates for security scanning tools (Semgrep, Nuclei, etc.) alongside platform defaults. Rules are stored as YAML files and synced from various sources.
+
+### Rule Sources
+
+Sources are repositories or URLs containing rule definitions. They can be Git repos, HTTP URLs, or local file paths.
+
+**Prefix:** `/api/v1/rules/sources`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `rules:read` | List rule sources |
+| GET | `/{sourceId}` | `rules:read` | Get source details |
+| POST | `/` | `rules:write` | Create rule source |
+| PUT | `/{sourceId}` | `rules:write` | Update rule source |
+| DELETE | `/{sourceId}` | `rules:delete` | Delete rule source |
+| POST | `/{sourceId}/enable` | `rules:write` | Enable source |
+| POST | `/{sourceId}/disable` | `rules:write` | Disable source |
+| POST | `/{sourceId}/sync` | `rules:write` | Trigger manual sync |
+| GET | `/{sourceId}/sync-history` | `rules:read` | Get sync history |
+
+**Source Types:**
+- `git` - Git repository with rules (requires URL, branch, path)
+- `http` - HTTP/HTTPS URL to rules archive
+- `local` - Local filesystem path (for development)
+
+**Example Create Source Request:**
+```json
+{
+  "name": "Custom Semgrep Rules",
+  "description": "Team security rules",
+  "tool_id": "550e8400-e29b-41d4-a716-446655440001",
+  "source_type": "git",
+  "config": {
+    "url": "https://github.com/org/security-rules.git",
+    "branch": "main",
+    "path": "semgrep/",
+    "auth_type": "token"
+  },
+  "credentials_id": "550e8400-e29b-41d4-a716-446655440002",
+  "sync_enabled": true,
+  "sync_interval_minutes": 60,
+  "priority": 100
+}
+```
+
+### Rules
+
+Individual rule definitions extracted from sources.
+
+**Prefix:** `/api/v1/rules/rules`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `rules:read` | List rules |
+| GET | `/{ruleId}` | `rules:read` | Get rule details |
+
+**Query Parameters:**
+- `tool_id` - Filter by tool
+- `source_id` - Filter by source
+- `severity` - Filter by severity (critical, high, medium, low, info)
+- `category` - Filter by category
+- `search` - Search by rule ID or name
+
+### Rule Overrides
+
+Override rules to enable/disable or change severity for specific contexts.
+
+**Prefix:** `/api/v1/rules/overrides`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `rules:read` | List overrides |
+| GET | `/{overrideId}` | `rules:read` | Get override |
+| POST | `/` | `rules:write` | Create override |
+| PUT | `/{overrideId}` | `rules:write` | Update override |
+| DELETE | `/{overrideId}` | `rules:delete` | Delete override |
+
+**Override Types:**
+- Pattern-based (`is_pattern: true`) - Glob patterns like `security/*`
+- Exact match (`is_pattern: false`) - Specific rule IDs
+
+**Example Create Override Request:**
+```json
+{
+  "tool_id": "550e8400-e29b-41d4-a716-446655440001",
+  "rule_pattern": "security/sql-injection-*",
+  "is_pattern": true,
+  "enabled": false,
+  "severity_override": "critical",
+  "reason": "Known false positive for our ORM",
+  "asset_group_id": "550e8400-e29b-41d4-a716-446655440003",
+  "expires_at": "2025-12-31T23:59:59Z"
+}
+```
+
+### Rule Bundles
+
+Pre-compiled bundles for worker download. Bundles contain merged rules from all enabled sources.
+
+**Prefix:** `/api/v1/rules/bundles`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `rules:read` | List bundles |
+| GET | `/latest` | `rules:read` | Get latest bundle for tool |
+| GET | `/{bundleId}` | `rules:read` | Get bundle details |
+| POST | `/build` | `rules:write` | Trigger bundle build |
+
+**Query Parameters for `/latest`:**
+- `tool_id` (required) - Tool ID to get bundle for
+
+**Bundle Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440004",
+  "tenant_id": "550e8400-e29b-41d4-a716-446655440005",
+  "tool_id": "550e8400-e29b-41d4-a716-446655440001",
+  "version": "v1.2.3",
+  "content_hash": "sha256:abc123...",
+  "rule_count": 450,
+  "source_count": 3,
+  "size_bytes": 1024000,
+  "storage_path": "bundles/tenant-abc/semgrep-v1.2.3.tar.gz",
+  "status": "ready",
+  "created_at": "2025-01-19T10:30:00Z"
+}
+```
+
+---
+
+## Data Ingestion Endpoints
+
+**Prefix:** `/api/v1/ingest`
+
+Endpoints for pushing scan results and findings into Rediver.
+
+### RIS Format Ingestion
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| POST | `/findings` | `ingest:write` | Push findings in RIS format |
+| POST | `/assets` | `ingest:write` | Push assets in RIS format |
+| POST | `/heartbeat` | `ingest:write` | Send worker heartbeat |
+
+### SARIF Ingestion
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| POST | `/sarif` | `ingest:write` | Push SARIF 2.1.0 results |
+
+**SARIF Request:**
+```json
+{
+  "workspace_id": "550e8400-e29b-41d4-a716-446655440001",
+  "sarif": {
+    "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+    "version": "2.1.0",
+    "runs": [...]
+  },
+  "options": {
+    "auto_resolve_assets": true,
+    "dedup_strategy": "fingerprint",
+    "asset_type": "repository",
+    "asset_value": "github.com/org/repo"
+  }
+}
+```
+
+**Supported SARIF Tools:**
+- **SAST:** Semgrep, CodeQL, Bandit, Gosec, ESLint, SonarQube
+- **Secrets:** Gitleaks, TruffleHog, Detect-secrets
+- **IaC:** Trivy, Checkov, TFSec, Terrascan, KICS
+- **Web3:** Slither, Mythril, Securify, Manticore, Aderyn
+
+**SARIF Level Mapping:**
+| SARIF Level | Rediver Severity |
+|-------------|------------------|
+| `error` | `high` |
+| `warning` | `medium` |
+| `note` | `low` |
+| `none` | `info` |
+
+---
+
+## Tool Configuration Endpoints
+
+**Prefix:** `/api/v1/tools`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `tools:read` | List available tools |
+| GET | `/{id}` | `tools:read` | Get tool details |
+| POST | `/` | `tools:write` | Register tool |
+| PUT | `/{id}` | `tools:write` | Update tool |
+| DELETE | `/{id}` | `tools:delete` | Delete tool |
 
 ---
 

@@ -406,7 +406,165 @@ RIS can convert SARIF output from popular tools:
 - MythX
 - Certora
 
-### Converting SARIF to RIS
+### Direct SARIF Ingestion (Recommended)
+
+Rediver supports direct SARIF 2.1.0 ingestion - no conversion needed:
+
+```bash
+# Push SARIF directly to Rediver
+curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_id": "ws-abc123",
+    "sarif": {...},
+    "options": {
+      "auto_resolve_assets": true,
+      "dedup_strategy": "fingerprint"
+    }
+  }'
+```
+
+### SARIF Structure
+
+Standard SARIF 2.1.0 format supported:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "semgrep",
+          "version": "1.45.0",
+          "rules": [
+            {
+              "id": "python.security.sql-injection",
+              "name": "SQL Injection",
+              "shortDescription": { "text": "SQL Injection vulnerability" },
+              "fullDescription": { "text": "User input is directly concatenated..." },
+              "defaultConfiguration": { "level": "error" },
+              "properties": {
+                "tags": ["security", "injection", "cwe-89"]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "python.security.sql-injection",
+          "level": "error",
+          "message": { "text": "Possible SQL injection" },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": { "uri": "src/db/query.py" },
+                "region": {
+                  "startLine": 45,
+                  "endLine": 47,
+                  "snippet": { "text": "cursor.execute(f\"SELECT * FROM users WHERE id = {user_id}\")" }
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "primaryLocationLineHash": "abc123def456"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### SARIF Level to Severity Mapping
+
+| SARIF Level | RIS Severity |
+|-------------|--------------|
+| `error` | `high` |
+| `warning` | `medium` |
+| `note` | `low` |
+| `none` | `info` |
+
+### Tool-Specific SARIF Examples
+
+**Semgrep:**
+```bash
+# Run Semgrep with SARIF output
+semgrep --config auto --sarif -o results.sarif .
+
+# Push to Rediver
+curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"sarif\": $(cat results.sarif)}"
+```
+
+**CodeQL:**
+```bash
+# Run CodeQL with SARIF output
+codeql database analyze /path/to/db --format=sarif-latest --output=results.sarif
+
+# Push to Rediver
+curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"sarif\": $(cat results.sarif)}"
+```
+
+**Trivy:**
+```bash
+# Run Trivy with SARIF output
+trivy fs --format sarif --output results.sarif .
+
+# Push to Rediver
+curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"sarif\": $(cat results.sarif)}"
+```
+
+**Gitleaks:**
+```bash
+# Run Gitleaks with SARIF output
+gitleaks detect --report-format sarif --report-path results.sarif
+
+# Push to Rediver
+curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+  -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"sarif\": $(cat results.sarif)}"
+```
+
+### SARIF Ingestion Options
+
+```json
+{
+  "sarif": {...},
+  "options": {
+    "auto_resolve_assets": true,
+    "dedup_strategy": "fingerprint",
+    "asset_type": "repository",
+    "asset_value": "github.com/org/repo",
+    "workspace_id": "ws-abc123"
+  }
+}
+```
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `auto_resolve_assets` | Automatically create assets from locations | `true` |
+| `dedup_strategy` | `fingerprint` or `rule_location` | `fingerprint` |
+| `asset_type` | Default asset type if not resolved | `repository` |
+| `asset_value` | Default asset value if not resolved | - |
+| `workspace_id` | Target workspace | Required |
+
+### Converting SARIF to RIS (Alternative)
+
+If you prefer programmatic conversion:
 
 ```go
 import (
