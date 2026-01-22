@@ -680,11 +680,12 @@ kubectl exec -it deployment/rediver-ui --namespace rediver -- curl http://redive
 
 ### Further Reading
 
-- **Security Best Practices** - Coming in Tier 2 documentation
-- **Monitoring & Alerting** - Coming in Tier 2 documentation  
-- **Performance Optimization** - Coming in Tier 2 documentation
+- **[Security Best Practices](../guides/SECURITY.md)** - Authentication, secrets management, access control
+- **[Monitoring & Alerting](./MONITORING.md)** - Prometheus, Grafana, Loki, SLIs/SLOs
+- **[Scaling Guide](./SCALING.md)** - Performance optimization (Coming in future release)
 
-For now, refer to:
+### Related Guides
+
 - [Architecture Overview](../architecture/overview.md)
 - [End-to-End Workflow](../guides/END_TO_END_WORKFLOW.md)
 - [Agent Quick Start](../../agent/docs/QUICK_START.md)
