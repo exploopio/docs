@@ -1,11 +1,6 @@
 ---
 layout: default
 title: API Reference
-nav_order: 6
----
----
-layout: default
-title: API Reference
 parent: Backend Services
 nav_order: 2
 ---

@@ -1,5 +1,9 @@
 ---
 layout: default
+parent: Architecture
+---
+---
+layout: default
 title: Agent & API Key Management
 parent: Architecture
 nav_order: 5

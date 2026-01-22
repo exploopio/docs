@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Operations
+grand_parent: UI Documentation
+---
 # Deployment Guide
 
 **Last Updated:** 2026-01-08

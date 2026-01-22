@@ -1,5 +1,9 @@
 ---
 layout: default
+parent: Architecture
+---
+---
+layout: default
 title: Scan Pipeline Architecture
 parent: Architecture
 nav_order: 7

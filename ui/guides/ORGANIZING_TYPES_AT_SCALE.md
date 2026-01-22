@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Guides
+grand_parent: UI Documentation
+---
 # Organizing Types at Scale
 
 **Last Updated:** 2025-12-11

@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Features
+grand_parent: UI Documentation
+---
 # Access Control System
 
 **Last Updated:** 2026-01-21

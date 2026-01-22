@@ -1,5 +1,9 @@
 ---
 layout: default
+parent: Architecture
+---
+---
+layout: default
 title: Server-Agent Command Architecture
 parent: Architecture
 nav_order: 4

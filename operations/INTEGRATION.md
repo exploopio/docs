@@ -1,4 +1,11 @@
-# Rediver Platform Integration Guide
+---
+layout: default
+title: Integration Guide
+parent: Operations
+nav_order: 11
+---
+
+# Integration Guide
 
 This guide provides a comprehensive overview of integrating with the Rediver security platform.
 

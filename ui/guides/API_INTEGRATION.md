@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Guides
+grand_parent: UI Documentation
+---
 # API Integration Guide
 
 **Last Updated:** 2025-12-11

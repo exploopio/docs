@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Operations
+grand_parent: UI Documentation
+---
 # Environment Variables Guide
 
 ## Overview

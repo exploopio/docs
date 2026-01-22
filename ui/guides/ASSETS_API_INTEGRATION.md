@@ -1,3 +1,8 @@
+---
+layout: default
+parent: UI Guides
+grand_parent: UI Documentation
+---
 # Assets API Integration Guide
 
 **Last Updated:** 2026-01-14

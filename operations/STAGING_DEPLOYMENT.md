@@ -1,3 +1,10 @@
+---
+layout: default
+title: Staging Deployment
+parent: Operations
+nav_order: 12
+---
+
 # Staging Deployment Guide
 
 **Last Updated:** 2026-01-14

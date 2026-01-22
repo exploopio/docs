@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Development Guide
-nav_order: 2
+parent: Operations
+nav_order: 10
 ---
 
 # Development Guide

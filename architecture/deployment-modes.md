@@ -1,5 +1,9 @@
 ---
 layout: default
+parent: Architecture
+---
+---
+layout: default
 title: SDK Deployment Modes
 parent: Architecture
 nav_order: 2

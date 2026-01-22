@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Service Overview
-parent: Backend Services
-nav_order: 1
+title: Backend Services
+has_children: true
+nav_order: 3
 ---
 
 # Backend API Service

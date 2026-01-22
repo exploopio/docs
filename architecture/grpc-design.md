@@ -1,5 +1,9 @@
 ---
 layout: default
+parent: Architecture
+---
+---
+layout: default
 title: gRPC API Design
 parent: Architecture
 nav_order: 6

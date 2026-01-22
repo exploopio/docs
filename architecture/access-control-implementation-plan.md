@@ -1,3 +1,7 @@
+---
+layout: default
+parent: Architecture
+---
 # Access Control & Multi-Persona Implementation Plan
 
 > **Document Version**: 1.3

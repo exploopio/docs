@@ -1,3 +1,7 @@
+---
+layout: default
+parent: Architecture
+---
 # Access Control - Detailed Flows, Data & Architecture
 
 > **Supplement to**: access-control-implementation-plan.md
