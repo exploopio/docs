@@ -49,36 +49,121 @@ Modules are system-defined feature areas. Each module contains related permissio
 -- Modules (System-defined feature areas)
 -- =============================================================================
 CREATE TABLE modules (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    slug VARCHAR(50) UNIQUE NOT NULL,      -- 'assets', 'findings', 'scans'
+    id VARCHAR(50) PRIMARY KEY,            -- 'assets', 'findings', 'scans'
+    slug VARCHAR(50) UNIQUE NOT NULL,
     name VARCHAR(100) NOT NULL,            -- 'Asset Management'
     description TEXT,
     icon VARCHAR(50),                       -- Lucide icon name: 'shield', 'scan'
-    category VARCHAR(50),                   -- 'core', 'security', 'compliance'
+    category VARCHAR(50),                   -- 'core', 'security', 'compliance', 'platform', 'enterprise'
     display_order INT DEFAULT 0,
-    is_core BOOLEAN DEFAULT FALSE,         -- Core modules available to all plans
-    is_active BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT TRUE,        -- Admin toggle to enable/disable module globally
+    release_status VARCHAR(20) DEFAULT 'released', -- 'released', 'coming_soon', 'beta', 'deprecated'
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Index
-CREATE INDEX idx_modules_slug ON modules(slug);
-CREATE INDEX idx_modules_category ON modules(category);
+-- Constraints
+ALTER TABLE modules ADD CONSTRAINT chk_modules_release_status
+    CHECK (release_status IN ('released', 'coming_soon', 'beta', 'deprecated'));
+```
 
--- Seed data
-INSERT INTO modules (slug, name, description, icon, category, is_core, display_order) VALUES
-('dashboard', 'Dashboard', 'Overview and analytics dashboard', 'layout-dashboard', 'core', true, 1),
-('assets', 'Asset Management', 'Manage and inventory assets', 'server', 'core', true, 2),
-('findings', 'Vulnerability Findings', 'View and manage security findings', 'shield-alert', 'security', false, 3),
-('scans', 'Security Scanning', 'Configure and run security scans', 'scan', 'security', false, 4),
-('reports', 'Reports & Analytics', 'Generate security reports', 'file-text', 'security', false, 5),
-('compliance', 'Compliance Management', 'Track compliance frameworks', 'clipboard-check', 'compliance', false, 6),
-('integrations', 'Integrations', 'Third-party integrations', 'plug', 'platform', false, 7),
-('api', 'API Access', 'REST API access', 'code', 'platform', false, 8),
-('audit', 'Audit Logs', 'Security audit trail', 'scroll-text', 'enterprise', false, 9),
-('sso', 'SSO & SAML', 'Single sign-on authentication', 'key', 'enterprise', false, 10),
-('teams', 'Team Management', 'Manage team members and roles', 'users', 'core', true, 11);
+### Module Categories
+
+| Category | Description | Examples |
+|----------|-------------|----------|
+| `core` | Essential features for all plans | dashboard, assets, team, settings |
+| `security` | CTEM security features | findings, exposures, scans, pentest, remediation |
+| `platform` | Integration & automation | integrations, notifications, webhooks, api |
+| `compliance` | Compliance & reporting | reports, policies, audit |
+| `enterprise` | Enterprise-only features | groups, roles, sso |
+
+### Release Status
+
+| Status | UI Behavior | Description |
+|--------|-------------|-------------|
+| `released` | Normal, clickable | Module is generally available |
+| `coming_soon` | "Soon" badge, disabled | Module is not released yet (preview) |
+| `beta` | "Beta" badge, clickable | Module is in beta testing |
+| `deprecated` | May show warning | Module is being phased out |
+
+### Current Modules
+
+```sql
+-- Core modules (available to all plans)
+('dashboard', 'Dashboard', 'core', 1),
+('assets', 'Assets', 'core', 2),
+('team', 'Team', 'core', 3),
+('settings', 'Settings', 'core', 4),
+
+-- Security modules (CTEM functionality)
+('findings', 'Findings', 'security', 10),
+('exposures', 'Exposures', 'security', 11),
+('scans', 'Scans', 'security', 12),
+('agents', 'Agents', 'security', 13),
+('attack_surface', 'Attack Surface', 'security', 14),
+('pentest', 'Penetration Testing', 'security', 16),
+('remediation', 'Remediation', 'security', 17),
+('threat_intel', 'Threat Intelligence', 'security', 18),
+('components', 'Components (SBOM)', 'security', 19),
+('credentials', 'Credential Leaks', 'security', 20),
+
+-- Platform modules
+('integrations', 'Integrations', 'platform', 20),
+('notifications', 'Notifications', 'platform', 21),
+('webhooks', 'Webhooks', 'platform', 22),
+('api', 'API Access', 'platform', 23),
+
+-- Compliance modules
+('reports', 'Reports', 'compliance', 30),
+('policies', 'Policies', 'compliance', 31),
+('audit', 'Audit Logs', 'compliance', 32),
+
+-- Enterprise modules
+('groups', 'Groups', 'enterprise', 40),
+('roles', 'Roles', 'enterprise', 41),
+('sso', 'SSO/SAML', 'enterprise', 42);
+```
+
+### Granular Modules & Sidebar Mapping
+
+The following modules provide fine-grained control over CTEM features by plan tier:
+
+| Module | UI Features | Plan Tier |
+|--------|-------------|-----------|
+| `pentest` | Penetration Testing, Attack Simulation, Control Testing | Business+ |
+| `remediation` | Remediation Tasks, Workflows | Business+ |
+| `threat_intel` | Threat Intel, Risk Analysis, Business Impact | Business+ |
+| `components` | Components (SBOM), Vulnerable Components, Ecosystems, Licenses | Team+ |
+| `credentials` | Credential Leaks | Team+ |
+
+**Sidebar Mapping (sidebar-data.ts):**
+
+```typescript
+// CTEM Phase: Validation → module: "pentest"
+{
+  title: "Penetration Testing",
+  module: "pentest",  // Controls visibility
+  items: [
+    { title: "Campaigns", url: "/pentest/campaigns" },
+    { title: "Findings", url: "/pentest/findings" },
+    { title: "Retests", url: "/pentest/retests" },
+  ],
+},
+{ title: "Attack Simulation", module: "pentest" },
+{ title: "Control Testing", module: "pentest" },
+
+// CTEM Phase: Mobilization → module: "remediation"
+{ title: "Remediation Tasks", module: "remediation" },
+{ title: "Workflows", module: "remediation" },
+
+// CTEM Phase: Prioritization → module: "threat_intel"
+{ title: "Threat Intel", module: "threat_intel" },
+{ title: "Risk Analysis", module: "threat_intel" },
+{ title: "Business Impact", module: "threat_intel" },
+
+// Discovery (Team+) → module: "components" and "credentials"
+{ title: "Components", module: "components" },      // SBOM
+{ title: "Credential Leaks", module: "credentials" },
 ```
 
 ### 2. Module Permissions Mapping
@@ -194,45 +279,97 @@ CREATE TABLE plan_modules (
 CREATE INDEX idx_plan_modules_plan ON plan_modules(plan_id);
 CREATE INDEX idx_plan_modules_module ON plan_modules(module_id);
 
--- Seed data
+-- =============================================================================
+-- PLAN MODULES MATRIX
+-- =============================================================================
+-- Each plan tier has explicit module assignments (no is_core flag)
+-- Modules are assigned based on business requirements per tier
+
+-- Plan Modules Matrix:
+-- | Module         | Free | Team | Business | Enterprise |
+-- |----------------|------|------|----------|------------|
+-- | dashboard      | ✓    | ✓    | ✓        | ✓          |
+-- | assets         | ✓    | ✓    | ✓        | ✓          |
+-- | team           | ✓    | ✓    | ✓        | ✓          |
+-- | settings       | ✓    | ✓    | ✓        | ✓          |
+-- | findings       | ✓    | ✓    | ✓        | ✓          |
+-- | exposures      | ✓    | ✓    | ✓        | ✓          |
+-- | scans          | ✓    | ✓    | ✓        | ✓          |
+-- | agents         | ✓    | ✓    | ✓        | ✓          |
+-- | components     |      | ✓    | ✓        | ✓          |
+-- | credentials    |      | ✓    | ✓        | ✓          |
+-- | threat_intel   |      |      | ✓        | ✓          |
+-- | pentest        |      |      | ✓        | ✓          |
+-- | remediation    |      |      | ✓        | ✓          |
+-- | attack_surface |      |      | ✓        | ✓          |
+-- | reports        |      | ✓    | ✓        | ✓          |
+-- | integrations   |      | ✓    | ✓        | ✓          |
+-- | notifications  |      | ✓    | ✓        | ✓          |
+-- | webhooks       |      |      | ✓        | ✓          |
+-- | api            |      |      | ✓        | ✓          |
+-- | policies       |      |      | ✓        | ✓          |
+-- | audit          |      |      |          | ✓          |
+-- | groups         |      |      |          | ✓          |
+-- | roles          |      |      |          | ✓          |
+-- | sso            |      |      |          | ✓          |
+
+-- =============================================================================
+-- SEED DATA: Explicit module assignment per plan
+-- =============================================================================
+
 -- Free plan: Core modules only with limits
 INSERT INTO plan_modules (plan_id, module_id, limits)
 SELECT p.id, m.id,
     CASE
         WHEN m.slug = 'assets' THEN '{"max_items": 50}'::jsonb
-        WHEN m.slug = 'teams' THEN '{"max_members": 2}'::jsonb
+        WHEN m.slug = 'team' THEN '{"max_members": 2}'::jsonb
         ELSE '{}'::jsonb
     END
 FROM plans p, modules m
-WHERE p.slug = 'free' AND m.is_core = TRUE;
+WHERE p.slug = 'free'
+  AND m.slug IN ('dashboard', 'assets', 'team', 'settings', 'findings', 'exposures', 'scans', 'agents');
 
--- Pro plan: Core + Security modules
+-- Team plan: Core + basic security + integrations
 INSERT INTO plan_modules (plan_id, module_id, limits)
 SELECT p.id, m.id,
     CASE
         WHEN m.slug = 'assets' THEN '{"max_items": 500}'::jsonb
-        WHEN m.slug = 'teams' THEN '{"max_members": 10}'::jsonb
+        WHEN m.slug = 'team' THEN '{"max_members": 10}'::jsonb
         WHEN m.slug = 'scans' THEN '{"max_per_month": 100}'::jsonb
         ELSE '{}'::jsonb
     END
 FROM plans p, modules m
-WHERE p.slug = 'pro' AND (m.is_core = TRUE OR m.category = 'security');
+WHERE p.slug = 'team'
+  AND m.slug IN (
+    'dashboard', 'assets', 'team', 'settings',
+    'findings', 'exposures', 'scans', 'agents',
+    'components', 'credentials',
+    'reports', 'integrations', 'notifications'
+  );
 
--- Business plan: Core + Security + Compliance + Platform
+-- Business plan: Full security suite
 INSERT INTO plan_modules (plan_id, module_id, limits)
 SELECT p.id, m.id,
     CASE
         WHEN m.slug = 'assets' THEN '{"max_items": 2000}'::jsonb
-        WHEN m.slug = 'teams' THEN '{"max_members": 25}'::jsonb
+        WHEN m.slug = 'team' THEN '{"max_members": 25}'::jsonb
         ELSE '{}'::jsonb
     END
 FROM plans p, modules m
-WHERE p.slug = 'business' AND m.category IN ('core', 'security', 'compliance', 'platform');
+WHERE p.slug = 'business'
+  AND m.slug IN (
+    'dashboard', 'assets', 'team', 'settings',
+    'findings', 'exposures', 'scans', 'agents',
+    'components', 'credentials',
+    'threat_intel', 'pentest', 'remediation', 'attack_surface',
+    'reports', 'integrations', 'notifications', 'webhooks', 'api', 'policies'
+  );
 
 -- Enterprise plan: All modules, no limits
 INSERT INTO plan_modules (plan_id, module_id, limits)
 SELECT p.id, m.id, '{}'::jsonb
-FROM plans p, modules m
+FROM plans p
+CROSS JOIN modules m
 WHERE p.slug = 'enterprise';
 ```
 
@@ -325,14 +462,16 @@ $$ LANGUAGE plpgsql;
 package licensing
 
 type Module struct {
-    ID          string
-    Slug        string
-    Name        string
-    Description string
-    Icon        string
-    Category    string
-    IsCore      bool
-    IsActive    bool
+    ID            string
+    Slug          string
+    Name          string
+    Description   string
+    Icon          string
+    Category      string
+    DisplayOrder  int
+    IsActive      bool
+    ReleaseStatus string  // 'released', 'coming_soon', 'beta', 'deprecated'
+    EventTypes    []string
 }
 
 type Plan struct {
@@ -664,7 +803,10 @@ export interface Module {
   description: string;
   icon: string;
   category: string;
-  is_core: boolean;
+  display_order: number;
+  is_active: boolean;
+  release_status: 'released' | 'coming_soon' | 'beta' | 'deprecated';
+  event_types?: string[];
 }
 
 export interface Plan {
@@ -904,40 +1046,59 @@ export default function CompliancePage() {
   );
 }
 
-// src/components/layout/sidebar.tsx
+// src/lib/permissions/use-filtered-sidebar.ts
+// The actual implementation uses useFilteredSidebarData hook which:
+// 1. Checks module access based on tenant's plan (moduleIds from API)
+// 2. Handles release status (coming_soon, beta, released, deprecated)
+// 3. Filters based on user permissions and roles
 
-export function Sidebar() {
-  const { modules } = useTenantModules();
-  const hasModule = (slug: string) => modules.some(m => m.slug === slug);
+export function useFilteredSidebarData(sidebarData: SidebarData): FilteredSidebarResult {
+  const { can, canAny, isRole, isAnyRole, tenantRole, permissions } = usePermissions();
+  const { moduleIds, modules, isLoading: modulesLoading } = useTenantModules();
 
-  return (
-    <nav>
-      {/* Core modules - always shown */}
-      <SidebarItem icon={LayoutDashboard} label="Dashboard" href="/" />
-      <SidebarItem icon={Server} label="Assets" href="/assets" />
+  // Module helpers
+  const hasModule = (moduleId: string): boolean => {
+    if (moduleIds.length > 0) {
+      return moduleIds.includes(moduleId);
+    }
+    // Fail-open for owner/admin only if API returns empty
+    if (!modulesLoading && (tenantRole === 'owner' || tenantRole === 'admin')) {
+      return true;
+    }
+    return false;
+  };
 
-      {/* Conditional modules based on plan */}
-      {hasModule('findings') && (
-        <SidebarItem icon={ShieldAlert} label="Findings" href="/findings" />
-      )}
-      {hasModule('scans') && (
-        <SidebarItem icon={Scan} label="Scans" href="/scans" />
-      )}
-      {hasModule('compliance') && (
-        <SidebarItem icon={ClipboardCheck} label="Compliance" href="/compliance" />
-      )}
+  const getModuleReleaseStatus = (moduleId: string) => {
+    const mod = modules.find(m => m.id === moduleId || m.slug === moduleId);
+    return mod?.release_status; // 'released' | 'coming_soon' | 'beta' | 'deprecated'
+  };
 
-      {/* Or show locked items */}
-      {!hasModule('compliance') && (
-        <SidebarItem
-          icon={Lock}
-          label="Compliance"
-          href="/settings/billing"
-          className="opacity-50"
-        />
-      )}
-    </nav>
-  );
+  // Filter items based on:
+  // - module access (from plan)
+  // - release status (show coming_soon with badge but disabled)
+  // - permissions (RBAC)
+  // - role requirements (minRole)
+  // ...
+}
+
+// Sidebar items use module property to control visibility:
+// - module: "findings"       -> Basic findings (all plans)
+// - module: "pentest"        -> Pentest features (Business+ plans)
+// - module: "threat_intel"   -> Threat intel (Business+ plans)
+// - module: "components"     -> SBOM (Team+ plans)
+// - module: "credentials"    -> Credential leaks (Team+ plans)
+// - module: "remediation"    -> Remediation (Business+ plans)
+
+// Example sidebar-data.ts structure:
+{
+  title: "Penetration Testing",
+  icon: Crosshair,
+  permission: Permission.PentestRead,
+  module: "pentest",  // Only visible if tenant has pentest module
+  items: [
+    { title: "Campaigns", url: "/pentest/campaigns" },
+    { title: "Findings", url: "/pentest/findings", badge: "12" },
+  ],
 }
 ```
 
@@ -1033,6 +1194,9 @@ POST   /api/v1/admin/tenants/{id}/subscription # Manually set subscription
 - [x] Create licensing handler (`internal/infra/http/handler/licensing_handler.go`)
 - [x] Register routes (`/api/v1/plans`, `/api/v1/me/modules`, `/api/v1/me/subscription`)
 - [x] Wire up in main.go
+- [x] Add `release_status` column for coming soon modules (`000067_add_module_release_status.up.sql`)
+- [x] Remove `is_core` column - use explicit `plan_modules` (`000068_drop_is_core_column.up.sql`)
+- [x] Add granular modules for better plan control (`000069_add_granular_modules.up.sql`)
 - [ ] Integrate with permission middleware (3-layer check)
 
 ### Phase 2: Stripe Integration ❌ NOT STARTED
@@ -1043,10 +1207,13 @@ POST   /api/v1/admin/tenants/{id}/subscription # Manually set subscription
 - [ ] Handle subscription lifecycle events
 - [ ] Create customer portal integration
 
-### Phase 3: Frontend ⚠️ PARTIAL
+### Phase 3: Frontend ✅ MOSTLY COMPLETE
 - [x] Create licensing types (`LicensingModule`, `TenantModulesResponse`)
 - [x] Create useTenantModules hook (`use-tenant-modules.ts`)
 - [x] Integrate with notification dialogs (event type filtering)
+- [x] Update sidebar filtering (`use-filtered-sidebar.ts`) with module access
+- [x] Add release status badges (Soon, Beta) in sidebar
+- [x] Update sidebar-data.ts with granular module assignments
 - [ ] Create ModuleGate component
 - [ ] Create UpgradePrompt component
 - [ ] Create LimitIndicator component
@@ -1102,4 +1269,4 @@ PRICING_URL=https://example.com/pricing
 
 ---
 
-**Last Updated**: 2026-01-22
+**Last Updated**: 2026-01-23

@@ -1,6 +1,6 @@
 # Feature Roadmap
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-23
 
 This document lists all planned features that are not yet implemented. These features have been temporarily hidden from the UI navigation but are planned for future development.
 
@@ -17,6 +17,36 @@ The Rediver CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure M
 | Prioritization | Partial | Rank risks based on impact |
 | Validation | Partial | Verify threats and test controls |
 | Mobilization | Partial | Execute remediation |
+
+---
+
+## Plan Tiers & Feature Availability
+
+Features are gated by subscription plan. See [Plans & Licensing](./operations/plans-licensing.md) for full details.
+
+| Feature Category | Free | Team | Business | Enterprise |
+|------------------|:----:|:----:|:--------:|:----------:|
+| **Core CTEM** | ✓ | ✓ | ✓ | ✓ |
+| Dashboard, Assets, Scans, Findings | ✓ | ✓ | ✓ | ✓ |
+| **Extended Discovery** | | | | |
+| Components (SBOM) | | ✓ | ✓ | ✓ |
+| Credential Leaks | | ✓ | ✓ | ✓ |
+| **Prioritization** | | | | |
+| Threat Intel, Risk Analysis | | | ✓ | ✓ |
+| **Validation** | | | | |
+| Penetration Testing | | | ✓ | ✓ |
+| Attack Simulation | | | ✓ | ✓ |
+| **Mobilization** | | | | |
+| Remediation Tasks | | | ✓ | ✓ |
+| Workflows | | | ✓ | ✓ |
+| **Platform** | | | | |
+| Reports | | ✓ | ✓ | ✓ |
+| Integrations | | ✓ | ✓ | ✓ |
+| API Access | | | ✓ | ✓ |
+| **Enterprise** | | | | |
+| Groups & Roles | | | | ✓ |
+| Audit Logs | | | | ✓ |
+| SSO/SAML | | | | ✓ |
 
 ---
 
@@ -661,6 +691,13 @@ The Rediver CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure M
 
 ## Recent Updates
 
+### 2026-01-23
+- **Plan-based Module Control** - Implemented granular module access per plan tier
+  - New modules: `pentest`, `remediation`, `threat_intel`, `components`, `credentials`
+  - Sidebar now filters based on tenant's plan modules
+  - Release status support: `coming_soon` (disabled with "Soon" badge), `beta` (enabled with "Beta" badge)
+  - Documentation: [Plans & Licensing Guide](./operations/plans-licensing.md)
+
 ### 2026-01-22
 - **Notification Integrations** - Implemented full notification channel management
   - Added Slack, Microsoft Teams, Telegram, Custom Webhook providers
@@ -704,4 +741,4 @@ When implementing a new feature:
 
 ---
 
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-23
