@@ -22,12 +22,12 @@ Rediver uses a **role-based access control** system where:
 
 ## Role Hierarchy
 
-| Role | Priority | Description |
-|------|:--------:|-------------|
-| **Owner** | 4 | Full control including billing and team deletion |
-| **Admin** | 3 | Full resource access + member management |
-| **Member** | 2 | Create and edit resources, no delete/admin access |
-| **Viewer** | 1 | Read-only access |
+| Role | Priority | Permissions | Description |
+|------|:--------:|:-----------:|-------------|
+| **Owner** | 4 | 216 | Full control including billing and team deletion |
+| **Admin** | 3 | 214 | Full resource access + member management |
+| **Member** | 2 | 86 | Create and edit resources, no delete/admin access |
+| **Viewer** | 1 | 66 | Read-only access |
 
 ```
        ┌───────────┐
@@ -63,6 +63,29 @@ Rediver uses a **role-based access control** system where:
 | **Manage billing** | ✅ | ❌ | ❌ | ❌ |
 | **View billing** | ✅ | ✅ | ❌ | ❌ |
 | **View audit logs** | ✅ | ✅ | ❌ | ❌ |
+
+---
+
+## Module Visibility
+
+The sidebar navigation is filtered based on user permissions. Each module requires a specific permission to be visible.
+
+| Module | Required Permission | Owner | Admin | Member | Viewer |
+|--------|-------------------|:-----:|:-----:|:------:|:------:|
+| Dashboard | `dashboard:read` | ✅ | ✅ | ✅ | ✅ |
+| Assets | `assets:read` | ✅ | ✅ | ✅ | ✅ |
+| Findings | `findings:read` | ✅ | ✅ | ✅ | ✅ |
+| Scans | `scans:read` | ✅ | ✅ | ✅ | ✅ |
+| Reports | `reports:read` | ✅ | ✅ | ✅ | ✅ |
+| Integrations | `integrations:read` | ✅ | ✅ | ✅ | ✅ |
+| Members | `team:members:read` | ✅ | ✅ | ✅ | ✅ |
+| Roles | `team:roles:read` | ✅ | ✅ | ✅ | ✅ |
+| Teams | `team:groups:read` | ✅ | ✅ | ✅ | ✅ |
+| **Audit Log** | `audit:read` | ✅ | ✅ | ❌ | ❌ |
+| **Billing** | `settings:billing:read` | ✅ | ✅ | ❌ | ❌ |
+
+> **Note**: Members and Viewers cannot see Audit Log or Billing in the sidebar.
+> See [Module Permission Filtering](../architecture/module-permission-filtering.md) for implementation details.
 
 ---
 
@@ -327,6 +350,9 @@ Only Owner can manage billing. Contact team owner.
 
 ## Related Documentation
 
+- [Module Permission Filtering](../architecture/module-permission-filtering.md) - How modules are filtered by user permissions
+- [Route-Level Permission Protection](../architecture/route-level-permission-protection.md) - How routes are protected from direct URL access
+- [Permission Real-time Sync](../architecture/permission-realtime-sync.md) - How permissions are synced in real-time
 - [Multi-Tenancy Guide](multi-tenancy.md) - Teams and tenant switching
 - [Authentication Guide](authentication.md) - Token and session management
 - [API Reference](../api/reference.md) - Endpoint permission requirements

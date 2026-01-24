@@ -21,6 +21,7 @@ Technical architecture and design documentation for the Rediver CTEM Platform.
 | [Scan Pipeline Design](scan-pipeline-design.md) | Workflow execution engine |
 | [Scan Orchestration](scan-orchestration.md) | Automated scan scheduling and pipeline progression |
 | [Notification System](notification-system.md) | Real-time alerts, async patterns, provider integrations |
+| [Storage Service Design](storage-service-design.md) | Multi-tenant storage infrastructure with BYOB support |
 
 ---
 

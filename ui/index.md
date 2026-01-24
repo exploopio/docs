@@ -99,6 +99,11 @@ ui/docs/
 - Group-based permissions
 - Role management
 
+**[Account Settings](./features/ACCOUNT_SETTINGS.md)**
+- User profile management
+- Security (password, 2FA, sessions)
+- Preferences (theme, language, notifications)
+
 ### 🚀 Operations (`ops/`)
 
 **[DEPLOYMENT.md](./ops/DEPLOYMENT.md)**
@@ -128,6 +133,7 @@ ui/docs/
 | **Add login/logout** | [features/auth/AUTH_USAGE.md](./features/auth/AUTH_USAGE.md) |
 | **Call backend API** | [guides/API_INTEGRATION.md](./guides/API_INTEGRATION.md) |
 | **Customize types** | [guides/CUSTOMIZE_TYPES_GUIDE.md](./guides/CUSTOMIZE_TYPES_GUIDE.md) |
+| **Account settings** | [features/ACCOUNT_SETTINGS.md](./features/ACCOUNT_SETTINGS.md) |
 | **Deploy** | [ops/DEPLOYMENT.md](./ops/DEPLOYMENT.md) |
 
 ---
