@@ -127,8 +127,12 @@ postgres://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?sslmode=DB_SSLMODE
 |----------|----------|---------|-------------|
 | `CORS_ALLOWED_ORIGINS` | Yes | - | Allowed origins (comma-separated or `*`) |
 | `CORS_ALLOWED_METHODS` | No | `GET,POST,PUT,DELETE,OPTIONS,PATCH` | Allowed HTTP methods |
-| `CORS_ALLOWED_HEADERS` | No | `Accept,Authorization,Content-Type,X-Request-ID` | Allowed headers |
+| `CORS_ALLOWED_HEADERS` | No | See below | Allowed headers |
 | `CORS_MAX_AGE` | No | `86400` | Preflight cache duration (seconds) |
+
+**Default CORS Headers**: `Accept,Authorization,Content-Type,X-Request-ID,X-Admin-API-Key`
+
+> **Important**: The `X-Admin-API-Key` header is required for Admin UI authentication. If you override `CORS_ALLOWED_HEADERS`, make sure to include it.
 
 ### Rate Limiting
 

@@ -1055,6 +1055,284 @@ cat manifest.yaml | rediver-admin apply -f -  # Apply from stdin
 
 ---
 
+## Development Environment Setup
+
+This section covers how to set up admin access in a local development environment.
+
+### Prerequisites
+
+1. PostgreSQL database running with migrations applied
+2. API server running (either via Docker or directly)
+
+### Method 1: Using bootstrap-admin Binary (Recommended for Dev)
+
+Build and run the bootstrap-admin tool directly:
+
+```bash
+cd api
+
+# Build the bootstrap-admin binary
+go build -o ./bin/bootstrap-admin ./cmd/bootstrap-admin
+
+# Run with database connection
+./bin/bootstrap-admin \
+  -db "postgres://rediver:rediver@localhost:5432/rediver?sslmode=disable" \
+  -email "admin@localhost" \
+  -name "Dev Admin" \
+  -role "super_admin"
+```
+
+**Output:**
+```
+=== Bootstrap Admin Created ===
+  ID:    550e8400-e29b-41d4-a716-446655440000
+  Email: admin@localhost
+  Name:  Dev Admin
+  Role:  super_admin
+
+API Key (save this, it won't be shown again):
+  rdv-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+
+Use this key to authenticate with the Admin UI or API.
+```
+
+### Method 2: Using Docker Compose (setup folder)
+
+If you're using the `setup/` deployment with docker-compose:
+
+```bash
+cd setup
+
+# For staging environment
+make bootstrap-admin-staging email=admin@localhost
+
+# For production environment
+make bootstrap-admin-prod email=admin@localhost
+
+# With custom role and name
+make bootstrap-admin-staging email=ops@localhost role=ops_admin name="Ops User"
+```
+
+### Method 3: Direct Docker Exec
+
+If API container is already running:
+
+```bash
+# Find your API container name
+docker ps | grep api
+
+# Execute bootstrap-admin inside the container
+docker exec -it <container_name> /app/bootstrap-admin \
+  -email "admin@localhost" \
+  -role "super_admin"
+```
+
+### Method 4: Using psql (Emergency/Manual)
+
+If the bootstrap-admin tool is unavailable, you can insert directly via SQL:
+
+```bash
+# Generate a bcrypt hash for your API key
+# Use this Go snippet or an online bcrypt generator:
+# echo -n "rdv-admin-your-secret-key-here" | htpasswd -bnBC 12 "" - | tr -d ':\n'
+
+# Or generate in Go:
+go run -e 'import "golang.org/x/crypto/bcrypt"; hash, _ := bcrypt.GenerateFromPassword([]byte("rdv-admin-testsecretkey123456789012345678901234567890123456"), 12); print(string(hash))'
+```
+
+```sql
+-- Connect to database
+psql -h localhost -U rediver -d rediver
+
+-- Insert admin user
+INSERT INTO admin_users (
+  id, email, name, role, api_key_hash, api_key_prefix, is_active, created_at, updated_at
+) VALUES (
+  gen_random_uuid(),
+  'admin@localhost',
+  'Dev Admin',
+  'super_admin',
+  '$2a$12$your-bcrypt-hash-here',  -- bcrypt hash of your API key
+  'rdv-admin-testsecr...',          -- first 20 chars of your key
+  true,
+  NOW(),
+  NOW()
+);
+```
+
+**Warning**: This method is not recommended. Use bootstrap-admin when possible.
+
+### Using the Admin API Key
+
+Once you have the API key, you can use it in several ways:
+
+#### 1. Admin UI Login
+
+1. Open Admin UI at `http://localhost:3001` (or your configured port)
+2. Enter the API key in the login form
+3. Click "Sign In"
+
+#### 2. API Requests with curl
+
+```bash
+# Set your API key
+export ADMIN_API_KEY="rdv-admin-your-key-here"
+
+# Validate the key
+curl -X GET http://localhost:8080/api/v1/admin/auth/validate \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
+
+# List platform agents
+curl -X GET http://localhost:8080/api/v1/admin/platform-agents \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
+
+# Get agent stats
+curl -X GET http://localhost:8080/api/v1/admin/platform-agents/stats \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
+
+# List bootstrap tokens
+curl -X GET http://localhost:8080/api/v1/admin/bootstrap-tokens \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
+```
+
+#### 3. Admin CLI (rediver-admin)
+
+```bash
+# Set environment variables
+export REDIVER_API_URL=http://localhost:8080
+export REDIVER_API_KEY=rdv-admin-your-key-here
+
+# Or create a config context
+rediver-admin config set-context local \
+  --api-url=http://localhost:8080 \
+  --api-key=rdv-admin-your-key-here
+
+rediver-admin config use-context local
+
+# Now use commands
+rediver-admin get agents
+rediver-admin get tokens
+```
+
+### Environment Variables for Development
+
+Create a `.env.local` file for easy development:
+
+```bash
+# .env.local
+ADMIN_API_KEY=rdv-admin-your-key-here
+ADMIN_API_URL=http://localhost:8080
+```
+
+Then source it:
+
+```bash
+source .env.local
+curl -X GET $ADMIN_API_URL/api/v1/admin/auth/validate \
+  -H "X-Admin-API-Key: $ADMIN_API_KEY"
+```
+
+### Admin UI Development Configuration
+
+For the Admin UI, set the API URL in `.env.local`:
+
+```bash
+# admin-ui/.env.local
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
+
+### Troubleshooting Development Setup
+
+#### "Invalid admin API key" error
+
+1. Check if the key was copied correctly (no extra spaces)
+2. Verify the admin user exists in database:
+   ```sql
+   SELECT id, email, role, is_active, api_key_prefix FROM admin_users;
+   ```
+3. Check if the key prefix matches what's stored
+
+#### "CORS error" in Admin UI
+
+Ensure your API has CORS configured for localhost:
+
+```bash
+# In .env.api.local or environment
+CORS_ALLOWED_ORIGINS=*
+# Or specific origins:
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+CORS_ALLOWED_HEADERS=Accept,Authorization,Content-Type,X-Request-ID,X-Admin-API-Key
+```
+
+Then restart the API server.
+
+#### "404 Not Found" on /api/v1/admin/auth/validate
+
+1. Ensure API server was rebuilt after adding admin routes
+2. Check that admin routes are registered:
+   ```bash
+   # If API has route listing
+   ./server -routes | grep admin
+   ```
+
+#### Database connection failed in bootstrap-admin
+
+Check your connection string format:
+```bash
+# Correct format
+-db "postgres://user:pass@host:5432/dbname?sslmode=disable"
+
+# Common mistakes:
+# - Missing sslmode parameter
+# - Wrong port (default is 5432)
+# - Password with special characters needs URL encoding
+```
+
+### Quick Start Script
+
+Create a `scripts/dev-setup-admin.sh` for convenience:
+
+```bash
+#!/bin/bash
+# scripts/dev-setup-admin.sh
+
+set -e
+
+DB_URL="${DB_URL:-postgres://rediver:rediver@localhost:5432/rediver?sslmode=disable}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@localhost}"
+ADMIN_ROLE="${ADMIN_ROLE:-super_admin}"
+
+echo "Building bootstrap-admin..."
+cd api
+go build -o ./bin/bootstrap-admin ./cmd/bootstrap-admin
+
+echo "Creating admin user..."
+./bin/bootstrap-admin \
+  -db "$DB_URL" \
+  -email "$ADMIN_EMAIL" \
+  -role "$ADMIN_ROLE"
+
+echo ""
+echo "Done! Save the API key above."
+echo ""
+echo "To use with Admin UI:"
+echo "  1. Open http://localhost:3001"
+echo "  2. Enter the API key"
+echo ""
+echo "To use with curl:"
+echo "  export ADMIN_API_KEY='rdv-admin-...'"
+echo "  curl -H 'X-Admin-API-Key: \$ADMIN_API_KEY' http://localhost:8080/api/v1/admin/auth/validate"
+```
+
+Make it executable and run:
+
+```bash
+chmod +x scripts/dev-setup-admin.sh
+./scripts/dev-setup-admin.sh
+```
+
+---
+
 ## Related Documentation
 
 - [Authentication Guide](./authentication.md) - Tenant API key management
