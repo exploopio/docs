@@ -58,3 +58,12 @@ Comprehensive guides for using the Rediver CTEM Platform.
 |-------|-------------|
 | [Docker Deployment](docker-deployment.md) | Container deployment |
 | [Agent Configuration](agent-configuration.md) | Agent config reference |
+
+---
+
+## Platform Administration
+
+| Guide | Description |
+|-------|-------------|
+| [Platform Administration](platform-admin.md) | Admin CLI, bootstrap, platform agents |
+| [Running Agents](running-agents.md) | Tenant and platform agent setup |

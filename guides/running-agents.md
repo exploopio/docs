@@ -552,53 +552,111 @@ Response:
 
 ### Deploying Platform Agents (Administrators)
 
-If you're a Rediver administrator deploying platform agents:
+If you're a Rediver administrator deploying platform agents, use the `rediver-admin` CLI:
 
-1. **Create a Bootstrap Token**
-   ```bash
-   curl -X POST /api/v1/admin/bootstrap-tokens \
-     -H "Authorization: Bearer $ADMIN_TOKEN" \
-     -d '{
-       "description": "US-East region agents",
-       "expires_in_hours": 24,
-       "max_uses": 10,
-       "required_region": "us-east-1"
-     }'
-   ```
+#### Step 1: Create a Bootstrap Token
 
-2. **Register the Agent**
-   ```bash
-   curl -X POST /api/v1/platform-agents/register \
-     -d '{
-       "bootstrap_token": "abc123.0123456789abcdef",
-       "name": "scanner-us-east-1-01",
-       "capabilities": ["nuclei", "nmap"],
-       "tools": ["nuclei", "nmap"],
-       "region": "us-east-1",
-       "max_concurrent": 10
-     }'
-   ```
+```bash
+# Using CLI (recommended)
+rediver-admin create token --max-uses=5 --expires=24h
 
-3. **Configure and Start the Agent**
-   ```yaml
-   # platform-agent.yaml
-   agent:
-     name: scanner-us-east-1-01
-     is_platform_agent: true
-     heartbeat_interval: 30s
+# Output:
+# token/tok-abc123 created
+#
+# Bootstrap Token (save this, it won't be shown again):
+#   abc123.xxxxxxxxxxxxxxxx
+#
+# Use this token to register a platform agent:
+#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.rediver.io
+```
 
-   server:
-     base_url: https://api.rediver.io
-     api_key: rdv_agent_xxx  # From registration response
-   ```
+#### Step 2: Start the Agent with Bootstrap Token
 
-See [Platform Agents Feature](../features/platform-agents.md) for complete documentation.
+```bash
+# Binary
+./agent -platform \
+  -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
+  -api-url=https://api.rediver.io \
+  -region=us-east-1 \
+  -capabilities=sast,sca,secrets
+
+# Docker
+docker run -d \
+  --name platform-agent \
+  --restart unless-stopped \
+  -e BOOTSTRAP_TOKEN=abc123.xxxxxxxxxxxxxxxx \
+  -e API_URL=https://api.rediver.io \
+  -v agent-data:/home/rediver/.rediver \
+  rediverio/agent:platform
+```
+
+The agent will:
+1. Register using the bootstrap token (one-time)
+2. Receive and store a permanent API key
+3. Start polling for jobs
+
+#### Kubernetes Deployment (Helm)
+
+For Kubernetes deployments, use the Helm chart:
+
+```bash
+# Add Rediver Helm repo
+helm repo add rediver https://charts.rediver.io
+helm repo update
+
+# Install with bootstrap token (auto-registration)
+helm install platform-agent rediver/platform-agent \
+  --namespace rediver \
+  --create-namespace \
+  --set apiUrl=https://api.rediver.io \
+  --set bootstrapToken=abc123.xxxxxxxxxxxxxxxx \
+  --set replicaCount=3 \
+  --set agent.region=us-east-1
+
+# Or install with pre-assigned API key
+helm install platform-agent rediver/platform-agent \
+  --namespace rediver \
+  --set apiUrl=https://api.rediver.io \
+  --set apiKey=ragent_xxxxx \
+  --set useStatefulSet=false
+```
+
+See [Platform Administration Guide - Kubernetes Deployment](./platform-admin.md#kubernetes-deployment) for detailed options.
+
+#### Step 3: Monitor the Agent
+
+```bash
+# List all platform agents
+rediver-admin get agents
+
+# Watch in real-time
+rediver-admin get agents -w
+
+# Get details
+rediver-admin describe agent <agent-name>
+```
+
+#### Step 4: Maintenance Operations
+
+```bash
+# Stop agent from accepting new jobs (for maintenance)
+rediver-admin drain agent <agent-name>
+
+# Resume operations
+rediver-admin uncordon agent <agent-name>
+
+# Remove agent
+rediver-admin delete agent <agent-name>
+```
+
+See [Platform Administration Guide](./platform-admin.md) for complete CLI documentation.
 
 ---
 
 ## Related Documentation
 
-- [Platform Agents Feature](../features/platform-agents.md)
+- [Platform Administration Guide](./platform-admin.md) - Admin CLI and platform management
+- [Platform Agents Feature](../features/platform-agents.md) - Detailed platform agent architecture
 - [Deployment Modes](../architecture/deployment-modes.md)
 - [Server-Agent Architecture](../architecture/server-agent-command.md)
 - [SDK Development Guide](./sdk-development.md)

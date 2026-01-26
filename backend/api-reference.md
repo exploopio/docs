@@ -637,10 +637,49 @@ Platform agents are Rediver-managed, shared scanning agents. See [Platform Agent
 | Method | Endpoint | Auth | Description |
 |--------|----------|:----:|-------------|
 | POST | `/heartbeat` | API Key* | Record heartbeat |
-| POST | `/jobs/claim` | API Key* | Claim next job |
-| POST | `/jobs/{id}/status` | API Key* | Update job status |
+| POST | `/poll` | API Key* | Long-poll for jobs (up to 30s) |
+| POST | `/jobs/{id}/ack` | API Key* + Job Token | Acknowledge job start |
+| POST | `/jobs/{id}/progress` | API Key* + Job Token | Report progress |
+| POST | `/jobs/{id}/result` | API Key* + Job Token | Submit job result |
 
-*Requires platform agent API key
+*Requires platform agent API key (`X-API-Key` header)
+
+**Job Token:** Jobs return an `auth_token` that must be passed via `X-Job-Token` header for job operations.
+
+**Long-Polling Flow:**
+```
+1. Agent calls POST /poll with timeout (default 30s)
+2. Server checks for available jobs matching agent capabilities
+3. If no jobs, server waits (via Redis Pub/Sub) until job available or timeout
+4. Returns job(s) when available, empty array on timeout
+```
+
+**Example Poll Request:**
+```bash
+curl -X POST /api/v1/platform-agent/poll \
+  -H "X-API-Key: rdv_agent_..." \
+  -d '{"capabilities": ["nuclei", "trivy"], "timeout": 30}'
+```
+
+**Example Job Lifecycle:**
+```bash
+# 1. Acknowledge job
+curl -X POST /api/v1/platform-agent/jobs/{id}/ack \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-token-here"
+
+# 2. Report progress (optional)
+curl -X POST /api/v1/platform-agent/jobs/{id}/progress \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-token-here" \
+  -d '{"progress": 50, "message": "Scanning..."}'
+
+# 3. Submit result
+curl -X POST /api/v1/platform-agent/jobs/{id}/result \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-token-here" \
+  -d '{"status": "completed", "result": {...}}'
+```
 
 ---
 
@@ -663,4 +702,17 @@ Platform agents are Rediver-managed, shared scanning agents. See [Platform Agent
 | 409 | `CONFLICT` | Resource already exists |
 | 422 | `VALIDATION_FAILED` | Validation error |
 | 429 | `RATE_LIMITED` | Too many requests |
+| 429 | `RATE_LIMIT_EXCEEDED` | Auth failure rate limit (IP banned) |
 | 500 | `INTERNAL_ERROR` | Server error |
+
+### Platform Agent Specific Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | `INVALID_SCANNER` | Scanner not in whitelist |
+| 400 | `INVALID_JOB_TYPE` | Job type not allowed |
+| 400 | `PATH_TRAVERSAL` | Target path contains `../` |
+| 400 | `PAYLOAD_TOO_LARGE` | Payload exceeds 1MB limit |
+| 401 | `INVALID_JOB_TOKEN` | Job token invalid or expired |
+| 403 | `JOB_ACCESS_DENIED` | Agent not authorized for job |
+| 429 | `RATE_LIMIT_EXCEEDED` | IP banned due to auth failures |

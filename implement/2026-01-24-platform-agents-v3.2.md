@@ -68,10 +68,34 @@ Rediver needs to support:
   - Documented PostgreSQL functions in `docs/architecture/database-notes.md`
   - Added DB function conventions to `docs/development/migrations.md`
 
-- [ ] **Phase 8: Integration Testing** - Pending
-  - Unit tests for services
+- [x] **Phase 8: Security Hardening** - Completed 2026-01-25
+  - Added scanner name whitelist validation (prevents command injection)
+  - Added job type whitelist validation
+  - Added path traversal prevention (`../` blocked)
+  - Added auth token lifetime = job_timeout + 10min (not 24h)
+  - Added payload size limit (1MB) and timeout cap (2h)
+  - Added security event type constants for monitoring
+  - Added Prometheus metrics for security events
+  - Added auth failure rate limiter (5 failures → 15min ban)
+  - Added security validation unit tests
+
+- [x] **Phase 9: Admin CLI (kubectl-style)** - Completed 2026-01-26
+  - `cmd/rediver-admin/main.go` - CLI entry point
+  - `cmd/rediver-admin/cmd/root.go` - Root command with global flags
+  - `cmd/rediver-admin/cmd/config.go` - Config/context management
+  - `cmd/rediver-admin/cmd/client.go` - API client for admin endpoints
+  - `cmd/rediver-admin/cmd/get.go` - Get agents/jobs/tokens/admins
+  - `cmd/rediver-admin/cmd/describe.go` - Describe agent/job/token
+  - `cmd/rediver-admin/cmd/create.go` - Create agent/token/admin
+  - `cmd/rediver-admin/cmd/delete.go` - Delete agent/token
+  - `cmd/rediver-admin/cmd/operations.go` - drain/uncordon/revoke/cluster-info
+  - `cmd/bootstrap-admin/main.go` - Bootstrap first admin user during deployment
+
+- [ ] **Phase 10: Integration Testing** - Pending
   - Integration tests for handlers
   - E2E tests for job flow
+  - Platform agent registration flow
+  - Job submission and claiming flow
 
 ## Files Created/Modified
 
@@ -125,6 +149,20 @@ Rediver needs to support:
   - `access_control.go` - Group, Role, Permission routes
   - `platform.go` - Platform agent/job routes (tenant & agent facing)
   - `misc.go` - Health, Docs, Dashboard, Audit, SLA routes
+- `api/internal/infra/http/middleware/ratelimit.go` - Auth failure rate limiter
+- `api/internal/infra/http/middleware/metrics.go` - Security Prometheus metrics
+- `api/internal/infra/redis/job_notifier.go` - Redis Pub/Sub for job notifications
+- `api/tests/unit/security_validation_test.go` - Security validation tests
+- `api/cmd/rediver-admin/` - Admin CLI (kubectl-style):
+  - `main.go` - CLI entry point
+  - `cmd/root.go` - Root command, global flags, version
+  - `cmd/config.go` - Config/context management (~/.rediver/config.yaml)
+  - `cmd/client.go` - HTTP client for admin API
+  - `cmd/get.go` - Get commands for agents/jobs/tokens/admins
+  - `cmd/describe.go` - Describe commands for detailed view
+  - `cmd/create.go` - Create commands for agent/token/admin
+  - `cmd/delete.go` - Delete commands with confirmation
+  - `cmd/operations.go` - drain/uncordon/revoke/cluster-info
 
 ### Modified
 - `api/internal/domain/agent/entity.go` - Added PlatformAgentStats, selection types
@@ -134,6 +172,9 @@ Rediver needs to support:
 - `api/internal/domain/command/repository.go` - Added queue methods interface
 - `api/internal/infra/postgres/agent_repository.go` - Added platform agent methods
 - `api/internal/infra/postgres/command_repository.go` - Added queue operations
+- `api/internal/app/platform_job_service.go` - Added security validation (scanner whitelist, job type whitelist, path traversal prevention)
+- `api/pkg/apierror/apierror.go` - Added TooManyRequests error
+- `CLAUDE.MD` - Added Platform Job Security documentation
 
 ## API Endpoints
 
@@ -167,7 +208,7 @@ Rediver needs to support:
 ## Verification
 
 - [x] All files compile without errors (`go build ./...`) - Completed 2026-01-25
-- [ ] Unit tests pass for new services
+- [x] Unit tests pass for new services - Completed 2026-01-25
 - [ ] Integration tests pass for handlers
 - [x] Database migrations apply cleanly - Completed 2026-01-25 (migrated to version 84)
 - [ ] Platform agent registration works with bootstrap token
@@ -176,6 +217,7 @@ Rediver needs to support:
 - [ ] Stuck job recovery works
 - [x] K8s-style controller reconciliation loop works - Completed 2026-01-25
 - [ ] Agent health monitoring works
+- [x] Security validation tests pass - Completed 2026-01-25
 
 ## Notes
 

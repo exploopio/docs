@@ -142,10 +142,41 @@ POST   /api/v1/platform-agents/register        # Self-registration
 ### Platform Agent Endpoints (API Key Auth)
 
 ```http
-POST   /api/v1/platform-agent/heartbeat        # Heartbeat
-POST   /api/v1/platform-agent/jobs/claim       # Claim job
-POST   /api/v1/platform-agent/jobs/{id}/status # Update status
+POST   /api/v1/platform-agent/heartbeat            # Heartbeat
+POST   /api/v1/platform-agent/poll                 # Long-poll for jobs
+POST   /api/v1/platform-agent/jobs/{id}/ack        # Acknowledge job
+POST   /api/v1/platform-agent/jobs/{id}/progress   # Report progress
+POST   /api/v1/platform-agent/jobs/{id}/result     # Submit result
 ```
+
+### Long-Polling for Jobs
+
+Platform agents use long-polling to efficiently wait for new jobs:
+
+```
+Agent                          API Server                    Redis
+  │                                │                           │
+  │  POST /platform-agent/poll     │                           │
+  │  timeout=30s                   │                           │
+  │───────────────────────────────>│                           │
+  │                                │                           │
+  │                                │  Check for pending jobs   │
+  │                                │  (none available)         │
+  │                                │                           │
+  │                                │  SUBSCRIBE job_queue      │
+  │                                │<─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─>│
+  │                                │                           │
+  │                                │       (new job queued)    │
+  │                                │<──────── PUBLISH ─────────│
+  │                                │                           │
+  │  Response: { jobs: [...] }     │                           │
+  │<───────────────────────────────│                           │
+```
+
+**Benefits:**
+- Near real-time job delivery (< 100ms latency)
+- Reduced API calls by ~90%
+- Scales horizontally via Redis Pub/Sub
 
 ## Usage Examples
 
@@ -223,29 +254,67 @@ curl -X POST /api/v1/platform-jobs \
 }
 ```
 
-### Agent Claiming Jobs
+### Agent Long-Polling for Jobs
 
 ```bash
-# Agent polls for work
-curl -X POST /api/v1/platform-agent/jobs/claim \
+# Agent long-polls for work (waits up to 30s)
+curl -X POST /api/v1/platform-agent/poll \
   -H "X-API-Key: rdv_agent_..." \
   -d '{
     "capabilities": ["nuclei", "nmap"],
-    "tools": ["nuclei", "nmap"]
+    "tools": ["nuclei", "nmap"],
+    "timeout": 30
   }'
 
-# Response:
+# Response when job available:
 {
-  "job": {
-    "id": "...",
+  "jobs": [{
+    "id": "job-uuid",
     "type": "scan",
-    "payload": { ... }
-  },
-  "no_job_available": false
+    "tenant_id": "tenant-uuid",
+    "payload": { ... },
+    "auth_token": "job-specific-token",
+    "timeout": 1800
+  }]
+}
+
+# Response when no job:
+{
+  "jobs": []
 }
 ```
 
-> **Note**: Platform agents are authenticated via their API key (`X-API-Key` header), so no additional auth token is needed for status updates.
+### Agent Job Lifecycle
+
+```bash
+# 1. Acknowledge job (start processing)
+curl -X POST /api/v1/platform-agent/jobs/{job_id}/ack \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-specific-token"
+
+# 2. Report progress (optional, keeps job alive)
+curl -X POST /api/v1/platform-agent/jobs/{job_id}/progress \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-specific-token" \
+  -d '{
+    "progress": 50,
+    "message": "Scanning 50% complete"
+  }'
+
+# 3. Submit result (complete job)
+curl -X POST /api/v1/platform-agent/jobs/{job_id}/result \
+  -H "X-API-Key: rdv_agent_..." \
+  -H "X-Job-Token: job-specific-token" \
+  -d '{
+    "status": "completed",
+    "result": {
+      "findings": [...],
+      "summary": "Found 5 vulnerabilities"
+    }
+  }'
+```
+
+> **Note**: Platform agents are authenticated via their API key (`X-API-Key` header). Each job also has a unique `X-Job-Token` for additional security.
 
 ## Background Workers
 
@@ -307,21 +376,220 @@ ALTER TABLE commands ADD COLUMN retry_count INT DEFAULT 0;
 
 ## Security Considerations
 
-1. **Bootstrap Token Security**
-   - Tokens are hashed before storage
-   - Only shown once at creation
-   - Can be revoked anytime
-   - Have configurable constraints
+### 1. Bootstrap Token Security
+- Tokens are hashed before storage (SHA-256)
+- Only shown once at creation
+- Can be revoked anytime
+- Have configurable constraints (region, capabilities, tools)
+- Audit trail of all registrations
 
-2. **Job Authentication**
-   - Each job has a unique auth token
-   - Agents must provide token to update status
-   - Prevents unauthorized status updates
+### 2. Job Authentication
+- Each job has a unique auth token
+- Token lifetime = job timeout + 10 minutes (not 24 hours)
+- Agents must provide token to update status
+- Prevents unauthorized status updates
 
-3. **Tenant Isolation**
-   - Jobs are always scoped to tenant
-   - Agents cannot access other tenants' data
-   - Queue limits per tenant
+### 3. Tenant Isolation
+- Jobs are always scoped to tenant
+- Agents cannot access other tenants' data
+- Queue limits per tenant
+- Platform agents get tenant context from job, not from agent itself
+
+### 4. Input Validation (P0 Security)
+
+**Scanner Name Whitelist:**
+Only these scanners are allowed to prevent command injection:
+```
+semgrep, gitleaks, trivy, trivy-fs, trivy-config,
+trivy-image, trivy-full, nuclei, bandit, gosec,
+brakeman, eslint, tfsec, checkov, grype, dependency
+```
+
+**Job Type Whitelist:**
+```
+scan, collect, health_check
+```
+
+**Path Traversal Prevention:**
+- Target paths cannot contain `../`
+- Prevents directory traversal attacks
+
+**Payload Limits:**
+- Maximum payload size: 1MB
+- Maximum job timeout: 2 hours
+
+### 5. Rate Limiting (P2 Security)
+
+**Auth Failure Rate Limiter:**
+Protects against brute-force attacks on agent authentication.
+
+| Setting | Value |
+|---------|-------|
+| Max failures before ban | 5 |
+| Ban duration | 15 minutes |
+| Window duration | 15 minutes |
+| Cleanup interval | 5 minutes |
+
+```go
+// Configuration in middleware/ratelimit.go
+cfg := AuthFailureLimiterConfig{
+    MaxFailures:     5,
+    BanDuration:     15 * time.Minute,
+    WindowDuration:  15 * time.Minute,
+    CleanupInterval: 5 * time.Minute,
+}
+```
+
+### 6. Security Monitoring
+
+**Security Event Types:**
+All security events are logged with structured types for monitoring/alerting:
+
+| Event Type | Description |
+|------------|-------------|
+| `security.auth.failure` | Authentication failure |
+| `security.agent.not_found` | Unknown agent ID attempt |
+| `security.apikey.invalid` | Invalid API key |
+| `security.agent.inactive` | Inactive agent attempt |
+| `security.agent.type_mismatch` | Non-platform agent trying platform auth |
+| `security.job.access_denied` | Unauthorized job access attempt |
+| `security.token.invalid` | Invalid/expired job token |
+
+**Prometheus Metrics:**
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `security_events_total` | Counter | Total security events by type |
+| `auth_failures_total` | Counter | Auth failures by reason |
+| `banned_ips_current` | Gauge | Currently banned IPs |
+| `platform_jobs_submitted_total` | Counter | Jobs by type and status |
+| `job_validation_failures_total` | Counter | Validation failures by reason |
+
+**Example Prometheus Queries:**
+```promql
+# Alert on high auth failure rate
+rate(auth_failures_total[5m]) > 10
+
+# Alert on security events
+increase(security_events_total{event_type="security.job.access_denied"}[1h]) > 5
+
+# Dashboard: Banned IPs
+banned_ips_current
+```
+
+## Deployment Guide
+
+### Prerequisites
+
+1. Redis server (for job notifications via Pub/Sub)
+2. PostgreSQL with migrations applied
+3. API server with platform agent endpoints enabled
+
+### Step 1: Apply Database Migrations
+
+```bash
+# Run migrations 000080-000081
+make migrate-up
+```
+
+### Step 2: Create Bootstrap Token
+
+```bash
+# Via Admin API
+curl -X POST /api/v1/admin/bootstrap-tokens \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{
+    "description": "Production agents",
+    "expires_in_hours": 24,
+    "max_uses": 10,
+    "required_region": "us-east-1"
+  }'
+
+# Save the raw_token from response
+```
+
+### Step 3: Deploy Platform Agent
+
+```bash
+# Environment variables for agent
+export REDIVER_API_URL=https://api.rediver.io
+export REDIVER_BOOTSTRAP_TOKEN=abc123.0123456789abcdef
+export AGENT_NAME=scanner-us-east-1-01
+export AGENT_REGION=us-east-1
+export AGENT_CAPABILITIES=nuclei,nmap,trivy
+
+# Run agent
+./rediver-agent --platform
+```
+
+### Step 4: Configure Tenant Plan Limits
+
+Update tenant subscription plans in the database or via Admin UI:
+- Free: 2 concurrent jobs, 10 queue size
+- Starter: 5 concurrent jobs, 50 queue size
+- Pro: 10 concurrent jobs, 100 queue size
+- Enterprise: 50 concurrent jobs, 500 queue size
+
+## Operations
+
+### Monitoring Dashboards
+
+Import Grafana dashboards for:
+- Platform agent health status
+- Job queue depth and latency
+- Security events and auth failures
+- Per-tenant usage statistics
+
+### Alerting Rules
+
+```yaml
+# Example Prometheus alerting rules
+groups:
+  - name: platform-agents
+    rules:
+      - alert: HighAuthFailureRate
+        expr: rate(auth_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High authentication failure rate
+
+      - alert: SecurityEventDetected
+        expr: increase(security_events_total{event_type="security.job.access_denied"}[1h]) > 5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Unauthorized job access attempts detected
+
+      - alert: AllAgentsOffline
+        expr: count(agent_status{type="platform", status="online"}) == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: All platform agents are offline
+```
+
+### Troubleshooting
+
+**Agent not receiving jobs:**
+1. Check agent is online: `GET /api/v1/admin/platform-agents/{id}`
+2. Check agent capabilities match job requirements
+3. Check Redis Pub/Sub connectivity
+4. Check agent logs for authentication errors
+
+**Jobs stuck in queue:**
+1. Check `PlatformQueueWorker` is running
+2. Check for available agents with matching capabilities
+3. Check tenant hasn't exceeded queue limits
+4. Review job priority calculation
+
+**High auth failure rate:**
+1. Check for misconfigured agents
+2. Review banned IPs: query `banned_ips_current` metric
+3. Check for credential leaks or brute-force attempts
 
 ## Migration Notes
 

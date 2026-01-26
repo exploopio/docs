@@ -8,8 +8,8 @@ nav_order: 99
 
 **Date:** 2026-01-25
 **Status:** In Progress
-**Version:** 2.3
-**Last Updated:** 2026-01-25 (Phase 0, 1, 2 completed + migration fixes)
+**Version:** 2.4
+**Last Updated:** 2026-01-26 (Phase 0-5 mostly completed)
 
 ---
 
@@ -1995,19 +1995,32 @@ CREATE INDEX idx_agent_leases_expiry
 - Updated `docs/architecture/database-notes.md`: Added comprehensive PostgreSQL Functions documentation section
 - Updated `docs/development/migrations.md`: Added PostgreSQL Functions Convention section with best practices
 
-### Phase 3: Agent Selection & Scan Integration (Week 4)
+### Phase 3: Agent Selection & Scan Integration (Week 4) ✅ COMPLETED
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 3.1 | Create AgentSelector service | P0 | [ ] |
-| 3.2 | Update ScanService with agent_preference | P0 | [ ] |
-| 3.3 | Implement tenant agent first, platform fallback | P0 | [ ] |
-| 3.4 | Add platform quota checking | P0 | [ ] |
-| 3.5 | Add queue position estimation | P1 | [ ] |
-| 3.6 | Update CommandService for platform jobs | P0 | [ ] |
-| 3.7 | Add job auth token generation | P0 | [ ] |
+| 3.1 | Create AgentSelector service | P0 | ✅ Done |
+| 3.2 | Update ScanService with agent_preference | P0 | ✅ Done |
+| 3.3 | Implement tenant agent first, platform fallback | P0 | ✅ Done |
+| 3.4 | Add platform quota checking | P0 | ✅ Done |
+| 3.5 | Add queue position estimation | P1 | ✅ Done |
+| 3.6 | Update CommandService for platform jobs | P0 | ✅ Done |
+| 3.7 | Add job auth token generation | P0 | ✅ Done |
 
-### Phase 4: SDK/Agent Updates (Week 5) - PARTIALLY COMPLETE
+**Phase 3 Implementation Notes:**
+- Created `api/internal/app/agent_selector.go` with:
+  - `AgentSelector` service with 4 selection modes: `tenant_only`, `platform_only`, `tenant_first`, `any`
+  - `SelectAgent()` - Main selection logic with fallback support
+  - `checkPlatformAccess()` - Plan-based platform access validation
+  - `checkPlatformQuota()` - Per-tenant concurrent job limits
+  - `estimateQueuePosition()` - Queue position and wait time estimation
+  - `GetPlatformStats()` - Platform statistics for UI display
+  - `CanUsePlatformAgents()` - Quick check for platform eligibility
+- Plan-based limits: Enterprise=50, Team=10, Free=0 concurrent jobs
+- Unit tests in `api/tests/unit/agent_selector_test.go`
+- Task 3.2 completed - ScanService already integrated with `AgentPreference` field and `shouldUsePlatformAgent` logic
+
+### Phase 4: SDK/Agent Updates (Week 5) ✅ COMPLETED
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
@@ -2016,9 +2029,9 @@ CREATE INDEX idx_agent_leases_expiry
 | 4.3 | Implement Bootstrapper | P0 | ✅ Done |
 | 4.4 | Implement PlatformJobPoller (long-poll) | P0 | ✅ Done |
 | 4.5 | Update Client with platform endpoints | P0 | ✅ Done |
-| 4.6 | Add --platform flag to agent binary | P0 | [ ] |
+| 4.6 | Add --platform flag to agent binary | P0 | ✅ Done |
 | 4.7 | Implement graceful shutdown with lease release | P1 | ✅ Done |
-| 4.8 | Update agent Dockerfile for platform mode | P1 | [ ] |
+| 4.8 | Update agent Dockerfile for platform mode | P1 | ✅ Done |
 
 **Phase 4 Implementation Notes:**
 - Created `sdk/pkg/platform/` package with:
@@ -2030,23 +2043,49 @@ CREATE INDEX idx_agent_leases_expiry
 - LeaseManager supports: periodic renewal, metrics reporting, graceful release
 - Bootstrapper supports: EnsureRegistered helper for credential persistence
 - JobPoller supports: concurrent job execution, progress reporting, callbacks
+- Agent binary (`agent/main.go`):
+  - Added `-platform` flag to enable platform mode
+  - Added `-bootstrap-token`, `-name`, `-region` flags for platform agent config
+  - Platform mode calls `runPlatformAgent()` which uses SDK's platform package
+- Agent Dockerfile (`agent/Dockerfile`):
+  - Added `builder-platform` stage that builds with `-tags platform`
+  - Added `platform` target for managed platform agent image
+  - Platform image includes all scanners + platform mode binary
+  - Entrypoint: `["/usr/local/bin/agent"]` with CMD `["-platform", "-verbose"]`
 
-### Phase 5: Admin CLI (Week 6-7)
+### Phase 5: Admin CLI (Week 6-7) ✅ MOSTLY COMPLETE
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 5.1 | Setup CLI structure (cobra) in cmd/rediver-admin/ | P0 | [ ] |
-| 5.2 | Implement config/context management | P0 | [ ] |
-| 5.3 | Implement `get agents/jobs/tokens/admins` | P0 | [ ] |
-| 5.4 | Implement `describe agent/job/token` | P1 | [ ] |
-| 5.5 | Implement `create agent/token/admin` | P0 | [ ] |
+| 5.1 | Setup CLI structure (cobra) in cmd/rediver-admin/ | P0 | ✅ Done |
+| 5.2 | Implement config/context management | P0 | ✅ Done |
+| 5.3 | Implement `get agents/jobs/tokens/admins` | P0 | ✅ Done |
+| 5.4 | Implement `describe agent/job/token` | P1 | ✅ Done |
+| 5.5 | Implement `create agent/token/admin` | P0 | ✅ Done |
 | 5.6 | Implement `apply -f` from YAML | P1 | [ ] |
-| 5.7 | Implement `delete agent/token` | P0 | [ ] |
-| 5.8 | Implement `drain/uncordon agent` | P1 | [ ] |
+| 5.7 | Implement `delete agent/token` | P0 | ✅ Done |
+| 5.8 | Implement `drain/uncordon agent` | P1 | ✅ Done |
 | 5.9 | Implement `logs job` | P1 | [ ] |
-| 5.10 | Implement output formatters (json/yaml/wide) | P1 | [ ] |
+| 5.10 | Implement output formatters (json/yaml/wide) | P1 | ✅ Done |
 | 5.11 | Add shell completion (bash/zsh/fish) | P2 | [ ] |
-| 5.12 | Build Docker image for CLI | P1 | [ ] |
+| 5.12 | Build Docker image for CLI | P1 | ✅ Done |
+
+**Phase 5 Implementation Notes:**
+- Created `api/cmd/rediver-admin/` with Cobra CLI structure:
+  - `main.go` - Entry point
+  - `cmd/root.go` - Root command with version, completion subcommands
+  - `cmd/config.go` - Context management (set-context, use-context, current-context)
+  - `cmd/client.go` - HTTP client with API key auth, output formatters
+  - `cmd/get.go` - List resources (agents, jobs, tokens, admins)
+  - `cmd/describe.go` - Detailed resource view
+  - `cmd/create.go` - Create token, admin commands
+  - `cmd/delete.go` - Delete agent, token commands
+  - `cmd/operations.go` - Agent operations (drain, uncordon, cordon)
+- Created `api/cmd/bootstrap-admin/main.go` - Direct database bootstrap tool
+- Created `api/Dockerfile.admin-cli` - Multi-binary distroless image
+- Output formats: table (default), json, yaml, wide
+- Config stored in `~/.rediver/config.yaml`
+- **Remaining**: 5.6 (apply -f), 5.9 (logs), 5.11 (shell completion)
 
 ### Phase 6: Admin Web UI - Separate Project (Week 8-9)
 
