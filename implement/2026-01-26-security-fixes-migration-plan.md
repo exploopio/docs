@@ -240,28 +240,45 @@ if triggerRateLimiter != nil {
 
 ---
 
-## 5. Phase 4: Additional Hardening 📅 FUTURE
+## 5. Phase 4: Additional Hardening ✅ COMPLETED
 
 ### 5.1 Transaction Boundaries
 
 **Problem:** Multi-entity operations can fail partially.
 
-**Solution:** Wrap TriggerPipeline in database transaction.
+**Solution:** Wrap DeleteTemplate in database transaction.
+
+**Implementation:**
+- Added `*InTx` methods to TemplateRepository and StepRepository
+- Added `TransactionDB` interface and `WithPipelineDB` option
+- `DeleteTemplate()` now uses transaction for atomic delete (steps + template)
+- Audit logging moved to AFTER transaction commit
 
 ### 5.2 Concurrent Run Limits
 
 **Problem:** Users can spam-trigger pipelines.
 
-**Solution:** Add `maxConcurrentRuns` check before triggering.
+**Solution:** Add concurrent run limits with count checks before triggering.
+
+**Implementation:**
+- Added `CountActiveByPipelineID/TenantID/ScanID` to RunRepository
+- Limits enforced:
+  - `MaxConcurrentRunsPerPipeline = 5`
+  - `MaxConcurrentRunsPerScan = 3`
+  - `MaxConcurrentRunsPerTenant = 50`
+- Returns `MAX_CONCURRENT_RUNS` error when limits exceeded
 
 ### 5.3 Input Sanitization
 
-**Problem:** Some values may contain special characters.
+**Problem:** Some values may contain special characters that could cause log injection or parsing issues.
 
 **Solution:**
-- Sanitize step keys (alphanumeric + underscore only)
-- Sanitize template names (no special characters)
-- Sanitize tag values
+- Added `ValidateIdentifier()` and `ValidateIdentifiers()` to SecurityValidator
+- Validate StepKey in `AddStep()` (alphanumeric, dash, underscore only)
+- Validate Tags in `CreateTemplate()` and `CreateScan()`
+- Returns `INVALID_IDENTIFIER_FORMAT` or `EMPTY_IDENTIFIER` error codes
+
+**Commit:** `5e2dd42`
 
 ---
 
@@ -311,6 +328,8 @@ See `api/tests/load/` for rate limit and platform queue tests.
 - [ ] Verify audit events in log aggregator
 - [x] Deploy Phase 3 (Rate Limiting) - `f948d35`
 - [ ] Monitor rate limit metrics
+- [x] Deploy Phase 4 (Hardening) - `5e2dd42`
+- [ ] Monitor for concurrent run limit errors
 
 ### Post-deployment
 
@@ -328,6 +347,7 @@ See `api/tests/load/` for rate limit and platform queue tests.
 | `3dc23ae` | fix(db): change bootstrap tokens FK from users to admin_users | Pre-req |
 | `dbe178b` | feat(security): add SecurityValidator to prevent command injection | Phase 1 |
 | `f948d35` | feat(security): add audit logging and rate limiting to scan/pipeline services | Phase 2+3 |
+| `5e2dd42` | feat(security): implement Phase 4 security hardening | Phase 4 |
 
 ---
 
@@ -340,7 +360,7 @@ See `api/tests/load/` for rate limit and platform queue tests.
 - `api/internal/infra/http/handler/pipeline_handler.go` - Tenant isolation
 - `api/cmd/server/services.go` - SecurityValidator injection
 
-### Phase 2+3 (Pending commit)
+### Phase 2+3 (Commit `f948d35`)
 - `api/internal/domain/audit/value_objects.go` - New audit Actions/ResourceTypes
 - `api/internal/app/pipeline_service.go` - Audit logging
 - `api/internal/app/scan_service.go` - Audit logging + option pattern
@@ -348,6 +368,15 @@ See `api/tests/load/` for rate limit and platform queue tests.
 - `api/internal/infra/http/routes/scanning.go` - Rate limiter integration
 - `api/internal/infra/http/routes/routes.go` - TriggerRateLimiter init
 - `api/cmd/server/services.go` - AuditService injection
+
+### Phase 4 (Commit `5e2dd42`)
+- `api/internal/app/security_validator.go` - ValidateIdentifier methods
+- `api/internal/app/pipeline_service.go` - StepKey/Tags validation, concurrent limits, transaction boundaries
+- `api/internal/app/scan_service.go` - Tags validation, concurrent limits
+- `api/internal/domain/pipeline/repository.go` - Count methods, *InTx interface methods
+- `api/internal/infra/postgres/pipeline_repository.go` - *InTx implementations
+- `api/internal/infra/postgres/pipeline_run_repository.go` - Count implementations
+- `api/cmd/server/services.go` - DB wiring for transactions
 
 ---
 
