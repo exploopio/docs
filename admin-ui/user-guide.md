@@ -56,16 +56,49 @@ The Admin UI is a web-based management console for platform administrators. It p
 
 ### Obtaining an API Key
 
-API keys are provided when:
-- An admin account is created via CLI or Admin UI
-- Your existing API key is rotated
+API keys are created when bootstrapping an admin account. Choose one method:
+
+**Method 1: Using Setup Makefile (Recommended)**
 
 ```bash
-# Create admin via CLI
-rediver-admin create admin --email=you@company.com --role=ops_admin
+cd setup
 
-# Output includes API key (save it!)
-# API Key: radm_a1b2c3d4e5f6g7h8...
+# Staging
+make bootstrap-admin-staging email=admin@yourcompany.com
+
+# Production
+make bootstrap-admin-prod email=admin@yourcompany.com
+
+# With specific role
+make bootstrap-admin-staging email=ops@yourcompany.com role=ops_admin
+```
+
+**Method 2: Using Docker Compose**
+
+```bash
+# From the API directory
+docker compose exec api ./bootstrap-admin \
+  -email "admin@yourcompany.com" \
+  -role "super_admin"
+```
+
+**Method 3: Using Admin CLI**
+
+```bash
+# Create admin via CLI (requires existing admin API key)
+rediver-admin create admin --email=you@company.com --role=ops_admin
+```
+
+**Output:**
+
+```
+=== Bootstrap Admin Created ===
+  ID:    550e8400-e29b-41d4-a716-446655440000
+  Email: admin@yourcompany.com
+  Role:  super_admin
+
+API Key (save this, it won't be shown again):
+  radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 ```
 
 > **Important**: API keys are shown only once. Store them securely.

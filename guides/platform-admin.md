@@ -36,29 +36,45 @@ When deploying Rediver for the first time, you need to create the first admin us
 
 The `bootstrap-admin` tool is included in the API Docker image. Since it needs database access, you run it from within the API container.
 
-#### Option 1: Using docker-compose exec (Recommended)
+#### Option 1: Using Setup Makefile (Recommended)
+
+If you're using the `setup/` deployment:
+
+```bash
+cd setup
+
+# Staging environment
+make bootstrap-admin-staging email=admin@yourcompany.com
+
+# Production environment
+make bootstrap-admin-prod email=admin@yourcompany.com
+
+# With specific role
+make bootstrap-admin-staging email=ops@yourcompany.com role=ops_admin
+```
+
+#### Option 2: Using docker-compose exec
 
 ```bash
 # Run bootstrap-admin from within the API container
 # The container already has DB_HOST, DB_USER, etc. configured
-docker-compose exec app ./bootstrap-admin \
+docker-compose exec api ./bootstrap-admin \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 
-# Note: The service name is 'app' in docker-compose.prod.yml
-# Adjust if your service has a different name
+# Note: The service name may be 'api' or 'app' depending on your compose file
 ```
 
-#### Option 2: Using docker exec
+#### Option 3: Using docker exec
 
 ```bash
 # If using plain docker (not compose)
-docker exec -it rediver-app ./bootstrap-admin \
+docker exec -it rediver-api ./bootstrap-admin \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 ```
 
-#### Option 3: Using standalone admin-cli image
+#### Option 4: Using standalone admin-cli image
 
 ```bash
 # For environments where API container isn't accessible
@@ -71,7 +87,7 @@ docker run --rm \
   rediverio/admin-cli:latest
 ```
 
-#### Option 4: Kubernetes Job (Recommended for K8s)
+#### Option 5: Kubernetes Job (Recommended for K8s)
 
 ```yaml
 # bootstrap-admin-job.yaml
@@ -139,7 +155,7 @@ kubectl logs -f job/bootstrap-admin -n rediver
 kubectl delete job bootstrap-admin -n rediver
 ```
 
-#### Option 5: kubectl exec (Quick method for K8s)
+#### Option 6: kubectl exec (Quick method for K8s)
 
 ```bash
 # If API pod is already running
@@ -147,7 +163,7 @@ kubectl exec -it deploy/rediver-api -n rediver -- \
   ./bootstrap-admin -email "admin@yourcompany.com" -role "super_admin"
 ```
 
-#### Option 6: Using Binary (development)
+#### Option 7: Using Binary (development)
 
 ```bash
 # Only for local development with direct DB access
