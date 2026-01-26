@@ -30,13 +30,13 @@ Báo cáo đánh giá bảo mật đã phát hiện các lỗ hổng nghiêm tr�
 | SEC-004 | Missing Tenant Isolation in GetRun | ✅ FIXED | `dbe178b` |
 | SEC-005 | Missing Tenant Isolation in DeleteStep | ✅ FIXED | `dbe178b` |
 | SEC-006 | Cross-Tenant Asset Group Reference | ✅ FIXED | `dbe178b` |
-| SEC-007 | No Audit Logging | ✅ FIXED | pending commit |
+| SEC-007 | No Audit Logging | ✅ FIXED | `f948d35` |
 
 ### 1.3 Medium Severity Issues (P2)
 
 | ID | Issue | Status | Commit |
 |----|-------|--------|--------|
-| SEC-008 | No Rate Limiting on Trigger Endpoints | ✅ FIXED | pending commit |
+| SEC-008 | No Rate Limiting on Trigger Endpoints | ✅ FIXED | `f948d35` |
 | SEC-009 | Cron Expression Injection | ✅ FIXED | `dbe178b` |
 | SEC-010 | Capabilities Injection | ✅ FIXED | `dbe178b` |
 
