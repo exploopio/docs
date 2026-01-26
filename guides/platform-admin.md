@@ -289,6 +289,20 @@ contexts:
       api-key: radm_local_dev_key
 ```
 
+### Command Reference
+
+#### Global Flags
+
+All commands support these global flags:
+
+| Flag | Short | Description |
+|------|-------|-------------|
+| `--output` | `-o` | Output format: `json`, `yaml`, `wide`, `name` |
+| `--api-url` | | Override API URL from config |
+| `--api-key` | | Override API key from config |
+| `--context` | `-c` | Use specific context from config |
+| `--verbose` | `-v` | Enable verbose output |
+
 ### Common Commands
 
 #### Cluster Overview
@@ -390,9 +404,89 @@ rediver-admin create admin --email=ops@company.com --role=ops_admin
 rediver-admin get jobs
 rediver-admin get jobs --status=pending
 rediver-admin get jobs --status=running
+rediver-admin get jobs -o wide
 
 # Job details
 rediver-admin describe job job-xyz123
+
+# View job logs
+rediver-admin logs job job-xyz123
+
+# Follow job logs in real-time (updates every 2s)
+rediver-admin logs job job-xyz123 -f
+
+# Show last N lines
+rediver-admin logs job job-xyz123 --tail=100
+```
+
+#### Declarative Configuration (apply)
+
+Similar to `kubectl apply`, you can create resources from YAML files:
+
+```bash
+# Apply from file
+rediver-admin apply -f agent.yaml
+
+# Apply from stdin
+cat agent.yaml | rediver-admin apply -f -
+```
+
+**Agent manifest example:**
+
+```yaml
+# agent.yaml
+apiVersion: admin.rediver.io/v1
+kind: Agent
+metadata:
+  name: agent-us-east-1
+  labels:
+    environment: production
+spec:
+  region: us-east-1
+  capabilities:
+    - sast
+    - sca
+    - secrets
+  maxJobs: 10
+```
+
+**Bootstrap Token manifest example:**
+
+```yaml
+# token.yaml
+apiVersion: admin.rediver.io/v1
+kind: Token
+metadata:
+  name: bootstrap-token-prod
+spec:
+  maxUses: 5
+  expiresIn: 24h
+```
+
+**Admin manifest example:**
+
+```yaml
+# admin.yaml
+apiVersion: admin.rediver.io/v1
+kind: Admin
+metadata:
+  name: ops-team
+spec:
+  email: ops@company.com
+  role: ops_admin
+```
+
+#### Delete Resources
+
+```bash
+# Delete an agent (with confirmation prompt)
+rediver-admin delete agent agent-us-east-1
+
+# Force delete without confirmation
+rediver-admin delete agent agent-us-east-1 --force
+
+# Delete a token
+rediver-admin delete token tok-abc123 --force
 ```
 
 ### Output Formats
@@ -867,6 +961,81 @@ rediver-admin get admins | grep your-email
 # Check if operation requires super_admin
 # Operations like "create admin" require super_admin role
 ```
+
+---
+
+## Quick Reference
+
+### Command Cheat Sheet
+
+```bash
+# === CLUSTER INFO ===
+rediver-admin cluster-info              # Platform overview
+rediver-admin version                   # CLI version
+
+# === AGENTS ===
+rediver-admin get agents                # List all agents
+rediver-admin get agents -o wide        # Detailed list
+rediver-admin get agents -w             # Watch mode (auto-refresh)
+rediver-admin describe agent <name>     # Agent details
+rediver-admin create agent --name=<n> --region=<r> --capabilities=sast,sca
+rediver-admin drain agent <name>        # Stop accepting new jobs
+rediver-admin uncordon agent <name>     # Resume operations
+rediver-admin delete agent <name>       # Remove agent
+
+# === TOKENS ===
+rediver-admin get tokens                # List bootstrap tokens
+rediver-admin create token --max-uses=5 --expires=24h
+rediver-admin describe token <id>       # Token details
+rediver-admin revoke token <id> --reason="..."
+rediver-admin delete token <id>         # Remove token
+
+# === JOBS ===
+rediver-admin get jobs                  # List platform jobs
+rediver-admin get jobs --status=pending # Filter by status
+rediver-admin describe job <id>         # Job details
+rediver-admin logs job <id>             # View job logs
+rediver-admin logs job <id> -f          # Follow logs in real-time
+
+# === ADMINS ===
+rediver-admin get admins                # List admin users
+rediver-admin create admin --email=<e> --role=ops_admin
+
+# === CONFIG ===
+rediver-admin config set-context <name> --api-url=<url> --api-key=<key>
+rediver-admin config use-context <name> # Switch context
+rediver-admin config current-context    # Show current
+rediver-admin config get-contexts       # List all contexts
+rediver-admin config view               # Show full config
+
+# === DECLARATIVE ===
+rediver-admin apply -f agent.yaml       # Apply from file
+cat manifest.yaml | rediver-admin apply -f -  # Apply from stdin
+```
+
+### Resource Aliases
+
+| Resource | Aliases |
+|----------|---------|
+| `agents` | `agent`, `ag` |
+| `tokens` | `token`, `tok` |
+| `jobs` | `job` |
+| `admins` | `admin` |
+
+### Status Values
+
+**Agent Status:**
+- `online` - Agent is connected and accepting jobs
+- `offline` - Agent is disconnected
+- `draining` - Agent finishing current jobs, not accepting new ones
+
+**Job Status:**
+- `pending` - Waiting in queue
+- `running` - Being processed by an agent
+- `completed` - Successfully finished
+- `failed` - Finished with errors
+- `cancelled` - Cancelled by user/admin
+- `expired` - Timed out
 
 ---
 

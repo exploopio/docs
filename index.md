@@ -38,10 +38,16 @@ Data models, schema definitions, and migration strategies.
 - [Migrations](./database/migrations.md)
 
 ### [🎨 User Interface](./ui/index.md)
-Frontend documentation for the Next.js dashboard.
+Frontend documentation for the Next.js tenant dashboard.
 - [UI Development Guides](./ui/guides/index.md)
 - [UI Features](./ui/features/index.md)
 - [UI Operations](./ui/ops/index.md)
+
+### [🛡️ Admin UI](./admin-ui/index.md)
+Platform administration console for managing agents, jobs, and tokens.
+- [Getting Started](./admin-ui/index.md#getting-started)
+- [Docker Deployment](./admin-ui/index.md#docker-deployment)
+- [API Integration](./admin-ui/index.md#api-integration)
 
 ### [⚙️ Operations](./operations/index.md)
 Development, deployment, and operational guides.
@@ -100,6 +106,13 @@ Product roadmap and planned features by CTEM phase.
 | **[Production Deployment](./operations/PRODUCTION_DEPLOYMENT.md)** | Kubernetes/Docker/Cloud |
 | **[Staging Deployment](./operations/STAGING_DEPLOYMENT.md)** | Staging environment setup |
 | **[Environment Variables](./ui/ops/ENVIRONMENT_VARIABLES.md)** | Configuration reference |
+
+### For Platform Admins
+| Guide | Description |
+|-------|-------------|
+| **[Admin UI](./admin-ui/index.md)** | Platform administration console |
+| **[Platform Admin Guide](./guides/platform-admin.md)** | CLI and API management |
+| **[Platform Agents](./features/platform-agents.md)** | Shared agent architecture |
 
 ---
 

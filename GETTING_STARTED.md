@@ -60,6 +60,7 @@ make logs
 - 🔴 Redis (cache & queues)
 - 🔧 API (backend at `localhost:8080`)
 - 🎨 UI (frontend at `localhost:3000`)
+- 🛡️ Admin UI (admin console at `localhost:3001`) - Optional
 
 Wait ~30 seconds for services to be healthy.
 
@@ -132,6 +133,14 @@ This scans the current directory for:
 | **Kubernetes** | [Production Deployment](./operations/PRODUCTION_DEPLOYMENT.md) |
 | **Environment Config** | [Environment Variables](./ui/ops/ENVIRONMENT_VARIABLES.md) |
 | **Security Hardening** | [Production Checklist](./ui/ops/PRODUCTION_CHECKLIST.md) |
+
+### Platform Administration
+
+| Topic | Guide |
+|-------|-------|
+| **Admin UI** | [Admin UI Documentation](./admin-ui/index.md) |
+| **Platform Admin CLI** | [Platform Admin Guide](./guides/platform-admin.md) |
+| **Platform Agents** | [Shared Agent Architecture](./features/platform-agents.md) |
 
 ### Integrate CI/CD
 

@@ -18,6 +18,7 @@ Technical architecture and design documentation for the Rediver CTEM Platform.
 | [Overview](overview.md) | High-level system architecture |
 | [Scan Flow Architecture](scan-flow.md) | Complete scan flow from creation to results display |
 | [Platform Agents](platform-agents-implementation-plan.md) | Hybrid agent model with tenant and platform agents |
+| [Platform Agents Feature](../features/platform-agents.md) | User-facing platform agents documentation |
 | [Deployment Modes](deployment-modes.md) | Standalone vs distributed deployment |
 | [Server-Agent Communication](server-agent-command.md) | Command & control protocol |
 | [Scan Pipeline Design](scan-pipeline-design.md) | Workflow execution engine |
@@ -82,3 +83,20 @@ Agents and scanners integrate via:
 1. **REST API** - Push findings and assets
 2. **Go SDK** - Build custom tools
 3. **RIS Schema** - Standardized data format
+
+### Platform Agents
+
+The platform supports two agent deployment models:
+
+| Model | Description | Use Case |
+|-------|-------------|----------|
+| **Tenant Agents** | Customer-deployed, customer-managed | Full control, private networks |
+| **Platform Agents** | Rediver-managed, shared infrastructure | Quick start, no deployment needed |
+
+Platform agents provide:
+- **Automatic selection**: Fallback when no tenant agent available
+- **Multi-tenant isolation**: Secure job isolation between tenants
+- **Central management**: Admin CLI and Web UI
+- **Auto-scaling**: Capacity based on queue depth
+
+See [Platform Agents Implementation](platform-agents-implementation-plan.md) for technical details.

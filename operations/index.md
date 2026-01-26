@@ -10,6 +10,25 @@ permalink: /operations
 
 Guides for developers and operators.
 
-- **[Development Guide](./DEVELOPMENT.md)**
-- **[Integration Guide](./INTEGRATION.md)**
-- **[Staging Deployment](./STAGING_DEPLOYMENT.md)**
+## Development
+
+- **[Development Guide](./DEVELOPMENT.md)** - Local development setup
+- **[Integration Guide](./INTEGRATION.md)** - Integration testing
+- **[Configuration Reference](./configuration.md)** - Environment variables
+
+## Deployment
+
+- **[Staging Deployment](./STAGING_DEPLOYMENT.md)** - Deploy to staging
+- **[Production Deployment](./PRODUCTION_DEPLOYMENT.md)** - Production setup
+
+## Platform Operations
+
+- **[Platform Agent Runbook](./platform-agent-runbook.md)** - Manage platform agents
+- **[Monitoring Guide](./MONITORING.md)** - Observability setup
+- **[Troubleshooting](./troubleshooting.md)** - Common issues and fixes
+
+## Configuration
+
+- **[Redis Setup](./redis-setup.md)** - Redis configuration
+- **[Plans & Licensing](./plans-licensing.md)** - Subscription plans
+- **[Dynamic Plan Limits](./dynamic-plan-limits.md)** - Plan limit management
