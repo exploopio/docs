@@ -103,6 +103,26 @@ defaults:
       path: "operations"
     values:
       parent: "Operations"
+  - scope:
+      path: "features"
+    values:
+      parent: "Features"
+  - scope:
+      path: "backend"
+    values:
+      parent: "Backend"
+  - scope:
+      path: "database"
+    values:
+      parent: "Database"
+  - scope:
+      path: "ui"
+    values:
+      parent: "UI Documentation"
+  - scope:
+      path: "admin-ui"
+    values:
+      parent: "Admin UI"
 
 # Mermaid diagrams support (if needed)
 mermaid:

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Admin UI Documentation
+title: Admin UI
 has_children: true
 nav_order: 6
 ---
