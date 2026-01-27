@@ -242,6 +242,7 @@ GET /api/v1/agents/available-capabilities?include_platform=true
 
 ### Usage Example
 
+{% raw %}
 ```tsx
 function ToolCapabilitiesDisplay({ toolId }: { toolId: string }) {
   const { data: capabilities } = useAllCapabilities()
@@ -270,6 +271,7 @@ function ToolCapabilitiesDisplay({ toolId }: { toolId: string }) {
   )
 }
 ```
+{% endraw %}
 
 ### Capability Metadata Hook
 
