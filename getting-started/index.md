@@ -14,28 +14,11 @@ Get your Rediver CTEM platform up and running quickly.
 
 ## Choose Your Path
 
-<div class="grid-container">
-
-### 🚀 Quick Start (5 minutes)
-New to Rediver? Get the platform running in 5 minutes.
-
-**→ [Quick Start Guide](./quick-start)**
-
----
-
-### 🔍 Run Your First Scan
-Set up an agent and scan your first repository.
-
-**→ [First Scan Tutorial](./first-scan)**
-
----
-
-### 🏢 For Enterprise
-Deploy Rediver in your organization with multi-tenancy.
-
-**→ [Enterprise Setup](./enterprise-setup)**
-
-</div>
+| Guide | Description |
+|-------|-------------|
+| [**Quick Start**](./quick-start) | Get the platform running in 5 minutes |
+| [**First Scan Tutorial**](./first-scan) | Set up an agent and scan your first repository |
+| [**Enterprise Setup**](./enterprise-setup) | Deploy Rediver with multi-tenancy and SSO |
 
 ---
 
