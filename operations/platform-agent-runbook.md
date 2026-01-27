@@ -4,6 +4,7 @@ title: Platform Agent Operations Runbook
 parent: Operations
 nav_order: 14
 ---
+{% raw %}
 
 # Platform Agent Operations Runbook
 
@@ -692,3 +693,4 @@ kubectl rollout restart deployment/rediver-platform-agent -n rediver
 - [Admin UI Guide](../admin-ui/user-guide.md) - Web interface guide
 - [Platform Agents Feature](../features/platform-agents.md) - Feature overview
 - [Monitoring Guide](./MONITORING.md) - General monitoring setup
+{% endraw %}

@@ -4,6 +4,7 @@ title: Monitoring & Observability
 parent: Operations
 nav_order: 7
 ---
+{% raw %}
 
 # Monitoring & Observability Guide
 
@@ -600,3 +601,4 @@ kubectl port-forward -n monitoring svc/monitoring-grafana 3000:80
 
 **Last Updated:** 2026-01-22  
 **Version:** 1.0
+{% endraw %}

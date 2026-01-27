@@ -4,6 +4,7 @@ title: Agent Usage Guide
 parent: Platform Guides
 nav_order: 12
 ---
+{% raw %}
 
 # Rediver Agent Usage Guide
 
@@ -805,3 +806,4 @@ See the [SDK Development Guide](sdk-development.md) for detailed SDK usage.
 - **[SDK Development](sdk-development.md)** - Build custom scanners and collectors
 - **[Custom Tools Development](custom-tools-development.md)** - Build your own tools
 - **[Platform Administration](platform-admin.md)** - Manage platform agents
+{% endraw %}

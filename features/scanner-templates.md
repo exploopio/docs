@@ -4,6 +4,7 @@ title: Scanner Templates
 parent: Features
 nav_order: 4
 ---
+{% raw %}
 
 # Scanner Templates
 
@@ -343,3 +344,4 @@ Permission IDs:
 4. **Testing**: Validate templates against known-vulnerable test targets
 5. **Documentation**: Include clear descriptions and references in template metadata
 6. **Review Process**: Implement review before enabling in production profiles
+{% endraw %}

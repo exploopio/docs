@@ -4,6 +4,7 @@ title: End-to-End Workflow
 parent: Platform Guides
 nav_order: 1
 ---
+{% raw %}
 
 # End-to-End Workflow: Scanning a Repository
 
@@ -440,3 +441,4 @@ docker run --network=host ...
 ---
 
 **Ready to secure your code? Start scanning! 🔒**
+{% endraw %}

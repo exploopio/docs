@@ -4,6 +4,7 @@ title: Storage Service Design
 parent: Architecture
 nav_order: 25
 ---
+{% raw %}
 
 # Storage Service - Technical Design Document
 
@@ -2369,3 +2370,4 @@ STORAGE_PRESIGN_TTL_MINUTES=15
 **Document Version**: 1.0
 **Last Updated**: 2026-01-24
 **Next Review**: After Phase 1 implementation
+{% endraw %}

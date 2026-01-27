@@ -4,6 +4,7 @@ title: Docker Deployment
 parent: Platform Guides
 nav_order: 13
 ---
+{% raw %}
 # Docker Deployment Guide
 
 Deploy and run Rediver Agent using Docker for consistent, reproducible security scanning.
@@ -474,3 +475,4 @@ docker run --rm --dns 8.8.8.8 -v $(pwd):/scan ...
 - [CI Environment Detection](./sdk-development.md#ci-environment-detection) - Auto-detection features
 - [Handler Pattern](./sdk-development.md#handler-pattern) - Scan lifecycle management
 - [Authentication Guide](./authentication.md) - API key management
+{% endraw %}

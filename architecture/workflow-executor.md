@@ -4,6 +4,7 @@ title: Workflow Executor
 parent: Architecture
 nav_order: 15
 ---
+{% raw %}
 
 # Workflow Executor
 
@@ -352,3 +353,4 @@ executor := app.NewWorkflowExecutor(
 
 **Last Updated:** 2026-01-26
 **Version:** 1.0
+{% endraw %}

@@ -4,6 +4,7 @@ title: Rule Management
 parent: Platform Guides
 nav_order: 7
 ---
+{% raw %}
 
 # Rule Management
 
@@ -455,3 +456,4 @@ curl https://api.rediver.io/api/v1/rules/bundles/{bundleId} \
 - [Scan Management](scan-management.md) - Configure scans with custom rules
 - [Custom Tools Development](custom-tools-development.md) - Build custom scanners
 - [SDK Development](sdk-development.md) - Advanced SDK usage
+{% endraw %}

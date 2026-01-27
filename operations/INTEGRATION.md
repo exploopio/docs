@@ -4,6 +4,7 @@ title: Integration Guide
 parent: Operations
 nav_order: 11
 ---
+{% raw %}
 
 # Integration Guide
 
@@ -232,3 +233,4 @@ security-scan:
 - **Documentation**: https://docs.rediver.io
 - **API Reference**: https://api.rediver.io/docs
 - **SDK Source**: https://github.com/rediverio/sdk
+{% endraw %}

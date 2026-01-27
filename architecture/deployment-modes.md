@@ -2,6 +2,7 @@
 layout: default
 parent: Architecture
 ---
+{% raw %}
 ---
 layout: default
 title: SDK Deployment Modes
@@ -451,3 +452,4 @@ rediver collect --config ./collectors.yaml --daemon
 - [SDK Development Guide](../guides/sdk-development.md)
 - [Server-Agent Command Architecture](./server-agent-command.md)
 - [SDK & API Integration](./sdk-api-integration.md)
+{% endraw %}

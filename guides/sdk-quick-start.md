@@ -4,6 +4,7 @@ title: SDK Quick Start
 parent: Platform Guides
 nav_order: 10
 ---
+{% raw %}
 
 # SDK Quick Start Guide
 
@@ -251,3 +252,4 @@ security-scan:
 - **[Agent Usage](agent-usage.md)** - Run the full scanning agent
 - **[Running Workers](running-workers.md)** - Setup workers in Rediver UI
 - **[SDK Development Guide](sdk-development.md)** - Advanced SDK usage
+{% endraw %}
