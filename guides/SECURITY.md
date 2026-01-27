@@ -556,6 +556,136 @@ USER appuser
 
 ---
 
+## Platform Agent Tier Security
+
+### Overview
+
+The Tiered Platform Agent system provides resource isolation and priority-based job processing for different subscription plans. This feature introduces several security considerations.
+
+### Tier Access Control
+
+| Tier | Priority | Target Plans | Max Queue Time |
+|------|----------|--------------|----------------|
+| Shared | 0 | Free, Team | 60 minutes |
+| Dedicated | 50 | Business | 30 minutes |
+| Premium | 100 | Enterprise | 10 minutes |
+
+### Security Controls
+
+#### IDOR Protection
+- Tier access is validated against tenant's subscription plan
+- The `validate_tenant_tier_access()` database function verifies caller permissions
+- Direct tier manipulation is prevented via database triggers
+
+#### Rate Limiting
+- Tier-specific rate limits prevent resource exhaustion:
+  - Shared: 50 requests/minute
+  - Dedicated: 200 requests/minute
+  - Premium: 500 requests/minute
+- Rate limits tracked in `tier_rate_limits` table
+- Automatic cleanup of old records via `cleanup_old_rate_limits()`
+
+#### Tier Downgrade Audit
+All tier downgrades are logged to `tier_downgrade_audit` table:
+```sql
+-- Audit record includes:
+- tenant_id, requested_tier, actual_tier
+- command_id (linked after job creation)
+- reason (e.g., 'plan_restriction')
+- subscription info (plan_slug, max_tier)
+- created_at timestamp
+```
+
+#### Application-Level Validation
+- Input sanitization via `SanitizeTier()` function
+- Tier values validated against whitelist: `shared`, `dedicated`, `premium`
+- Invalid tier requests default to `shared` tier
+- No information disclosure in error messages
+
+### Security Monitoring
+
+**Monitor for anomalies:**
+```yaml
+alerts:
+  - name: TierEscalationAttempt
+    condition: tier_requested != tier_actual AND tier_requested = 'premium'
+    severity: warning
+
+  - name: UnusualTierDistribution
+    condition: shared_jobs / total_jobs > 0.95
+    severity: warning
+
+  - name: HighDowngradeRate
+    condition: tier_downgrades > 10/hour for tenant
+    severity: warning
+```
+
+**Security events view:**
+```sql
+SELECT * FROM tier_security_events
+WHERE recent_downgrade_count > 10;
+```
+
+### Threat Model
+
+| Threat | Mitigation |
+|--------|------------|
+| Tier escalation | Plan-based tier validation in database trigger |
+| Resource exhaustion | Per-tier rate limiting |
+| IDOR attacks | Tenant ID verification in all tier functions |
+| Privilege escalation via SQL injection | Application-level tier validation before database |
+| Information disclosure | Generic error messages, detailed logging internal only |
+
+See: [Tiered Platform Agents PRD](../prd/tiered-platform-agents.md) | [Operational Runbook](../runbook/tiered-platform-agents.md)
+
+---
+
+## Workflow Automation Security
+
+### Overview
+
+The Workflow Executor processes user-defined automation graphs that can trigger HTTP requests, pipelines, scans, and notifications. This creates multiple attack vectors that are mitigated through 14 security controls.
+
+### Key Protections
+
+| Attack Vector | Protection | Controls |
+|--------------|------------|----------|
+| **SSRF** | URL validation, blocked CIDRs, DNS validation, TOCTOU-safe dialer | SEC-WF02, SEC-WF09, SEC-WF13 |
+| **SSTI** | Safe string interpolation (no template execution) | SEC-WF01, SEC-WF03 |
+| **Resource Exhaustion** | Global semaphore, per-tenant limits, timeouts | SEC-WF04, SEC-WF07, SEC-WF10 |
+| **Tenant Isolation** | Verification at trigger, load, and execution phases | SEC-WF05, SEC-WF08 |
+| **ReDoS** | Expression length/complexity limits | SEC-WF11 |
+| **Panic/DoS** | Panic recovery with resource cleanup | SEC-WF12 |
+| **Log Injection** | Input sanitization | SEC-WF14 |
+
+### Blocked Resources
+
+**CIDR Ranges (SSRF Protection):**
+```
+127.0.0.0/8      - Loopback
+10.0.0.0/8       - Private
+172.16.0.0/12    - Private
+192.168.0.0/16   - Private
+169.254.0.0/16   - Link-local / Cloud metadata
+```
+
+**Hostname Patterns:**
+```
+.local, .internal, .localhost, .lan, .home, .corp, .intranet
+```
+
+### Script Execution
+
+Script execution (`run_script` action) is **disabled by default** for security reasons. Enabling it requires:
+- Sandboxed execution environment (Docker, gVisor)
+- Resource limits (CPU, memory, time)
+- Network restrictions
+- Input validation and output sanitization
+
+See: [Workflow Executor Architecture](../architecture/workflow-executor.md) for full technical details.
+
+---
+
 ## References
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
@@ -564,5 +694,5 @@ USER appuser
 
 ---
 
-**Last Updated:** 2026-01-22  
-**Version:** 1.0
+**Last Updated:** 2026-01-26
+**Version:** 1.1

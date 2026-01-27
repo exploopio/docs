@@ -34,6 +34,20 @@ nav_order: 1
 - **`audit_logs`**: System audit trail.
 - **`jobs`**: Background job entries.
 
+### 5. Platform Administration (Added v3.2)
+- **`admin_users`**: Platform admin accounts with bcrypt API key auth.
+- **`admin_audit_logs`**: Admin action audit trail (immutable).
+- **`agent_leases`**: K8s-style lease management for platform agents.
+- **`platform_agent_bootstrap_tokens`**: One-time registration tokens.
+- **`platform_agent_registrations`**: Agent registration audit trail.
+
+### 6. Pipelines & Scans
+- **`pipelines`**: Scan pipeline templates.
+- **`pipeline_steps`**: Steps within a pipeline.
+- **`pipeline_runs`**: Pipeline execution instances.
+- **`step_runs`**: Individual step execution records.
+- **`commands`**: Job queue for agents (includes platform jobs).
+
 ## Relationships Diagram
 
 ```mermaid

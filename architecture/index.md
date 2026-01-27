@@ -15,14 +15,16 @@ Technical architecture and design documentation for the Rediver CTEM Platform.
 
 | Document | Description |
 |----------|-------------|
+| [Component Interactions](component-interactions.md) | Complete overview of how all components interact |
 | [Overview](overview.md) | High-level system architecture |
 | [Scan Flow Architecture](scan-flow.md) | Complete scan flow from creation to results display |
 | [Platform Agents](platform-agents-implementation-plan.md) | Hybrid agent model with tenant and platform agents |
 | [Platform Agents Feature](../features/platform-agents.md) | User-facing platform agents documentation |
 | [Deployment Modes](deployment-modes.md) | Standalone vs distributed deployment |
 | [Server-Agent Communication](server-agent-command.md) | Command & control protocol |
-| [Scan Pipeline Design](scan-pipeline-design.md) | Workflow execution engine |
+| [Scan Pipeline Design](scan-pipeline-design.md) | Pipeline execution engine |
 | [Scan Orchestration](scan-orchestration.md) | Automated scan scheduling and pipeline progression |
+| [Workflow Executor](workflow-executor.md) | Automation workflow execution with 14-layer security |
 | [Notification System](notification-system.md) | Real-time alerts, async patterns, provider integrations |
 | [Storage Service Design](storage-service-design.md) | Multi-tenant storage infrastructure with BYOB support |
 

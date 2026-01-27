@@ -27,6 +27,7 @@ High-level system design, data flow patterns, and technology choices.
 - [Scan Flow Architecture](./architecture/scan-flow.md) - Complete scan lifecycle
 - [Deployment Modes](./architecture/deployment-modes.md)
 - [Scan Pipeline Design](./architecture/scan-pipeline-design.md)
+- [Workflow Executor](./architecture/workflow-executor.md) - Automation with 14-layer security
 
 ### [💻 Backend Services](./backend/index.md)
 Documentation for the Go-based API service.
@@ -62,7 +63,8 @@ Comprehensive guides for using the platform.
 - [Authentication](./guides/authentication.md)
 - [Multi-Tenancy](./guides/multi-tenancy.md)
 - [Scan Management](./guides/scan-management.md)
-- [Notification Integrations](./guides/notification-integrations.md) ⭐ **NEW**
+- [Security Best Practices](./guides/SECURITY.md) - Includes workflow automation security
+- [Notification Integrations](./guides/notification-integrations.md)
 
 ### [🗺️ Roadmap](./ROADMAP.md)
 Product roadmap and planned features by CTEM phase.
@@ -113,6 +115,7 @@ Product roadmap and planned features by CTEM phase.
 | **[Admin UI](./admin-ui/index.md)** | Platform administration console |
 | **[Platform Admin Guide](./guides/platform-admin.md)** | CLI and API management |
 | **[Platform Agents](./features/platform-agents.md)** | Shared agent architecture |
+| **[Capabilities Registry](./features/capabilities-registry.md)** | Tool capability management |
 
 ---
 

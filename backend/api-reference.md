@@ -583,6 +583,74 @@ Endpoints for pushing scan results and findings into Rediver.
 
 ---
 
+## Capability Endpoints
+
+Capabilities represent what security tools can do (e.g., `sast`, `sca`, `dast`, `secrets`). Platform capabilities are seeded; tenants can create custom capabilities.
+
+**Prefix:** `/api/v1/capabilities`
+
+### Read Endpoints
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| GET | `/` | `tools:read` | List capabilities with pagination |
+| GET | `/all` | `tools:read` | List all capabilities (no pagination, for dropdowns) |
+| GET | `/categories` | `tools:read` | List unique capability categories |
+| GET | `/by-category/{category}` | `tools:read` | List capabilities by category |
+| GET | `/{id}` | `tools:read` | Get single capability |
+
+### Custom Capability Endpoints
+
+**Prefix:** `/api/v1/custom-capabilities`
+
+| Method | Endpoint | Permission | Description |
+|--------|----------|------------|-------------|
+| POST | `/` | `tools:write` | Create custom capability for tenant |
+| PUT | `/{id}` | `tools:write` | Update custom capability |
+| DELETE | `/{id}` | `tools:delete` | Delete custom capability |
+
+### Capability Object
+
+```json
+{
+  "id": "uuid",
+  "tenant_id": "uuid or null",
+  "name": "sast",
+  "display_name": "Static Analysis",
+  "description": "Source code vulnerability detection",
+  "icon": "code",
+  "color": "purple",
+  "category": "security",
+  "is_builtin": true,
+  "sort_order": 1,
+  "created_at": "2026-01-26T00:00:00Z",
+  "updated_at": "2026-01-26T00:00:00Z"
+}
+```
+
+### Seeded Platform Capabilities
+
+| Name | Display Name | Category | Icon | Color |
+|------|--------------|----------|------|-------|
+| `sast` | Static Analysis | security | code | purple |
+| `sca` | Composition Analysis | security | package | blue |
+| `dast` | Dynamic Testing | security | zap | orange |
+| `secrets` | Secret Detection | security | key | red |
+| `iac` | IaC Security | security | server | green |
+| `container` | Container Security | security | box | cyan |
+| `web` | Web Scanning | security | globe | orange |
+| `xss` | XSS Detection | security | alert-triangle | amber |
+| `recon` | Reconnaissance | recon | search | yellow |
+| `subdomain` | Subdomain Enumeration | recon | layers | lime |
+| `http` | HTTP Probing | recon | wifi | teal |
+| `portscan` | Port Scanning | recon | radio | indigo |
+| `crawler` | Web Crawling | recon | spider | fuchsia |
+| `sbom` | SBOM Generation | analysis | file-text | slate |
+| `terraform` | Terraform Security | security | cloud | violet |
+| `docker` | Docker Security | security | container | sky |
+
+---
+
 ## Platform Agent Endpoints
 
 Platform agents are Rediver-managed, shared scanning agents. See [Platform Agents Feature](../features/platform-agents.md) for details.

@@ -276,6 +276,12 @@ Examples:
 | `scans:tools:write` | ✅ | ❌ | ❌ |
 | `scans:tenant_tools:read` | ✅ | ✅ | ✅ |
 | `scans:tenant_tools:write` | ✅ | ✅ | ❌ |
+| `scans:templates:read` | ✅ | ✅ | ✅ |
+| `scans:templates:write` | ✅ | ✅ | ❌ |
+| `scans:templates:delete` | ✅ | ❌ | ❌ |
+| `scans:secret_store:read` | ✅ | ✅ | ❌ |
+| `scans:secret_store:write` | ✅ | ❌ | ❌ |
+| `scans:secret_store:delete` | ✅ | ❌ | ❌ |
 
 ### Team Module (Access Control)
 
@@ -604,4 +610,4 @@ Start with minimal permissions and add as needed.
 
 ---
 
-**Last Updated**: 2026-01-24
+**Last Updated**: 2026-01-27

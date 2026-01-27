@@ -144,6 +144,7 @@ internal/
 │   │ # Tools & Workers
 │   ├── tool/            # Security tools registry
 │   ├── toolcategory/    # Tool categorization
+│   ├── capability/      # Tool capabilities (sast, sca, dast, etc.)
 │   ├── worker/          # Scanner/Agent workers
 │   ├── command/         # Remote commands for agents
 │   ├── pipeline/        # Workflow pipelines
@@ -186,6 +187,7 @@ internal/
 │   ├── tenant_service.go
 │   ├── tool_service.go
 │   ├── toolcategory_service.go
+│   ├── capability_service.go
 │   ├── user_service.go
 │   ├── vulnerability_service.go
 │   └── worker_service.go
