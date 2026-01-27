@@ -358,4 +358,4 @@ Only Owner can manage billing. Contact team owner.
 - [Permission Real-time Sync](../architecture/permission-realtime-sync.md) - How permissions are synced in real-time
 - [Multi-Tenancy Guide](multi-tenancy.md) - Teams and tenant switching
 - [Authentication Guide](authentication.md) - Token and session management
-- [API Reference](../api/reference.md) - Endpoint permission requirements
+- [API Reference](../backend/api-reference.md) - Endpoint permission requirements

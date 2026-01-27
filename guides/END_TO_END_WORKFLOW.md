@@ -379,7 +379,7 @@ func main() {
 }
 ```
 
-See [SDK Documentation](../../sdk/docs/API_REFERENCE.md) for details.
+See [SDK Documentation](https://github.com/rediverio/sdk#readme) for details.
 
 ---
 
@@ -433,9 +433,9 @@ docker run --network=host ...
 ## Next Steps
 
 - **[Production Deployment](../operations/PRODUCTION_DEPLOYMENT.md)** - Deploy to Kubernetes/Cloud
-- **[Agent Configuration](../../agent/docs/CONFIGURATION_REFERENCE.md)** - Advanced agent.yaml options
+- **[Agent Configuration](https://github.com/rediverio/agent#configuration)** - Advanced agent.yaml options
 - **[API Reference](../backend/api-reference.md)** - Full API documentation
-- **[SDK Guide](../../sdk/docs/API_REFERENCE.md)** - Build custom tools
+- **[SDK Guide](https://github.com/rediverio/sdk#readme)** - Build custom tools
 
 ---
 

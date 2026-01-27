@@ -648,4 +648,4 @@ Server should rate limit command creation per tenant.
 
 - [SDK & API Integration](./sdk-api-integration.md)
 - [SDK Development Guide](../guides/sdk-development.md)
-- [API Reference](../api/reference.md)
+- [API Reference](../backend/api-reference.md)

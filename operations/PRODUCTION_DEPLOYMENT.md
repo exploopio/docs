@@ -688,7 +688,7 @@ kubectl exec -it deployment/rediver-ui --namespace rediver -- curl http://redive
 
 - [Architecture Overview](../architecture/overview.md)
 - [End-to-End Workflow](../guides/END_TO_END_WORKFLOW.md)
-- [Agent Quick Start](../../agent/docs/QUICK_START.md)
+- [Agent Quick Start](https://github.com/rediverio/agent#quick-start)
 
 ---
 

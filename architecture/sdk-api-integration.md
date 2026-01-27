@@ -452,4 +452,4 @@ Keep sources "alive" by sending regular heartbeats.
 
 - [SDK Development Guide](../guides/sdk-development.md)
 - [Building Ingestion Tools](../guides/building-ingestion-tools.md)
-- [API Reference](../api/reference.md)
+- [API Reference](../backend/api-reference.md)

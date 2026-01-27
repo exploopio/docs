@@ -17,12 +17,12 @@ Unified Exposure Management platform built with Clean Architecture in Go.
 
 | Guide | Description |
 |-------|-------------|
-| [Getting Started](https://docs.rediver.io/docs/getting-started) | Quick start guide |
-| [API Reference](https://docs.rediver.io/docs/api/reference) | Complete API endpoints |
-| [Authentication](https://docs.rediver.io/docs/guides/authentication) | JWT & OIDC auth flow |
-| [Permissions](https://docs.rediver.io/docs/guides/permissions) | Role-based access control |
-| [Architecture](https://docs.rediver.io/docs/architecture/overview) | System design |
-| [Configuration](https://docs.rediver.io/docs/operations/configuration) | Environment variables |
+| [Getting Started](../getting-started/) | Quick start guide |
+| [API Reference](./api-reference) | Complete API endpoints |
+| [Authentication](../guides/authentication) | JWT & OIDC auth flow |
+| [Permissions](../guides/permissions) | Role-based access control |
+| [Architecture](../architecture/overview) | System design |
+| [Configuration](../operations/configuration) | Environment variables |
 
 ## Features
 
@@ -229,11 +229,10 @@ Access documentation at: `http://localhost:8080/docs`
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md)
-- [Architecture](docs/architecture/overview.md)
-- [API Reference](docs/api/)
-- [Development](docs/development/)
-- [Deployment](docs/deployment/)
+- [Getting Started](../getting-started/)
+- [Architecture](../architecture/overview)
+- [API Reference](./api-reference)
+- [Operations](../operations/)
 
 ## License
 

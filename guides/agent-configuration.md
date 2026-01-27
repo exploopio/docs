@@ -327,7 +327,7 @@ platform:
 - **Lease expiry handling**: Jobs auto-cancel when lease expires
 - **Template security**: Path traversal prevention, size limits, hash verification
 
-See [SDK Security Guide](../../sdk/docs/SECURITY.md) for detailed information.
+See [SDK Security Guide](https://github.com/rediverio/sdk#security) for detailed information.
 
 ---
 
@@ -335,6 +335,6 @@ See [SDK Security Guide](../../sdk/docs/SECURITY.md) for detailed information.
 
 - [Docker Deployment Guide](./docker-deployment.md)
 - [SDK Development Guide](./sdk-development.md)
-- [SDK Security Guide](../../sdk/docs/SECURITY.md)
+- [SDK Security Guide](https://github.com/rediverio/sdk#security)
 - [Agent Key Management](../architecture/agent-key-management.md)
 - [CI/CD Examples](https://github.com/rediverio/sdk/tree/main/examples/ci-cd)

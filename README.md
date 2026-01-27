@@ -4,7 +4,7 @@ title: Rediver CTEM Platform
 ---
 
 <p align="center">
-  <img src="docs/images/logo.png" alt="Rediver Logo" width="200">
+  <img src="./images/logo.png" alt="Rediver Logo" width="200">
 </p>
 
 <h1 align="center">Rediver CTEM Platform</h1>
@@ -25,7 +25,7 @@ title: Rediver CTEM Platform
   <a href="https://rediver.io">Website</a> •
   <a href="https://app.rediver.io">Platform</a> •
   <a href="https://api.rediver.io/docs">API Docs</a> •
-  <a href="docs/getting-started.md">Getting Started</a>
+  <a href="./getting-started/">Getting Started</a>
 </p>
 
 ---
@@ -93,48 +93,48 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 ### Getting Started
 | Guide | Description |
 |-------|-------------|
-| [Quick Start](docs/getting-started.md) | Get up and running in 10 minutes |
-| [Development Setup](docs/development-setup.md) | IDE, debugging, testing |
-| [Configuration](docs/operations/configuration.md) | Environment variables |
+| [Quick Start](./getting-started/quick-start) | Get up and running in 10 minutes |
+| [First Scan](./getting-started/first-scan) | Run your first security scan |
+| [Configuration](./operations/configuration) | Environment variables |
 
 ### Guides
 | Guide | Description |
 |-------|-------------|
-| [Authentication](docs/guides/authentication.md) | Login flow, JWT, sessions |
-| [Multi-tenancy](docs/guides/multi-tenancy.md) | Teams, tenant switching |
-| [Permissions](docs/guides/permissions.md) | Role-based access control |
-| [Notification Integrations](docs/guides/notification-integrations.md) | Slack, Teams, Telegram, Email alerts |
-| [Running Agents](docs/guides/running-agents.md) | Setup and run scanning agents |
-| [SDK Development](docs/guides/sdk-development.md) | Build custom scanners |
-| [Building Ingestion Tools](docs/guides/building-ingestion-tools.md) | Custom data collectors |
+| [Authentication](./guides/authentication) | Login flow, JWT, sessions |
+| [Multi-tenancy](./guides/multi-tenancy) | Teams, tenant switching |
+| [Permissions](./guides/permissions) | Role-based access control |
+| [Notification Integrations](./guides/notification-integrations) | Slack, Teams, Telegram, Email alerts |
+| [Running Agents](./guides/running-agents) | Setup and run scanning agents |
+| [SDK Development](./guides/sdk-development) | Build custom scanners |
+| [Building Ingestion Tools](./guides/building-ingestion-tools) | Custom data collectors |
 
 ### Architecture
 | Document | Description |
 |----------|-------------|
-| [Overview](docs/architecture/overview.md) | System design |
-| [Deployment Modes](docs/architecture/deployment-modes.md) | Standalone, distributed |
-| [Server-Agent Communication](docs/architecture/server-agent-command.md) | Command & control |
-| [Agent Key Management](docs/architecture/agent-key-management.md) | API keys, registration tokens |
-| [Scan Pipeline Design](docs/architecture/scan-pipeline-design.md) | Workflow execution |
-| [Notification System](docs/architecture/notification-system.md) | Real-time alerts, async patterns |
+| [Overview](./architecture/overview) | System design |
+| [Deployment Modes](./architecture/deployment-modes) | Standalone, distributed |
+| [Server-Agent Communication](./architecture/server-agent-command) | Command & control |
+| [Agent Key Management](./architecture/agent-key-management) | API keys, registration tokens |
+| [Scan Pipeline Design](./architecture/scan-pipeline-design) | Workflow execution |
+| [Notification System](./architecture/notification-system) | Real-time alerts, async patterns |
 
 ### Security
 | Document | Description |
 |----------|-------------|
-| [SDK Security Guide](sdk/docs/SECURITY.md) | SDK security features and best practices |
-| [Agent Configuration](docs/guides/agent-configuration.md) | Secure agent configuration |
+| [Security Guide](./guides/SECURITY) | Security features and best practices |
+| [Agent Configuration](./guides/agent-configuration) | Secure agent configuration |
 
 ### Reference
 | Document | Description |
 |----------|-------------|
-| [API Reference](docs/api/reference.md) | Complete API endpoints |
+| [API Reference](./backend/api-reference) | Complete API endpoints |
 | [RIS Schema](https://github.com/rediverio/schemas) | Rediver Ingest Schema |
 
 ### Operations
 | Document | Description |
 |----------|-------------|
-| [Troubleshooting](docs/operations/troubleshooting.md) | Common issues |
-| [Docker Deployment](docs/guides/docker-deployment.md) | Container deployment |
+| [Troubleshooting](./operations/troubleshooting) | Common issues |
+| [Docker Deployment](./guides/docker-deployment) | Container deployment |
 
 ---
 
@@ -191,9 +191,9 @@ docker compose up -d
 
 We welcome contributions! Please see:
 
-- [Contributing Guide](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
+- [Contributing Guide](https://github.com/rediverio/api/blob/main/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/rediverio/api/blob/main/CODE_OF_CONDUCT.md)
+- [Security Policy](https://github.com/rediverio/api/blob/main/SECURITY.md)
 
 ---
 

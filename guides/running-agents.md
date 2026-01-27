@@ -679,4 +679,4 @@ See [Platform Administration Guide](./platform-admin.md) for complete CLI docume
 - [Deployment Modes](../architecture/deployment-modes.md)
 - [Server-Agent Architecture](../architecture/server-agent-command.md)
 - [SDK Development Guide](./sdk-development.md)
-- [API Reference](../api/reference.md)
+- [API Reference](../backend/api-reference.md)

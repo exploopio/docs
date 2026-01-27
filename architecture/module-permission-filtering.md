@@ -416,4 +416,4 @@ This restores the previous (broader) permission set for Member role.
 
 - [Roles and Permissions Guide](../guides/roles-and-permissions.md)
 - [Permission Real-time Sync](./permission-realtime-sync.md)
-- [Access Control Implementation](./access-control-implementation-plan.md)
+- [Access Control Implementation](./access-control-flows-and-data.md)

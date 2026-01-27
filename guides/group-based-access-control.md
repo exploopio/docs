@@ -442,4 +442,4 @@ Service Owner "sarah@company.com" takes ownership of API service
 - [Roles and Permissions](roles-and-permissions.md) - Legacy role system reference
 - [Multi-Tenancy Guide](multi-tenancy.md) - Tenant management
 - [Authentication Guide](authentication.md) - Token and session management
-- [Access Control Implementation Plan](../architecture/access-control-implementation-plan.md) - Technical details
+- [Access Control Implementation Plan](../architecture/access-control-flows-and-data.md) - Technical details

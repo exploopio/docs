@@ -2437,7 +2437,7 @@ docker run --rm ghcr.io/rediverio/agent:latest -check-tools
 - [SDK & API Integration Architecture](../architecture/sdk-api-integration.md) - How SDK integrates with API
 - [Server-Agent Command Architecture](../architecture/server-agent-command.md) - Remote agent control
 - [Building Ingestion Tools](./building-ingestion-tools.md) - RIS schema reference
-- [API Reference](../api/reference.md) - Full API documentation
+- [API Reference](../backend/api-reference.md) - Full API documentation
 - [Authentication Guide](./authentication.md) - API key management
 
 ---
