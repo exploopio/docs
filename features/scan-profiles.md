@@ -1,3 +1,10 @@
+---
+layout: default
+title: Scan Profiles
+parent: Features
+nav_order: 5
+---
+
 # Scan Profiles
 
 ## Overview

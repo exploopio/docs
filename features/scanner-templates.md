@@ -1,3 +1,10 @@
+---
+layout: default
+title: Scanner Templates
+parent: Features
+nav_order: 4
+---
+
 # Scanner Templates
 
 ## Overview
