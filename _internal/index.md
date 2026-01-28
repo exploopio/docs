@@ -18,6 +18,7 @@ Implementation planning documents for new features:
 
 | RFC | Date | Status | Description |
 |-----|------|--------|-------------|
+| [Platform-Controlled Suppression](./rfcs/2026-01-28-platform-controlled-suppression.md) | 2026-01-28 | Planned | False positive management |
 | [CTEM Framework Enhancement](./rfcs/2026-01-27-ctem-framework-enhancement.md) | 2026-01-27 | In Progress | CTEM 5-phase enhancement |
 | [Platform Agent Unified](./rfcs/2026-01-27-platform-agent-unified.md) | 2026-01-27 | In Progress | Unified agent architecture |
 | [Tiered Platform Agents](./rfcs/2026-01-26-tiered-platform-agents.md) | 2026-01-26 | In Progress | Agent tier system |

@@ -134,6 +134,29 @@ Click on a finding to:
 
 ---
 
+## Checking Tools Installation
+
+Before running scans, verify scanners are installed:
+
+```bash
+# Check installation status
+agent -check-tools
+
+# Output:
+#   ✓ semgrep      SAST scanner with dataflow/taint tracking (installed: 1.90.0)
+#   ✓ gitleaks     Secret detection scanner (installed: 8.28.0)
+#   ✓ trivy        SCA/Container/IaC scanner (installed: 0.67.2)
+#   ✗ nuclei       Vulnerability scanner (DAST) (NOT INSTALLED)
+```
+
+Install missing tools interactively:
+
+```bash
+agent -install-tools
+```
+
+---
+
 ## Available Scanners
 
 | Tool | Type | What it detects |
@@ -143,6 +166,7 @@ Click on a finding to:
 | **Gitleaks** | Secrets | API keys, passwords, tokens |
 | **Trivy-Config** | IaC | Infrastructure misconfigurations |
 | **Trivy-Image** | Container | Container image vulnerabilities |
+| **Nuclei** | DAST | Web vulnerabilities, CVEs |
 
 ---
 
@@ -184,6 +208,20 @@ Successful scan output:
 1. Ensure `-push` flag is used
 2. Check if scan actually found vulnerabilities (look at agent output)
 3. Verify findings filter isn't hiding results
+
+### Tool not installed
+
+If you see "Scanner X not installed":
+
+```bash
+# Check what's installed
+agent -check-tools
+
+# Install missing tools
+agent -install-tools
+```
+
+Or install manually following the instructions shown.
 
 ### Docker network issues
 
