@@ -156,8 +156,44 @@ export API_KEY=rdw_your_api_key_here
 |------|-------------|
 | `-auto-ci` | Auto-detect CI environment |
 | `-comments` | Post findings as PR/MR comments |
-| `-sarif` | Generate SARIF output |
-| `-sarif-output` | SARIF output file path |
+| `-fail-on` | Exit with code 1 if findings >= severity (critical, high, medium, low) |
+| `-output-format` | Output format: json, sarif, table (default: table) |
+| `-output` | Output file path (instead of stdout) |
+
+### Security Gate (CI/CD Pipeline Control)
+
+The security gate allows you to fail CI/CD pipelines based on finding severity:
+
+```bash
+# Fail if any critical or high severity findings
+agent -tool semgrep -target . -fail-on high
+
+# Fail only on critical findings
+agent -tool semgrep -target . -fail-on critical -push
+
+# Fail on medium and above
+agent -tools semgrep,gitleaks -target . -fail-on medium -output-format sarif -output results.sarif
+```
+
+**Exit Codes:**
+| Code | Meaning |
+|------|---------|
+| 0 | Pass - no findings above threshold |
+| 1 | Fail - findings above threshold |
+| 2 | Error - configuration or runtime error |
+
+### Output Formats
+
+```bash
+# JSON output
+agent -tool semgrep -target . -output-format json
+
+# SARIF 2.1.0 output (for GitHub/GitLab Security Dashboard)
+agent -tool semgrep -target . -output-format sarif -output results.sarif
+
+# Table output (default, human-readable)
+agent -tool semgrep -target . -output-format table
+```
 
 ---
 
@@ -210,7 +246,19 @@ To view the SBOM for an asset, use the API endpoint:
 
 # Check which tools are installed
 ./agent -check-tools
+
+# Interactively install missing tools
+./agent -install-tools
 ```
+
+**Supported native tools:**
+
+| Tool | Description | Install Command |
+|------|-------------|-----------------|
+| `semgrep` | SAST scanner with dataflow/taint tracking | `pip install semgrep` |
+| `gitleaks` | Secret detection scanner | `brew install gitleaks` |
+| `trivy` | SCA/Container/IaC scanner | `brew install trivy` |
+| `nuclei` | Vulnerability scanner (DAST) | `brew install nuclei` |
 
 ---
 
@@ -360,8 +408,9 @@ jobs:
             -comments
             -push
             -verbose
-            -sarif
-            -sarif-output results.sarif
+            -fail-on high
+            -output-format sarif
+            -output results.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           API_URL: ${{ secrets.API_URL }}
@@ -369,9 +418,16 @@ jobs:
 
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
+        if: always()
         with:
           sarif_file: results.sarif
 ```
+
+**Key flags explained:**
+- `-fail-on high`: Fails the pipeline if any high or critical findings
+- `-comments`: Posts inline comments on PR for each finding
+- `-output-format sarif`: SARIF 2.1.0 for GitHub Security tab
+- `-auto-ci`: Auto-detects GitHub Actions environment
 
 ### GitLab CI
 
@@ -395,25 +451,54 @@ security-scan:
         -comments \
         -push \
         -verbose \
-        -sarif \
-        -sarif-output gl-sast-report.json
+        -fail-on high \
+        -output-format sarif \
+        -output gl-sast-report.json
   artifacts:
     reports:
       sast: gl-sast-report.json
+  allow_failure:
+    exit_codes:
+      - 1  # Allow security gate failures to be visible but not block
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 ```
+
+**Key flags explained:**
+- `-fail-on high`: Exit code 1 if high/critical findings (shows warning in GitLab)
+- `-comments`: Posts inline comments on MR for each finding
+- `-output-format sarif`: SARIF output for GitLab Security Dashboard
+- `allow_failure: exit_codes: [1]`: Shows warning but doesn't block pipeline
 
 ### CI Features
 
 | Feature | Flag | Description |
 |---------|------|-------------|
 | Auto CI detection | `-auto-ci` | Detects GitHub/GitLab automatically |
-| Inline comments | `-comments` | Posts findings as PR/MR comments |
+| Inline comments | `-comments` | Posts findings as PR/MR comments (max 10 by default) |
+| Security gate | `-fail-on` | Fail pipeline on severity threshold |
 | Push to platform | `-push` | Sends results to Rediver |
-| SARIF output | `-sarif` | Generates SARIF for security dashboards |
+| SARIF output | `-output-format sarif` | Generates SARIF 2.1.0 for security dashboards |
+| JSON output | `-output-format json` | Machine-readable JSON output |
 | Diff-based scan | Automatic | Only scans changed files in PR/MR |
+
+### PR/MR Comments
+
+When running with `-comments` flag in a PR/MR context, the agent will:
+1. Detect the CI environment (GitHub Actions, GitLab CI)
+2. Filter findings to only those on changed files
+3. Create inline comments on the exact lines with issues
+4. Limit to 10 comments by default to avoid spam
+
+```bash
+# Enable PR comments
+agent -tools semgrep,gitleaks -target . -push -comments -auto-ci
+```
+
+**Requirements:**
+- `GITHUB_TOKEN` for GitHub Actions (usually `${{ secrets.GITHUB_TOKEN }}`)
+- `GITLAB_TOKEN` for GitLab CI (usually `$CI_JOB_TOKEN`)
 
 ---
 
