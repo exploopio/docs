@@ -380,7 +380,90 @@ Run as a long-running service:
 
 ## CI/CD Integration
 
+### CI vs DAST: Understanding the Difference
+
+```
+PR/MR Workflow (CI):
+┌─────────────────────────────────────────────────────────┐
+│  Push/PR → SAST → Secrets → SCA → Build → Deploy       │
+│            (semgrep) (gitleaks) (trivy)                 │
+│            ↑─────── CI Stage ──────↑                    │
+└─────────────────────────────────────────────────────────┘
+
+DAST Workflow (Separate):
+┌─────────────────────────────────────────────────────────┐
+│  Deploy to Staging → DAST Scan → Report                 │
+│                      (nuclei)                           │
+│                      ↑ Requires running app             │
+└─────────────────────────────────────────────────────────┘
+```
+
+**CI scans (SAST, Secrets, SCA):**
+- Run on every PR/MR
+- Scan source code statically
+- Block merge if critical issues found
+- Use `agent:ci` or per-tool images
+
+**DAST scans (Nuclei):**
+- Run AFTER deployment to staging/production
+- Require a running application URL
+- Triggered manually or on schedule
+- Use `agent:nuclei` image
+
 ### GitHub Actions
+
+**Option 1: Use Rediver's reusable workflow:**
+
+```yaml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  security:
+    uses: rediverio/agent/.github/workflows/rediver-security.yml@main
+    with:
+      tools: "semgrep,gitleaks,trivy"
+      fail_on: "high"
+    secrets:
+      api_url: ${{ secrets.API_URL }}
+      api_key: ${{ secrets.API_KEY }}
+
+  # Or use individual scan types:
+  # sast:
+  #   uses: rediverio/agent/.github/workflows/rediver-security.yml@main
+  #   with:
+  #     scan_type: "sast"
+  #     fail_on: "high"
+```
+
+**Option 2: Use composite action:**
+
+```yaml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Security Scan
+        uses: rediverio/agent/ci/github@main
+        with:
+          tools: semgrep,gitleaks,trivy
+          fail_on: high
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+```
+
+**Option 3: Direct Docker usage:**
 
 ```yaml
 name: Security Scan
@@ -431,6 +514,32 @@ jobs:
 
 ### GitLab CI
 
+**Option 1: Use Rediver's reusable template:**
+
+```yaml
+include:
+  - remote: 'https://raw.githubusercontent.com/rediverio/agent/main/ci/gitlab/rediver-security.yml'
+
+stages:
+  - security
+
+# Full scan (all tools)
+security:
+  extends: .rediver-full-scan
+  variables:
+    FAIL_ON: "high"
+
+# Or use individual scans in parallel (faster):
+# sast:
+#   extends: .rediver-sast
+# secrets:
+#   extends: .rediver-secrets
+# sca:
+#   extends: .rediver-sca
+```
+
+**Option 2: Custom configuration:**
+
 ```yaml
 stages:
   - security
@@ -471,6 +580,107 @@ security-scan:
 - `-output-format sarif`: SARIF output for GitLab Security Dashboard
 - `allow_failure: exit_codes: [1]`: Shows warning but doesn't block pipeline
 
+### Understanding GitLab `extends` Keyword
+
+The `extends` keyword in GitLab CI allows you to inherit configuration from a template (hidden job starting with `.`). This is how Rediver templates work:
+
+```yaml
+# Template definition (provided by Rediver)
+.rediver-sast:
+  stage: security
+  image: rediverio/agent:semgrep
+  variables:
+    PUSH: "true"
+    FAIL_ON: "critical"
+  script:
+    - agent -tool semgrep -target . ...
+
+# Your job extends the template
+sast:
+  extends: .rediver-sast
+```
+
+**Key Points:**
+- `extends` copies all configuration from the template
+- You can override any setting by redefining it in your job
+- Variables, script, rules, artifacts are all inherited and overridable
+
+**Override Examples:**
+
+```yaml
+# Override severity threshold
+sast:
+  extends: .rediver-sast
+  variables:
+    FAIL_ON: "high"          # Override: fail on high+ (not just critical)
+    PUSH: "false"            # Override: scan-only mode
+
+# Override rules (only run on specific branches)
+sast:
+  extends: .rediver-sast
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+# Add custom before_script
+sast:
+  extends: .rediver-sast
+  before_script:
+    - echo "Running custom setup..."
+    - npm install
+
+# Use different image version
+sast:
+  extends: .rediver-sast
+  image: rediverio/agent:semgrep@sha256:abc123...  # Pin specific version
+```
+
+**Deep Merge Behavior:**
+
+GitLab performs deep merge for hashes (like `variables`), but replaces arrays (like `script`):
+
+```yaml
+# Parent template
+.rediver-sast:
+  variables:
+    PUSH: "true"
+    FAIL_ON: "critical"
+    VERBOSE: "false"
+
+# Your job
+sast:
+  extends: .rediver-sast
+  variables:
+    FAIL_ON: "high"    # Override this one
+    # PUSH and VERBOSE are inherited from template
+```
+
+### Reusable CI Templates
+
+Rediver provides pre-built templates for quick integration:
+
+| Platform | Template Location | Description |
+|----------|-------------------|-------------|
+| GitHub Actions | `rediverio/agent/.github/workflows/rediver-security.yml` | Single job workflow |
+| GitHub Actions | `rediverio/agent/.github/workflows/parallel-security.yml` | **Parallel jobs (fastest)** |
+| GitHub Actions | `rediverio/agent/ci/github/action.yml` | Composite action |
+| GitLab CI | `ci/gitlab/rediver-security.yml` | Include templates |
+| GitLab CI | `ci/gitlab/parallel-security.yml` | **Parallel jobs (fastest)** |
+
+**Available GitLab Templates:**
+
+| Template | Image | Description |
+|----------|-------|-------------|
+| `.rediver-sast` | `rediverio/agent:semgrep` | SAST scanning with Semgrep |
+| `.rediver-sca` | `rediverio/agent:trivy` | SCA with fresh Trivy DB |
+| `.rediver-sca-fast` | `rediverio/agent:trivy-ci` | SCA with pre-loaded DB (faster) |
+| `.rediver-secrets` | `rediverio/agent:gitleaks` | Secret detection |
+| `.rediver-iac` | `rediverio/agent:trivy` | IaC misconfiguration |
+| `.rediver-container` | `rediverio/agent:trivy` | Container image scanning |
+| `.rediver-full-scan` | `rediverio/agent:ci` | All CI tools in one job |
+
+> **Note about DAST**: `.rediver-dast` uses a separate `dast` stage (not `security`) and runs manually after deployment. DAST scans require a running application.
+
 ### CI Features
 
 | Feature | Flag | Description |
@@ -482,6 +692,38 @@ security-scan:
 | SARIF output | `-output-format sarif` | Generates SARIF 2.1.0 for security dashboards |
 | JSON output | `-output-format json` | Machine-readable JSON output |
 | Diff-based scan | Automatic | Only scans changed files in PR/MR |
+
+### CI/CD Template Variables
+
+Both GitHub Actions and GitLab CI templates support these configuration variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PUSH` | `"true"` | Push results to Rediver platform. Set `"false"` for testing or scan-only mode |
+| `COMMENTS` | `"true"` | Post findings as PR/MR comments |
+| `FAIL_ON` | `"critical"` | Security gate threshold (critical, high, medium, low) |
+| `VERBOSE` | `"false"` | Enable verbose output for debugging |
+
+**Smart Defaults:**
+- If `PUSH` is `"true"` but `API_KEY` is not set, push is automatically disabled (scan-only mode)
+- This allows testing CI integration without configuring platform credentials
+
+**Example: Scan-only mode (testing without platform)**
+
+```yaml
+# GitLab
+sast:
+  extends: .rediver-sast
+  variables:
+    PUSH: "false"      # Disable push for testing
+    FAIL_ON: "high"    # Still enforce security gate
+
+# GitHub Actions
+- uses: rediverio/agent/.github/workflows/rediver-security.yml@main
+  with:
+    push: false        # Disable push for testing
+    fail_on: "high"
+```
 
 ### PR/MR Comments
 
@@ -500,6 +742,184 @@ agent -tools semgrep,gitleaks -target . -push -comments -auto-ci
 - `GITHUB_TOKEN` for GitHub Actions (usually `${{ secrets.GITHUB_TOKEN }}`)
 - `GITLAB_TOKEN` for GitLab CI (usually `$CI_JOB_TOKEN`)
 
+### Parallel Scanning (Recommended)
+
+Running scans in parallel is **2-3x faster** than sequential scanning:
+- Sequential: `time = sast + secrets + sca` (~5-10 min)
+- Parallel: `time = max(sast, secrets, sca)` (~2-4 min)
+
+**GitHub Actions - Parallel (Simplest):**
+
+```yaml
+name: Security
+on: [push, pull_request]
+
+jobs:
+  security:
+    uses: rediverio/agent/.github/workflows/parallel-security.yml@main
+    with:
+      fail_on: "high"
+    secrets:
+      api_url: ${{ secrets.API_URL }}
+      api_key: ${{ secrets.API_KEY }}
+```
+
+**GitLab CI - Parallel (Simplest):**
+
+```yaml
+include:
+  - remote: 'https://raw.githubusercontent.com/rediverio/agent/main/ci/gitlab/parallel-security.yml'
+
+stages:
+  - security
+
+variables:
+  FAIL_ON: "high"
+
+# Jobs rediver-sast, rediver-secrets, rediver-sca run automatically in parallel
+```
+
+**GitHub Actions - Parallel (Custom):**
+
+```yaml
+name: Security Scan (Parallel)
+on: [push, pull_request]
+
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    container: rediverio/agent:semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - run: agent -tool semgrep -target . -push -auto-ci -comments -fail-on high
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+  secrets:
+    runs-on: ubuntu-latest
+    container: rediverio/agent:gitleaks
+    steps:
+      - uses: actions/checkout@v4
+      - run: agent -tool gitleaks -target . -push -auto-ci -comments -fail-on critical
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+  sca:
+    runs-on: ubuntu-latest
+    container: rediverio/agent:trivy
+    steps:
+      - uses: actions/checkout@v4
+      - run: agent -tool trivy -target . -push -auto-ci -fail-on critical
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+  # DAST runs separately after deployment (not in PR checks)
+  dast:
+    runs-on: ubuntu-latest
+    container: rediverio/agent:nuclei
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - run: agent -tool nuclei -target https://staging.example.com -push
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+```
+
+**GitLab CI - Parallel:**
+
+```yaml
+stages:
+  - security
+
+sast:
+  stage: security
+  image: rediverio/agent:semgrep
+  script:
+    - agent -tool semgrep -target . -push -auto-ci -comments -fail-on high
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+secrets:
+  stage: security
+  image: rediverio/agent:gitleaks
+  script:
+    - agent -tool gitleaks -target . -push -auto-ci -comments
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+sca:
+  stage: security
+  image: rediverio/agent:trivy
+  script:
+    - agent -tool trivy -target . -push -auto-ci -fail-on critical
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+```
+
+---
+
+## Docker Images
+
+### Available Images
+
+**CI Images (for PR/MR scanning):**
+
+| Image | Size | Tools | Use Case |
+|-------|------|-------|----------|
+| `rediverio/agent:ci` | ~600MB | semgrep + gitleaks + trivy | Full CI pipeline (recommended) |
+| `rediverio/agent:ci-cached` | ~700MB | + preloaded Trivy DB | Faster CI (rebuild weekly) |
+| `rediverio/agent:semgrep` | ~400MB | Semgrep only | SAST scanning |
+| `rediverio/agent:gitleaks` | ~50MB | Gitleaks only | Secrets detection |
+| `rediverio/agent:trivy` | ~100MB | Trivy only | SCA/IaC/Container |
+| `rediverio/agent:trivy-ci` | ~500MB | Trivy + preloaded DB | Fast SCA (no DB download) |
+
+**DAST Image (separate from CI, runs after deployment):**
+
+| Image | Size | Tools | Use Case |
+|-------|------|-------|----------|
+| `rediverio/agent:nuclei` | ~100MB | Nuclei only | DAST against staging/production |
+
+**Development & Platform Images:**
+
+| Image | Size | Tools | Use Case |
+|-------|------|-------|----------|
+| `rediverio/agent:slim` | ~20MB | Agent only (distroless) | Custom tool integration |
+| `rediverio/agent:full` | ~800MB | All tools including Nuclei | Local development |
+| `rediverio/agent:platform` | ~800MB | All tools + platform mode | Platform-managed agents |
+| `rediverio/agent:latest` | ~800MB | Alias for `full` | Default |
+
+> **Note**: CI images do NOT include Nuclei because DAST requires a running application and should run in a separate stage after deployment, not during PR checks.
+
+### Build Custom Images
+
+Per-tool images use separate Dockerfiles for better maintainability:
+
+```bash
+# Build per-tool images (from separate Dockerfiles)
+docker build -f Dockerfile.semgrep -t rediverio/agent:semgrep .
+docker build -f Dockerfile.gitleaks -t rediverio/agent:gitleaks .
+docker build -f Dockerfile.trivy -t rediverio/agent:trivy .
+docker build -f Dockerfile.trivy --target trivy-ci -t rediverio/agent:trivy-ci .
+docker build -f Dockerfile.nuclei -t rediverio/agent:nuclei .
+
+# Build combined images (from main Dockerfile)
+docker build --target slim -t rediverio/agent:slim .
+docker build --target full -t rediverio/agent:latest .
+docker build --target ci -t rediverio/agent:ci .
+```
+
+**Dockerfile structure:**
+- `Dockerfile` - Main file with builder stages and combined images (slim, full, ci, platform)
+- `Dockerfile.semgrep` - Agent + Semgrep (~400MB)
+- `Dockerfile.gitleaks` - Agent + Gitleaks (~50MB)
+- `Dockerfile.trivy` - Agent + Trivy with optional trivy-ci target (~100-500MB)
+- `Dockerfile.nuclei` - Agent + Nuclei (~100MB)
+
 ---
 
 ## Docker Usage
@@ -511,6 +931,26 @@ docker run --rm -v $(pwd):/scan rediverio/agent:latest \
     -tools semgrep,gitleaks,trivy \
     -target /scan \
     -verbose
+```
+
+### Per-Tool Scans
+
+```bash
+# SAST with Semgrep
+docker run --rm -v $(pwd):/scan rediverio/agent:semgrep \
+    -tool semgrep -target /scan -verbose
+
+# Secrets with Gitleaks
+docker run --rm -v $(pwd):/scan rediverio/agent:gitleaks \
+    -tool gitleaks -target /scan -verbose
+
+# SCA with Trivy (pre-loaded DB for speed)
+docker run --rm -v $(pwd):/scan rediverio/agent:trivy-ci \
+    -tool trivy -target /scan -verbose
+
+# DAST with Nuclei
+docker run --rm rediverio/agent:nuclei \
+    -tool nuclei -target https://example.com -verbose
 ```
 
 ### With API Push
@@ -635,6 +1075,37 @@ Other causes:
 ```
 
 ---
+
+## Tool Auto-Update Mechanism
+
+Each scanner tool has different update mechanisms for rules/databases:
+
+| Tool | What Updates | When | In Docker |
+|------|--------------|------|-----------|
+| **Semgrep** | Rules from [Semgrep Registry](https://semgrep.dev/docs/running-rules) | Every scan | Auto (needs network) |
+| **Trivy** | Vuln DB from [GHCR](https://trivy.dev/docs/latest/configuration/db/) | Every 6 hours | Auto-download on first use |
+| **Gitleaks** | Rules embedded in binary | On version update | Pull latest image |
+| **Nuclei** | [Templates from GitHub](https://docs.projectdiscovery.io/opensource/nuclei/running) | On first run or `-update-templates` | Auto (needs network) |
+
+### Keeping Tools Updated
+
+**Semgrep**: No action needed. Rules are fetched from the registry on every scan.
+
+**Trivy**: DB auto-updates. For faster CI with preloaded DB:
+```bash
+# Use trivy-ci image (rebuild weekly to keep DB fresh)
+docker pull rediverio/agent:trivy-ci
+```
+
+**Gitleaks**: Pull latest image to get new detection rules:
+```bash
+docker pull rediverio/agent:gitleaks
+```
+
+**Nuclei**: Templates auto-update, or force update:
+```bash
+nuclei -update-templates
+```
 
 ---
 

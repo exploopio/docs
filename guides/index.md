@@ -36,6 +36,7 @@ Configure and run security scans.
 | [Running Agents](running-agents.md) | Setup and deploy scanning agents |
 | [Agent Configuration](agent-configuration.md) | Agent config reference |
 | [Agent Usage](agent-usage.md) | CLI agent for scanning |
+| [Agent Usage: CI/CD Integration](agent-usage.md#cicd-integration) | GitHub Actions, GitLab CI templates |
 | [Rule Management](rule-management.md) | Custom rules and templates |
 
 ---
