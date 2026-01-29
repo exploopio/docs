@@ -26,10 +26,10 @@ Optimize API response caching for the Next.js proxy layer to address:
 ### Client-Side Caching: ✅ **Already Optimized**
 
 **Discovery**: The application is using **SWR (stale-while-revalidate)** library:
-- Package: `"swr": "^2.3.7"` ([package.json:80](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/package.json#L80))
-- Comprehensive implementation in [hooks.ts](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/src/lib/api/hooks.ts)
+- Package: `"swr": "^2.3.7"` ([package.json:80](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/package.json#L80))
+- Comprehensive implementation in [hooks.ts](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/src/lib/api/hooks.ts)
 
-**SWR Configuration** ([hooks.ts:32-45](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/src/lib/api/hooks.ts#L32-L45)):
+**SWR Configuration** ([hooks.ts:32-45](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/src/lib/api/hooks.ts#L32-L45)):
 ```typescript
 {
   revalidateOnFocus: false,        // ✅ Good: Don't refetch on tab focus
@@ -54,7 +54,7 @@ Optimize API response caching for the Next.js proxy layer to address:
 
 ### Server-Side Caching: ❌ **Missing**
 
-**Current Proxy**: [route.ts](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/src/app/api/v1/%5B...path%5D/route.ts)
+**Current Proxy**: [route.ts](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/src/app/api/v1/%5B...path%5D/route.ts)
 - ❌ No caching layer
 - ❌ Every request hits Golang API (even if identical)
 - ❌ No shared cache across instances
@@ -1382,9 +1382,9 @@ autocannon -c 100 -d 30 http://<LB_IP>/api/v1/users/me
 
 ## Related Documentation
 
-- [API Proxy Implementation](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/src/app/api/v1/%5B...path%5D/route.ts)
-- [SWR Hooks](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/src/lib/api/hooks.ts)
-- [Docker Compose Setup](file:///Users/0xmanhnv/Data/Projects/rediverio/ui/docker-compose.yml)
+- [API Proxy Implementation](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/src/app/api/v1/%5B...path%5D/route.ts)
+- [SWR Hooks](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/src/lib/api/hooks.ts)
+- [Docker Compose Setup](file:///Users/0xmanhnv/Data/Projects/exploopio/ui/docker-compose.yml)
 
 ---
 

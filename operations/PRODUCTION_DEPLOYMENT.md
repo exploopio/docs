@@ -7,7 +7,7 @@ nav_order: 13
 
 # Production Deployment Guide
 
-Deploy the RediverIO platform to production environments using Kubernetes, Docker Compose, or cloud-managed services.
+Deploy the Exploop platform to production environments using Kubernetes, Docker Compose, or cloud-managed services.
 
 ---
 
@@ -73,10 +73,10 @@ Deploy the RediverIO platform to production environments using Kubernetes, Docke
 
 ```bash
 # Create namespace
-kubectl create namespace rediver
+kubectl create namespace.exploop
 
 # Set as default
-kubectl config set-context --current --namespace=rediver
+kubectl config set-context --current --namespace.exploop
 ```
 
 ---
@@ -91,12 +91,12 @@ export DB_PASSWORD=$(openssl rand -base64 32)
 export REDIS_PASSWORD=$(openssl rand -base64 32)
 
 # Create Kubernetes secrets
-kubectl create secret generic rediver-secrets \
+kubectl create secret generic.exploop-secrets \
   --from-literal=jwt-secret=$JWT_SECRET \
   --from-literal=csrf-secret=$CSRF_SECRET \
   --from-literal=db-password=$DB_PASSWORD \
   --from-literal=redis-password=$REDIS_PASSWORD \
-  --namespace=rediver
+  --namespace.exploop
 ```
 
 ---
@@ -108,13 +108,13 @@ Create `values.yaml`:
 ```yaml
 # values.yaml
 global:
-  domain: app.rediver.io
+  domain: app.exploop.io
   tlsEnabled: true
 
 api:
   replicaCount: 3
   image:
-    repository: rediverio/api
+    repository: exploopio/api
     tag: latest
   resources:
     requests:
@@ -125,13 +125,13 @@ api:
       cpu: "1000m"
   env:
     AUTH_PROVIDER: local  # or "oidc" for Keycloak
-    CORS_ALLOWED_ORIGINS: "https://app.rediver.io"
+    CORS_ALLOWED_ORIGINS: "https://app.exploop.io"
     LOG_LEVEL: info
 
 ui:
   replicaCount: 2
   image:
-    repository: rediverio/ui
+    repository: exploopio/ui
     tag: latest
   resources:
     requests:
@@ -144,7 +144,7 @@ ui:
 postgresql:
   enabled: true
   auth:
-    existingSecret: rediver-secrets
+    existingSecret:.exploop-secrets
     secretKeys:
       adminPasswordKey: db-password
   primary:
@@ -156,7 +156,7 @@ postgresql:
 redis:
   enabled: true
   auth:
-    existingSecret: rediver-secrets
+    existingSecret:.exploop-secrets
     existingSecretPasswordKey: redis-password
   master:
     persistence:
@@ -168,14 +168,14 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: app.rediver.io
+    - host: app.exploop.io
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName: rediver-tls
+    - secretName:.exploop-tls
       hosts:
-        - app.rediver.io
+        - app.exploop.io
 ```
 
 ---
@@ -184,17 +184,17 @@ ingress:
 
 ```bash
 # Add Rediver Helm repository
-helm repo add rediverio https://charts.rediver.io
+helm repo add.exploopio https://charts.exploop.io
 helm repo update
 
 # Install
-helm install rediver rediverio/rediver \
-  --namespace rediver \
+helm install.exploop exploopio.exploop \
+  --namespace.exploop \
   --values values.yaml \
   --wait --timeout 10m
 
 # Check status
-helm status rediver --namespace rediver
+helm status.exploop --namespace.exploop
 ```
 
 ---
@@ -203,23 +203,23 @@ helm status rediver --namespace rediver
 
 ```bash
 # Check all pods are running
-kubectl get pods --namespace rediver
+kubectl get pods --namespace.exploop
 
 # Expected output:
 # NAME                          READY   STATUS    RESTARTS   AGE
-# rediver-api-xxx               1/1     Running   0          2m
-# rediver-api-yyy               1/1     Running   0          2m
-# rediver-api-zzz               1/1     Running   0          2m
-# rediver-ui-xxx                1/1     Running   0          2m
-# rediver-ui-yyy                1/1     Running   0          2m
-# rediver-postgresql-0          1/1     Running   0          2m
-# rediver-redis-master-0        1/1     Running   0          2m
+# exploop-api-xxx               1/1     Running   0          2m
+# exploop-api-yyy               1/1     Running   0          2m
+# exploop-api-zzz               1/1     Running   0          2m
+#.exploop-ui-xxx                1/1     Running   0          2m
+#.exploop-ui-yyy                1/1     Running   0          2m
+#.exploop-postgresql-0          1/1     Running   0          2m
+#.exploop-redis-master-0        1/1     Running   0          2m
 
 # Check services
-kubectl get svc --namespace rediver
+kubectl get svc --namespace.exploop
 
 # Check ingress
-kubectl get ingress --namespace rediver
+kubectl get ingress --namespace.exploop
 ```
 
 ---
@@ -232,28 +232,28 @@ kubectl apply -f - <<EOF
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: rediver-migrate
-  namespace: rediver
+  name:.exploop-migrate
+  namespace: exploop
 spec:
   template:
     spec:
       containers:
       - name: migrate
-        image: rediverio/api:latest
+        image: exploopio/api:latest
         command: ["migrate", "-path", "/app/migrations", "-database", "\$(DATABASE_URL)", "up"]
         env:
         - name: DATABASE_URL
-          value: "postgres://rediver:\$(DB_PASSWORD)@rediver-postgresql:5432/rediver?sslmode=disable"
+          value: "postgres:/.exploop:\$(DB_PASSWORD).exploop-postgresql:5432/exploop?sslmode=disable"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: rediver-secrets
+              name:.exploop-secrets
               key: db-password
       restartPolicy: OnFailure
 EOF
 
 # Wait for completion
-kubectl wait --for=condition=complete job/rediver-migrate --namespace rediver --timeout=5m
+kubectl wait --for=condition=complete job.exploop-migrate --namespace.exploop --timeout=5m
 ```
 
 ---
@@ -262,7 +262,7 @@ kubectl wait --for=condition=complete job/rediver-migrate --namespace rediver --
 
 ```bash
 # Seed test data for staging
-kubectl exec -it deployment/rediver-api --namespace rediver -- \
+kubectl exec -it deployment/exploop-api --namespace.exploop -- \
   psql \$DATABASE_URL -f /app/seeds/seed_required.sql
 ```
 
@@ -272,13 +272,13 @@ kubectl exec -it deployment/rediver-api --namespace rediver -- \
 
 1. Update your DNS to point to the Ingress IP:
    ```bash
-   kubectl get ingress rediver-ingress --namespace rediver
+   kubectl get ingress.exploop-ingress --namespace.exploop
    ```
 
-2. Navigate to your domain: `https://app.rediver.io`
+2. Navigate to your domain: `https://app.exploop.io`
 
 3. Login with default credentials (change immediately):
-   - Email: `admin@rediver.io`
+   - Email: `admin@exploop.io`
    - Password: `Admin123!`
 
 ---
@@ -306,13 +306,13 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: rediver
-      POSTGRES_USER: rediver
+      POSTGRES_DB:.exploop
+      POSTGRES_USER:.exploop
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rediver"]
+      test: ["CMD-SHELL", "pg_isready -U.exploop"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -328,7 +328,7 @@ services:
       interval: 10s
 
   api:
-    image: rediverio/api:latest
+    image: exploopio/api:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -338,15 +338,15 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER: rediver
+      DB_USER:.exploop
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: rediver
+      DB_NAME:.exploop
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       AUTH_JWT_SECRET: ${JWT_SECRET}
       CSRF_SECRET: ${CSRF_SECRET}
-      CORS_ALLOWED_ORIGINS: https://app.rediver.io
-      NEXT_PUBLIC_APP_URL: https://app.rediver.io
+      CORS_ALLOWED_ORIGINS: https://app.exploop.io
+      NEXT_PUBLIC_APP_URL: https://app.exploop.io
       LOG_LEVEL: info
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
@@ -355,13 +355,13 @@ services:
       retries: 3
 
   ui:
-    image: rediverio/ui:latest
+    image: exploopio/ui:latest
     restart: unless-stopped
     depends_on:
       - api
     environment:
       NEXT_PUBLIC_BACKEND_API_URL: http://api:8080
-      NEXT_PUBLIC_APP_URL: https://app.rediver.io
+      NEXT_PUBLIC_APP_URL: https://app.exploop.io
       CSRF_SECRET: ${CSRF_SECRET}
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
@@ -402,13 +402,13 @@ upstream api {
 
 server {
     listen 80;
-    server_name app.rediver.io;
+    server_name app.exploop.io;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name app.rediver.io;
+    server_name app.exploop.io;
 
     ssl_certificate /etc/nginx/ssl/fullchain.pem;
     ssl_certificate_key /etc/nginx/ssl/privkey.pem;
@@ -447,13 +447,13 @@ sudo apt install certbot
 
 # Generate certificate
 sudo certbot certonly --standalone \
-  -d app.rediver.io \
-  --email admin@rediver.io \
+  -d app.exploop.io \
+  --email admin@exploop.io \
   --agree-tos
 
 # Copy certificates
-sudo cp /etc/letsencrypt/live/app.rediver.io/fullchain.pem ./ssl/
-sudo cp /etc/letsencrypt/live/app.rediver.io/privkey.pem ./ssl/
+sudo cp /etc/letsencrypt/live/app.exploop.io/fullchain.pem ./ssl/
+sudo cp /etc/letsencrypt/live/app.exploop.io/privkey.pem ./ssl/
 ```
 
 ---
@@ -540,10 +540,10 @@ All services expose health endpoints:
 
 ```bash
 # API
-curl https://app.rediver.io/api/health
+curl https://app.exploop.io/api/health
 
 # UI (via proxy)
-curl https://app.rediver.io/api/health
+curl https://app.exploop.io/api/health
 ```
 
 ### Metrics (Prometheus)
@@ -553,9 +553,9 @@ API exposes metrics at `/metrics`:
 ```yaml
 # prometheus.yml
 scrape_configs:
-  - job_name: 'rediver-api'
+  - job_name: 'exploop-api'
     static_configs:
-      - targets: ['rediver-api:8080']
+      - targets: ['exploop-api:8080']
 ```
 
 ### Logging
@@ -583,12 +583,12 @@ Ship logs to:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: rediver-api-hpa
+  name: exploop-api-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: rediver-api
+    name: exploop-api
   minReplicas: 3
   maxReplicas: 10
   metrics:
@@ -614,10 +614,10 @@ spec:
 
 ```bash
 # Daily automated backups
-kubectl create cronjob rediver-backup \
+kubectl create cronjob.exploop-backup \
   --image=postgres:17 \
   --schedule="0 2 * * *" \
-  -- pg_dump -h postgres -U rediver rediver | gzip > /backups/backup-$(date +%Y%m%d).sql.gz
+  -- pg_dump -h postgres -U.exploop.exploop | gzip > /backups/backup-$(date +%Y%m%d).sql.gz
 ```
 
 ### Retention Policy
@@ -651,7 +651,7 @@ kubectl create cronjob rediver-backup \
 
 ```bash
 # Check logs
-kubectl logs -l app=rediver-api --namespace rediver --tail=100
+kubectl logs -l app=exploop-api --namespace.exploop --tail=100
 
 # Common causes:
 # - Database not ready
@@ -663,15 +663,15 @@ kubectl logs -l app=rediver-api --namespace rediver --tail=100
 
 ```bash
 # Test connection from API pod
-kubectl exec -it deployment/rediver-api --namespace rediver -- sh
-pg_isready -h postgres -U rediver
+kubectl exec -it deployment/exploop-api --namespace.exploop -- sh
+pg_isready -h postgres -U.exploop
 ```
 
 ### UI Not Loading
 
 ```bash
 # Check API is reachable from UI
-kubectl exec -it deployment/rediver-ui --namespace rediver -- curl http://rediver-api:8080/health
+kubectl exec -it deployment.exploop-ui --namespace.exploop -- curl http://exploop-api:8080/health
 ```
 
 ---
@@ -688,7 +688,7 @@ kubectl exec -it deployment/rediver-ui --namespace rediver -- curl http://redive
 
 - [Architecture Overview](../architecture/overview.md)
 - [End-to-End Workflow](../guides/END_TO_END_WORKFLOW.md)
-- [Agent Quick Start](https://github.com/rediverio/agent#quick-start)
+- [Agent Quick Start](https://github.com/exploopio/agent#quick-start)
 
 ---
 

@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This RFC proposes a **chunked upload mechanism** for handling large scan outputs in the Rediver SDK. When security tools generate thousands of findings, uploading everything in a single request causes:
+This RFC proposes a **chunked upload mechanism** for handling large scan outputs in the Exploop SDK. When security tools generate thousands of findings, uploading everything in a single request causes:
 - Server congestion and timeouts
 - Memory pressure on both client and server
 - Network instability in constrained environments
@@ -134,7 +134,7 @@ type Config struct {
     RetryBackoffMs         int           // Initial backoff between retries (default: 1000ms)
 
     // Storage configuration
-    DatabasePath           string        // SQLite database path (default: ~/.rediver/chunks.db)
+    DatabasePath           string        // SQLite database path (default: ~/.exploop/chunks.db)
     RetentionHours         int           // How long to keep completed chunks (default: 24h)
     MaxStorageMB           int           // Max storage for chunk DB (default: 500MB)
 
@@ -168,7 +168,7 @@ func DefaultConfig() *Config {
 ### 2. SQLite Database Schema
 
 ```sql
--- Database: ~/.rediver/chunks.db
+-- Database: ~/.exploop/chunks.db
 
 -- Reports table: tracks overall report status
 CREATE TABLE IF NOT EXISTS reports (
@@ -217,7 +217,7 @@ package chunk
 
 import (
     "time"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // Report represents a chunked report in the database.
@@ -306,7 +306,7 @@ type Progress struct {
 package chunk
 
 import (
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // Splitter handles report chunking logic.
@@ -464,7 +464,7 @@ import (
     "sync"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
     _ "modernc.org/sqlite" // Pure Go SQLite driver
 )
 
@@ -644,7 +644,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "github.com/rediverio/api/internal/domain/shared"
+    "github.com/exploopio/api/internal/domain/shared"
 )
 
 // ChunkRequest represents a chunk upload request.
@@ -718,7 +718,7 @@ func (h *Handler) HandleChunkIngest(c *gin.Context) {
 ```yaml
 # agent.yaml
 
-rediver:
+exploop:
   base_url: ${API_URL}
   api_key: ${API_KEY}
 
@@ -745,7 +745,7 @@ rediver:
     retry_backoff_ms: 1000
 
     # Storage
-    database_path: ~/.rediver/chunks.db
+    database_path: ~/.exploop/chunks.db
     retention_hours: 24
     max_storage_mb: 500
 
@@ -769,7 +769,7 @@ export REDIVER_CHUNK_UPLOAD_DELAY_MS=100
 export REDIVER_CHUNK_MAX_CONCURRENT=2
 
 # Storage
-export REDIVER_CHUNK_DB_PATH=~/.rediver/chunks.db
+export REDIVER_CHUNK_DB_PATH=~/.exploop/chunks.db
 export REDIVER_CHUNK_RETENTION_HOURS=24
 ```
 

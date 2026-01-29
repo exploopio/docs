@@ -7,7 +7,7 @@ nav_order: 11
 
 # Custom Tools Development Guide
 
-Build custom security scanners, parsers, and collectors using the Rediver SDK.
+Build custom security scanners, parsers, and collectors using the Exploop SDK.
 
 ---
 
@@ -35,7 +35,7 @@ package main
 
 import (
     "time"
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -76,7 +76,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -167,8 +167,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // MyToolOutput represents your tool's JSON output format
@@ -280,8 +280,8 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 type MyAPICollector struct {
@@ -419,7 +419,7 @@ finding := ris.Finding{
 Use the shared fingerprint package for consistent deduplication:
 
 ```go
-import "github.com/rediverio/sdk/pkg/shared/fingerprint"
+import "github.com/exploopio/sdk/pkg/shared/fingerprint"
 
 // SAST findings
 fp := fingerprint.GenerateSAST("src/main.go", "CWE-89", 42, 44)
@@ -502,4 +502,4 @@ func TestMyParser_Parse(t *testing.T) {
 - **[SDK Quick Start](sdk-quick-start.md)** - Basic SDK usage
 - **[Agent Usage](agent-usage.md)** - Run as continuous scanner
 - **[Building Ingestion Tools](building-ingestion-tools.md)** - Detailed guide
-- **[RIS Schema Reference](https://github.com/rediverio/schemas)** - Full schema documentation
+- **[RIS Schema Reference](https://github.com/exploopio/schemas)** - Full schema documentation

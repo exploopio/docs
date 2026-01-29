@@ -802,7 +802,7 @@ import (
     "database/sql"
 
     "github.com/lib/pq"
-    "rediverio/api/internal/domain/role"
+    "exploopio/api/internal/domain/role"
 )
 
 type roleRepository struct {
@@ -991,8 +991,8 @@ package app
 import (
     "context"
 
-    "rediverio/api/internal/domain/role"
-    "rediverio/api/internal/domain/permission"
+    "exploopio/api/internal/domain/role"
+    "exploopio/api/internal/domain/permission"
 )
 
 type RoleService struct {
@@ -1199,8 +1199,8 @@ package accesscontrol
 import (
     "context"
 
-    "rediverio/api/internal/domain/role"
-    "rediverio/api/internal/domain/group"
+    "exploopio/api/internal/domain/role"
+    "exploopio/api/internal/domain/group"
 )
 
 type AccessScope struct {
@@ -1379,7 +1379,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "rediverio/api/internal/app"
+    "exploopio/api/internal/app"
 )
 
 type RoleHandler struct {
@@ -1560,7 +1560,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "rediverio/api/internal/domain/permission"
+    "exploopio/api/internal/domain/permission"
 )
 
 type PermissionHandler struct {
@@ -1653,7 +1653,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "rediverio/api/internal/app"
+    "exploopio/api/internal/app"
 )
 
 type UserRoleHandler struct {
@@ -1851,7 +1851,7 @@ package middleware
 
 import (
     "github.com/gin-gonic/gin"
-    "rediverio/api/internal/domain/accesscontrol"
+    "exploopio/api/internal/domain/accesscontrol"
 )
 
 func PermissionMiddleware(resolver *accesscontrol.AccessResolver) gin.HandlerFunc {

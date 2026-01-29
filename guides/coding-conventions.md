@@ -7,7 +7,7 @@ nav_order: 10
 
 # Coding Conventions
 
-This document defines coding standards and conventions for the Rediver CTEM Platform codebase.
+This document defines coding standards and conventions for the Exploop CTEM Platform codebase.
 
 ---
 

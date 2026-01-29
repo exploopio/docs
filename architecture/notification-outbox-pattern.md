@@ -921,11 +921,11 @@ If you're using Docker Compose (file `api/docker-compose.yml`), the default data
 ```
 Host:     localhost
 Port:     5432
-User:     rediver
+User:    .exploop
 Password: secret
-Database: rediver
+Database:.exploop
 
-DATABASE_URL: postgres://rediver:secret@localhost:5432/rediver
+DATABASE_URL: postgres:/.exploop:secret@localhost:5432.exploop
 ```
 
 #### Usage
@@ -935,10 +935,10 @@ DATABASE_URL: postgres://rediver:secret@localhost:5432/rediver
 chmod +x api/scripts/test_notification_outbox_e2e.sh
 
 # Option 1: Pass DATABASE_URL directly
-./api/scripts/test_notification_outbox_e2e.sh <tenant_id> 'postgres://rediver:secret@localhost:5432/rediver'
+./api/scripts/test_notification_outbox_e2e.sh <tenant_id> 'postgres:/.exploop:secret@localhost:5432.exploop'
 
 # Option 2: Set environment variable first
-export DATABASE_URL='postgres://rediver:secret@localhost:5432/rediver'
+export DATABASE_URL='postgres:/.exploop:secret@localhost:5432.exploop'
 ./api/scripts/test_notification_outbox_e2e.sh <tenant_id>
 ```
 
@@ -947,7 +947,7 @@ export DATABASE_URL='postgres://rediver:secret@localhost:5432/rediver'
 If you don't know the tenant_id, you can query the database:
 
 ```bash
-psql 'postgres://rediver:secret@localhost:5432/rediver' -c "SELECT id, name FROM tenants LIMIT 5;"
+psql 'postgres:/.exploop:secret@localhost:5432.exploop' -c "SELECT id, name FROM tenants LIMIT 5;"
 ```
 
 #### How the Script Works

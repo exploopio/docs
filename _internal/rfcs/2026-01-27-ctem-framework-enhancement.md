@@ -413,7 +413,7 @@ package service
 
 import (
     "time"
-    "github.com/rediverio/api/internal/domain/shared"
+    "github.com/exploopio/api/internal/domain/shared"
 )
 
 // Service represents a network service running on an asset
@@ -582,7 +582,7 @@ package asset
 
 import (
     "time"
-    "github.com/rediverio/api/internal/domain/shared"
+    "github.com/exploopio/api/internal/domain/shared"
 )
 
 // AssetStateChange represents a tracked change in asset state

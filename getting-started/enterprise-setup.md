@@ -64,8 +64,8 @@ This guide covers enterprise deployment with:
 
 ```yaml
 # PostgreSQL with required extensions
-CREATE DATABASE rediver;
-\c rediver
+CREATE DATABASE.exploop;
+\c.exploop
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 ```
@@ -103,7 +103,7 @@ See [Keycloak Setup Guide](../ui/features/auth/KEYCLOAK_SETUP.md) for full confi
 ### 2.1 Create Namespace
 
 ```bash
-kubectl create namespace rediver
+kubectl create namespace.exploop
 ```
 
 ### 2.2 Configure Secrets
@@ -112,11 +112,11 @@ kubectl create namespace rediver
 apiVersion: v1
 kind: Secret
 metadata:
-  name: rediver-secrets
-  namespace: rediver
+  name:.exploop-secrets
+  namespace: exploop
 type: Opaque
 stringData:
-  DATABASE_URL: "postgres://user:pass@postgres:5432/rediver?sslmode=require"
+  DATABASE_URL: "postgres://user:pass@postgres:5432/exploop?sslmode=require"
   REDIS_URL: "redis://redis:6379"
   APP_ENCRYPTION_KEY: "your-32-byte-encryption-key-hex"
   JWT_SECRET: "your-jwt-secret-key"
@@ -141,7 +141,7 @@ Tenants are created via the API or Admin UI:
 
 ```bash
 # Create tenant via API
-curl -X POST https://api.rediver.io/api/v1/tenants \
+curl -X POST https://api.exploop.io/api/v1/tenants \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -d '{
     "name": "Acme Corp",
@@ -189,14 +189,14 @@ Configure OIDC provider (Keycloak, Okta, Azure AD):
 ```env
 # API Configuration
 AUTH_MODE=oidc
-OIDC_ISSUER_URL=https://keycloak.example.com/realms/rediver
-OIDC_CLIENT_ID=rediver-api
+OIDC_ISSUER_URL=https://keycloak.example.com/realms.exploop
+OIDC_CLIENT_ID=exploop-api
 OIDC_CLIENT_SECRET=your-client-secret
 
 # UI Configuration
 NEXT_PUBLIC_AUTH_MODE=oidc
-NEXT_PUBLIC_OIDC_AUTHORITY=https://keycloak.example.com/realms/rediver
-NEXT_PUBLIC_OIDC_CLIENT_ID=rediver-ui
+NEXT_PUBLIC_OIDC_AUTHORITY=https://keycloak.example.com/realms.exploop
+NEXT_PUBLIC_OIDC_CLIENT_ID.exploop-ui
 ```
 
 ### 4.2 Role Mapping
@@ -205,9 +205,9 @@ Map OIDC roles to Rediver permissions:
 
 | OIDC Role | Rediver Role | Permissions |
 |-----------|--------------|-------------|
-| `rediver-admin` | Owner | Full access |
-| `rediver-user` | Member | Standard access |
-| `rediver-viewer` | Viewer | Read-only |
+| `exploop-admin` | Owner | Full access |
+| .exploop-user` | Member | Standard access |
+| .exploop-viewer` | Viewer | Read-only |
 
 See [Authentication Guide](../guides/authentication.md) for details.
 
@@ -221,7 +221,7 @@ See [Authentication Guide](../guides/authentication.md) for details.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rediver-api
+  name: exploop-api
 spec:
   replicas: 3
   strategy:
@@ -237,11 +237,11 @@ Configure PostgreSQL with read replicas:
 
 ```yaml
 primary:
-  host: postgres-primary.rediver.svc
+  host: postgres-primary.exploop.svc
 
 replicas:
-  - host: postgres-replica-1.rediver.svc
-  - host: postgres-replica-2.rediver.svc
+  - host: postgres-replica-1.exploop.svc
+  - host: postgres-replica-2.exploop.svc
 ```
 
 ### 5.3 Redis Cluster
@@ -282,9 +282,9 @@ Prometheus metrics exposed at `/metrics`:
 
 | Metric | Description |
 |--------|-------------|
-| `rediver_findings_total` | Total findings by severity |
-| `rediver_scans_total` | Scans by status |
-| `rediver_api_request_duration` | API latency |
+| .exploop_findings_total` | Total findings by severity |
+| .exploop_scans_total` | Scans by status |
+| .exploop_api_request_duration` | API latency |
 
 ### 6.3 Logging
 
@@ -330,6 +330,6 @@ See [Production Checklist](../ui/ops/PRODUCTION_CHECKLIST.md) for complete list.
 ## Support
 
 For enterprise support:
-- **Email:** enterprise@rediver.io
-- **Documentation:** [docs.rediver.io](https://docs.rediver.io)
-- **GitHub:** [github.com/rediverio](https://github.com/rediverio)
+- **Email:** enterprise@exploop.io
+- **Documentation:** [docs.exploop.io](https://docs.exploop.io)
+- **GitHub:** [github.com/exploopio](https://github.com/exploopio)

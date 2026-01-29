@@ -27,14 +27,14 @@ The Rediver Agent is available on both **GitHub Container Registry (GHCR)** and 
 
 ```bash
 # From Docker Hub (recommended)
-docker pull rediverio/agent:latest
-docker pull rediverio/agent:slim
-docker pull rediverio/agent:ci
+docker pull exploopio/agent:latest
+docker pull exploopio/agent:slim
+docker pull exploopio/agent:ci
 
 # From GitHub Container Registry
-docker pull ghcr.io/rediverio/agent:latest
-docker pull ghcr.io/rediverio/agent:slim
-docker pull rediverio/agent:ci
+docker pull ghcr.io/exploopio/agent:latest
+docker pull ghcr.io/exploopio/agent:slim
+docker pull exploopio/agent:ci
 ```
 
 ---
@@ -45,22 +45,22 @@ docker pull rediverio/agent:ci
 
 ```bash
 # Scan current directory with all tools
-docker run --rm -v $(pwd):/scan rediverio/agent:latest \
+docker run --rm -v $(pwd):/scan exploopio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -verbose
 
 # Scan specific directory
-docker run --rm -v /path/to/project:/scan rediverio/agent:latest \
+docker run --rm -v /path/to/project:/scan exploopio/agent:latest \
     -tool semgrep -target /scan
 
 # Push results to Rediver platform
 docker run --rm -v $(pwd):/scan \
-    -e API_URL=https://api.rediver.io \
+    -e API_URL=https://api.exploop.io \
     -e API_KEY=your-api-key \
-    rediverio/agent:latest \
+    exploopio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 
 # Generate JSON and SARIF output
-docker run --rm -v $(pwd):/scan rediverio/agent:latest \
+docker run --rm -v $(pwd):/scan exploopio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan \
     -json -output /scan/results.json \
     -sarif -sarif-output /scan/results.sarif
@@ -69,7 +69,7 @@ docker run --rm -v $(pwd):/scan rediverio/agent:latest \
 ### Check Tool Installation
 
 ```bash
-docker run --rm ghcr.io/rediverio/agent:latest -check-tools
+docker run --rm ghcr.io/exploopio/agent:latest -check-tools
 ```
 
 Output:
@@ -99,12 +99,12 @@ The full image includes:
 ```dockerfile
 # Base: python:3.12-slim
 # Size: ~500MB
-# User: non-root (rediver)
+# User: non-root (exploop)
 ```
 
 **Usage:**
 ```bash
-docker run --rm -v $(pwd):/scan ghcr.io/rediverio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan
 ```
 
@@ -126,7 +126,7 @@ docker run --rm \
     -v /usr/local/bin/semgrep:/usr/local/bin/semgrep:ro \
     -v /usr/local/bin/gitleaks:/usr/local/bin/gitleaks:ro \
     -v /usr/local/bin/trivy:/usr/local/bin/trivy:ro \
-    ghcr.io/rediverio/agent:slim \
+    ghcr.io/exploopio/agent:slim \
     -tools semgrep,gitleaks,trivy -target /scan
 ```
 
@@ -149,7 +149,7 @@ docker run --rm \
     -v $(pwd):/github/workspace \
     -e GITHUB_ACTIONS=true \
     -e GITHUB_TOKEN=$GITHUB_TOKEN \
-    rediverio/agent:ci \
+    exploopio/agent:ci \
     -tools semgrep,gitleaks,trivy -target . -auto-ci
 ```
 
@@ -164,7 +164,7 @@ Use docker-compose for local development and testing.
 ```yaml
 services:
   scan:
-    image: ghcr.io/rediverio/agent:latest
+    image: ghcr.io/exploopio/agent:latest
     volumes:
       - ./:/scan:ro
       - scan-cache:/cache
@@ -175,7 +175,7 @@ services:
     command: ["-tools", "semgrep,gitleaks,trivy", "-target", "/scan", "-verbose"]
 
   agent:
-    image: ghcr.io/rediverio/agent:latest
+    image: ghcr.io/exploopio/agent:latest
     volumes:
       - ./:/scan:ro
       - ./config.yaml:/config/config.yaml:ro
@@ -236,7 +236,7 @@ jobs:
           fetch-depth: 0  # Full history for diff-based scanning
 
       - name: Run Rediver Security Scan
-        uses: docker://rediverio/agent:ci
+        uses: docker://exploopio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -278,7 +278,7 @@ stages:
 
 security-scan:
   stage: security
-  image: rediverio/agent:ci
+  image: exploopio/agent:ci
   variables:
     GIT_DEPTH: 0
     GITLAB_TOKEN: $CI_JOB_TOKEN
@@ -315,7 +315,7 @@ security-scan:
 pipeline {
     agent {
         docker {
-            image 'rediverio/agent:ci'
+            image 'exploopio/agent:ci'
         }
     }
 
@@ -381,10 +381,10 @@ docker run --rm \
     -v $(pwd)/config.yaml:/config/config.yaml:ro \
     -v app-cache:/cache \
     -v $(pwd)/output:/output \
-    -e API_URL=https://api.rediver.io \
+    -e API_URL=https://api.exploop.io \
     -e API_KEY=your-api-key \
     -e WORKER_ID=scanner-001 \
-    ghcr.io/rediverio/agent:latest \
+    ghcr.io/exploopio/agent:latest \
     -config /config/config.yaml \
     -target /scan \
     -push \
@@ -399,7 +399,7 @@ docker run --rm \
 ### Extend the Base Image
 
 ```dockerfile
-FROM ghcr.io/rediverio/agent:latest
+FROM ghcr.io/exploopio/agent:latest
 
 # Add custom tools
 RUN apt-get update && apt-get install -y \
@@ -417,7 +417,7 @@ CMD ["-daemon", "-config", "/config/your-config.yaml"]
 
 ```bash
 # Clone repository
-git clone https://github.com/rediverio/sdk.git
+git clone https://github.com/exploopio/sdk.git
 cd sdk
 
 # Build images
@@ -445,7 +445,7 @@ docker run --rm --user root -v $(pwd):/scan ...
 
 ```bash
 # Add safe directory inside container
-docker run --rm -v $(pwd):/scan ghcr.io/rediverio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
     sh -c "git config --global --add safe.directory /scan && agent -tool semgrep -target /scan"
 ```
 
@@ -453,7 +453,7 @@ docker run --rm -v $(pwd):/scan ghcr.io/rediverio/agent:latest \
 
 ```bash
 # Force update trivy database
-docker run --rm -v trivy-cache:/cache ghcr.io/rediverio/agent:latest \
+docker run --rm -v trivy-cache:/cache ghcr.io/exploopio/agent:latest \
     sh -c "trivy image --download-db-only"
 ```
 

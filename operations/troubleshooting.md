@@ -20,7 +20,7 @@ docker compose logs -f [service_name]
 curl http://localhost:8080/health
 
 # Database connection
-docker compose exec postgres pg_isready -U rediver
+docker compose exec postgres pg_isready -U.exploop
 
 # Redis connection
 docker compose exec redis redis-cli ping
@@ -117,14 +117,14 @@ failed to connect to database: dial tcp 127.0.0.1:5432: connect: connection refu
    # In .env file
    DB_HOST=localhost      # Use 'postgres' if running in Docker network
    DB_PORT=5432
-   DB_USER=rediver
+   DB_USER.exploop
    DB_PASSWORD=secret
-   DB_NAME=rediver
+   DB_NAME.exploop
    ```
 
 3. **Test connection manually:**
    ```bash
-   docker compose exec postgres psql -U rediver -d rediver -c "SELECT 1"
+   docker compose exec postgres psql -U.exploop -d.exploop -c "SELECT 1"
    ```
 
 4. **Restart PostgreSQL:**
@@ -180,7 +180,7 @@ migration failed: error executing migration
 
 3. **Drop and recreate (development only):**
    ```bash
-   docker compose exec postgres psql -U rediver -c "DROP DATABASE rediver; CREATE DATABASE rediver;"
+   docker compose exec postgres psql -U.exploop -c "DROP DATABASE.exploop; CREATE DATABASE.exploop;"
    make migrate-up
    ```
 
@@ -515,7 +515,7 @@ DEBUG=* npm run dev
 
 ```bash
 # Connect to database
-docker compose exec postgres psql -U rediver -d rediver
+docker compose exec postgres psql -U.exploop -d.exploop
 
 # View active connections
 SELECT * FROM pg_stat_activity;
@@ -531,7 +531,7 @@ SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 If you can't resolve the issue:
 
 1. **Search existing issues:**
-   - [GitHub Issues](https://github.com/rediverio/api/issues)
+   - [GitHub Issues](https://github.com/exploopio/api/issues)
 
 2. **Create a new issue with:**
    - OS and version

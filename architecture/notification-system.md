@@ -7,7 +7,7 @@ nav_order: 6
 
 # Notification System Architecture
 
-Technical architecture for the real-time notification system in Rediver CTEM Platform.
+Technical architecture for the real-time notification system in Exploop CTEM Platform.
 
 ---
 

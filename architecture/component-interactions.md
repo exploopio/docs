@@ -7,7 +7,7 @@ nav_order: 2
 
 # Component Interactions
 
-This document provides a comprehensive overview of how all major components in the Rediver CTEM Platform interact with each other.
+This document provides a comprehensive overview of how all major components in the Exploop CTEM Platform interact with each other.
 
 ---
 
@@ -620,7 +620,7 @@ User → Scan Definition → Schedule/Trigger → Command Queue → Agent Pollin
 
 ## Summary
 
-The Rediver CTEM Platform is built around these core interaction patterns:
+The Exploop CTEM Platform is built around these core interaction patterns:
 
 1. **Tenant Isolation**: All resources scoped by `tenant_id`, enforced at every layer
 2. **Configuration Reuse**: Scan Profiles define reusable configurations with quality gates

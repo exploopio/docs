@@ -7,9 +7,9 @@ nav_order: 2
 
 # API Reference
 
-Complete API reference for Rediver CTEM Platform.
+Complete API reference for Exploop CTEM Platform.
 
-**Base URL:** `http://localhost:8080` (development) | `https://api.rediver.io` (production)
+**Base URL:** `http://localhost:8080` (development) | `https://api.exploop.io` (production)
 
 ---
 

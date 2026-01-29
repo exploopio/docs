@@ -80,15 +80,15 @@ Rediver needs to support:
   - Added security validation unit tests
 
 - [x] **Phase 9: Admin CLI (kubectl-style)** - Completed 2026-01-26
-  - `cmd/rediver-admin/main.go` - CLI entry point
-  - `cmd/rediver-admin/cmd/root.go` - Root command with global flags
-  - `cmd/rediver-admin/cmd/config.go` - Config/context management
-  - `cmd/rediver-admin/cmd/client.go` - API client for admin endpoints
-  - `cmd/rediver-admin/cmd/get.go` - Get agents/jobs/tokens/admins
-  - `cmd/rediver-admin/cmd/describe.go` - Describe agent/job/token
-  - `cmd/rediver-admin/cmd/create.go` - Create agent/token/admin
-  - `cmd/rediver-admin/cmd/delete.go` - Delete agent/token
-  - `cmd/rediver-admin/cmd/operations.go` - drain/uncordon/revoke/cluster-info
+  - `cmd/exploop-admin/main.go` - CLI entry point
+  - `cmd/exploop-admin/cmd/root.go` - Root command with global flags
+  - `cmd/exploop-admin/cmd/config.go` - Config/context management
+  - `cmd/exploop-admin/cmd/client.go` - API client for admin endpoints
+  - `cmd/exploop-admin/cmd/get.go` - Get agents/jobs/tokens/admins
+  - `cmd/exploop-admin/cmd/describe.go` - Describe agent/job/token
+  - `cmd/exploop-admin/cmd/create.go` - Create agent/token/admin
+  - `cmd/exploop-admin/cmd/delete.go` - Delete agent/token
+  - `cmd/exploop-admin/cmd/operations.go` - drain/uncordon/revoke/cluster-info
   - `cmd/bootstrap-admin/main.go` - Bootstrap first admin user during deployment
 
 - [ ] **Phase 10: Integration Testing** - Pending
@@ -153,10 +153,10 @@ Rediver needs to support:
 - `api/internal/infra/http/middleware/metrics.go` - Security Prometheus metrics
 - `api/internal/infra/redis/job_notifier.go` - Redis Pub/Sub for job notifications
 - `api/tests/unit/security_validation_test.go` - Security validation tests
-- `api/cmd/rediver-admin/` - Admin CLI (kubectl-style):
+- `api/cmd/exploop-admin/` - Admin CLI (kubectl-style):
   - `main.go` - CLI entry point
   - `cmd/root.go` - Root command, global flags, version
-  - `cmd/config.go` - Config/context management (~/.rediver/config.yaml)
+  - `cmd/config.go` - Config/context management (~/.exploop/config.yaml)
   - `cmd/client.go` - HTTP client for admin API
   - `cmd/get.go` - Get commands for agents/jobs/tokens/admins
   - `cmd/describe.go` - Describe commands for detailed view

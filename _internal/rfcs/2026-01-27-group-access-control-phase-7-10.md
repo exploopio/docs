@@ -526,7 +526,7 @@ CREATE TABLE external_sync_configs (
     --   "organization": "my-org",
     --   "token_encrypted": "...",
     --   "team_mappings": [
-    --     {"github_team": "backend", "rediver_group": "api-team", "sync_members": true}
+    --     {"github_team": "backend", .exploop_group": "api-team", "sync_members": true}
     --   ],
     --   "codeowners_sync": true
     -- }

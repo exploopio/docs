@@ -8,7 +8,7 @@ permalink: /features/
 
 # Features
 
-Documentation for major features in the Rediver CTEM Platform.
+Documentation for major features in the Exploop CTEM Platform.
 
 ---
 

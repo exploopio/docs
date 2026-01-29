@@ -13,7 +13,7 @@ Configure notification channels to receive security alerts through Slack, Micros
 
 ## Overview
 
-RediverIO supports real-time notifications for security events. Notifications are triggered **internally by the system** when:
+Exploop supports real-time notifications for security events. Notifications are triggered **internally by the system** when:
 
 - New findings are discovered (via scans)
 - Critical/high severity vulnerabilities are detected
@@ -164,13 +164,13 @@ Send notifications to any HTTP endpoint. The payload format:
   "title": "Critical Vulnerability Detected",
   "body": "SQL Injection found in login.php",
   "severity": "critical",
-  "url": "https://app.rediver.io/findings/abc123",
+  "url": "https://app.exploop.io/findings/abc123",
   "fields": {
     "asset": "web-app-prod",
     "tool": "semgrep"
   },
   "color": "#dc2626",
-  "source": "rediver.io"
+  "source": "exploop.io"
 }
 ```
 

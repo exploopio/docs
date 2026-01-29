@@ -16,7 +16,7 @@ nav_order: 8
 
 ## Overview
 
-Scan Orchestration enables automated, scheduled, and pipeline-driven scan execution across the RediverIO CTEM platform. The architecture follows a **pull-based, event-driven** model inspired by Kubernetes but simplified for multi-tenant isolation.
+Scan Orchestration enables automated, scheduled, and pipeline-driven scan execution across the Exploop CTEM platform. The architecture follows a **pull-based, event-driven** model inspired by Kubernetes but simplified for multi-tenant isolation.
 
 ## Design Principles
 
@@ -233,7 +233,7 @@ func (h *CommandHandler) triggerPipelineProgression(ctx, cmd) {
 
 ## Why Not Kubernetes-Style Controllers?
 
-| K8s Pattern | RediverIO Equivalent | Why Simpler |
+| K8s Pattern | Exploop Equivalent | Why Simpler |
 |-------------|---------------------|-------------|
 | Scheduler (Filter→Score→Bind) | `FindAvailableWithTool()` | Simple query, tenant isolation |
 | Controller reconciliation loops | Event-driven `OnStepCompleted()` | More efficient, no polling |

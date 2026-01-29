@@ -4,7 +4,7 @@ title: SDK Development
 parent: Platform Guides
 nav_order: 8
 ---
-# Rediver SDK Development Guide
+# Exploop SDK Development Guide
 
 This guide shows how to use the **sdk** to build custom scanners, collectors, and agents.
 
@@ -28,7 +28,7 @@ The `sdk` provides a complete toolkit for building security scanning and data co
 ## Installation
 
 ```bash
-go get github.com/rediverio/sdk
+go get github.com/exploopio/sdk
 ```
 
 ---
@@ -44,7 +44,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -111,7 +111,7 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -157,7 +157,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -272,8 +272,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // MyToolParser parses output from my-tool
@@ -458,8 +458,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -476,7 +476,7 @@ func main() {
 
     // Create API client for pushing results
     pusher := client.New(&client.Config{
-        BaseURL: "https://api.rediver.io",
+        BaseURL: "https://api.exploop.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -531,7 +531,7 @@ The SDK includes a ready-to-use CLI:
 go build -o agent ./cmd/agent
 
 # Run single scan
-./agent -tool semgrep -target /path/to/project -api-url https://api.rediver.io -api-key $API_KEY
+./agent -tool semgrep -target /path/to/project -api-url https://api.exploop.io -api-key $API_KEY
 
 # Run as daemon with config file
 ./agent -daemon -config config.yaml
@@ -550,7 +550,7 @@ agent:
   verbose: true
 
 server:
-  base_url: https://api.rediver.io
+  base_url: https://api.exploop.io
   api_key: ${API_KEY}
   timeout: 30s
 
@@ -581,7 +581,7 @@ targets:
 ### Creating Reports Programmatically
 
 ```go
-import "github.com/rediverio/sdk/pkg/ris"
+import "github.com/exploopio/sdk/pkg/ris"
 
 // Create new report
 report := ris.NewReport()
@@ -635,7 +635,7 @@ report.Findings = append(report.Findings, ris.Finding{
 ### Converting SARIF to RIS
 
 ```go
-import "github.com/rediverio/sdk/pkg/ris"
+import "github.com/exploopio/sdk/pkg/ris"
 
 sarifData := []byte(`{"version": "2.1.0", ...}`)
 
@@ -693,8 +693,8 @@ import (
     "context"
     "fmt"
 
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
@@ -731,11 +731,11 @@ func main() {
 ## Pushing Results to Rediver
 
 ```go
-import "github.com/rediverio/sdk/pkg/client"
+import "github.com/exploopio/sdk/pkg/client"
 
 // Create API client
 c := client.New(&client.Config{
-    BaseURL: "https://api.rediver.io",
+    BaseURL: "https://api.exploop.io",
     APIKey:  os.Getenv("API_KEY"),
     Timeout: 30 * time.Second,
     Verbose: true,
@@ -844,8 +844,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -862,7 +862,7 @@ func main() {
 
     // Create API client (implements core.CommandClient)
     apiClient := client.New(&client.Config{
-        BaseURL:  "https://api.rediver.io",
+        BaseURL:  "https://api.exploop.io",
         APIKey:   os.Getenv("API_KEY"),
         SourceID: os.Getenv("SOURCE_ID"), // For tenant tracking
         Verbose:  true,
@@ -926,13 +926,13 @@ The Processor provides a complete scan-parse-push workflow.
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 // Create API client
 pusher := client.New(&client.Config{
-    BaseURL:  "https://api.rediver.io",
+    BaseURL:  "https://api.exploop.io",
     APIKey:   os.Getenv("API_KEY"),
     SourceID: "src_abc123",
 })
@@ -987,7 +987,7 @@ type Logger interface {
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
     "github.com/sirupsen/logrus"
 )
 
@@ -1046,7 +1046,7 @@ Validate configurations before use.
 ### Using the Validator
 
 ```go
-import "github.com/rediverio/sdk/pkg/core"
+import "github.com/exploopio/sdk/pkg/core"
 
 // Validate scanner config
 err := core.ValidateBaseScannerConfig(&core.BaseScannerConfig{
@@ -1105,7 +1105,7 @@ When pushing data to Rediver, tenant identification is done via API Key + Source
 ```go
 // Create client with Source ID
 client := client.New(&client.Config{
-    BaseURL:  "https://api.rediver.io",
+    BaseURL:  "https://api.exploop.io",
     APIKey:   "rs_src_xxxxxxxxxxxxxxxxxxxxxxxx", // Identifies tenant
     SourceID: "src_abc123def456",                // Identifies this scanner/agent
     Timeout:  30 * time.Second,
@@ -1116,7 +1116,7 @@ client := client.New(&client.Config{
 
 ```http
 POST /api/v1/ingest/findings HTTP/1.1
-Host: api.rediver.io
+Host: api.exploop.io
 Content-Type: application/json
 Authorization: Bearer rs_src_xxxxxxxxxxxxxxxxxxxxxxxx
 X-Rediver-Source-ID: src_abc123def456
@@ -1128,7 +1128,7 @@ User-Agent: sdk/1.0
 Sources should be registered via the Rediver API or UI before use:
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/sources \
+curl -X POST https://api.exploop.io/api/v1/sources \
   -H "Authorization: Bearer $USER_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1155,7 +1155,7 @@ The SDK can auto-detect CI environments (GitHub Actions, GitLab CI) and provide 
 ### Auto-Detection
 
 ```go
-import "github.com/rediverio/sdk/pkg/gitenv"
+import "github.com/exploopio/sdk/pkg/gitenv"
 
 // Auto-detect CI environment
 ci := gitenv.Detect()
@@ -1226,8 +1226,8 @@ Automatically determine whether to scan all files or only changed files based on
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/gitenv"
-    "github.com/rediverio/sdk/pkg/strategy"
+    "github.com/exploopio/sdk/pkg/gitenv"
+    "github.com/exploopio/sdk/pkg/strategy"
 )
 
 // Detect CI environment
@@ -1306,7 +1306,7 @@ type ScanHandler interface {
 ### Console Handler (Local Development)
 
 ```go
-import "github.com/rediverio/sdk/pkg/handler"
+import "github.com/exploopio/sdk/pkg/handler"
 
 // Simple handler that prints to console
 h := handler.NewConsoleHandler(true) // verbose=true
@@ -1326,13 +1326,13 @@ h.OnCompleted()
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/handler"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/handler"
 )
 
 // Create API client
 pusher := client.New(&client.Config{
-    BaseURL: "https://api.rediver.io",
+    BaseURL: "https://api.exploop.io",
     APIKey:  os.Getenv("API_KEY"),
 })
 
@@ -1416,8 +1416,8 @@ The SDK includes native scanner implementations with full parsing support.
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/scanners"
-    "github.com/rediverio/sdk/pkg/scanners/semgrep"
+    "github.com/exploopio/sdk/pkg/scanners"
+    "github.com/exploopio/sdk/pkg/scanners/semgrep"
 )
 
 // Create scanner with defaults
@@ -1461,8 +1461,8 @@ for _, f := range report.Findings {
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/scanners"
-    "github.com/rediverio/sdk/pkg/scanners/gitleaks"
+    "github.com/exploopio/sdk/pkg/scanners"
+    "github.com/exploopio/sdk/pkg/scanners/gitleaks"
 )
 
 // Create scanner with defaults
@@ -1497,8 +1497,8 @@ report, _ := parser.Parse(ctx, genericResult.RawOutput, nil)
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/scanners"
-    "github.com/rediverio/sdk/pkg/scanners/trivy"
+    "github.com/exploopio/sdk/pkg/scanners"
+    "github.com/exploopio/sdk/pkg/scanners/trivy"
 )
 
 // Create scanner with defaults (filesystem mode, vulnerability scanning)
@@ -1615,7 +1615,7 @@ for _, vuln := range result.Vulnerabilities {
 ### Scanner Registry
 
 ```go
-import "github.com/rediverio/sdk/pkg/scanners"
+import "github.com/exploopio/sdk/pkg/scanners"
 
 // Create registry with all built-in scanners
 registry := scanners.NewRegistry()
@@ -1659,9 +1659,9 @@ import (
     "context"
     "fmt"
 
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/scanners/recon/subfinder"
-    "github.com/rediverio/sdk/pkg/scanners/recon/httpx"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/scanners/recon/subfinder"
+    "github.com/exploopio/sdk/pkg/scanners/recon/httpx"
 )
 
 func main() {
@@ -1738,8 +1738,8 @@ Enrichers add threat intelligence data to findings.
 ```go
 import (
     "context"
-    "github.com/rediverio/sdk/pkg/enrichers/epss"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/enrichers/epss"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
@@ -1772,7 +1772,7 @@ func main() {
 ```go
 import (
     "context"
-    "github.com/rediverio/sdk/pkg/enrichers/kev"
+    "github.com/exploopio/sdk/pkg/enrichers/kev"
 )
 
 func main() {
@@ -1839,12 +1839,12 @@ import (
     "fmt"
     "os"
 
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/gitenv"
-    "github.com/rediverio/sdk/pkg/handler"
-    "github.com/rediverio/sdk/pkg/scanners"
-    "github.com/rediverio/sdk/pkg/scanners/semgrep"
-    "github.com/rediverio/sdk/pkg/strategy"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/gitenv"
+    "github.com/exploopio/sdk/pkg/handler"
+    "github.com/exploopio/sdk/pkg/scanners"
+    "github.com/exploopio/sdk/pkg/scanners/semgrep"
+    "github.com/exploopio/sdk/pkg/strategy"
 )
 
 func main() {
@@ -1867,7 +1867,7 @@ func main() {
 
     // 3. Initialize handler
     pusher := client.New(&client.Config{
-        BaseURL: "https://api.rediver.io",
+        BaseURL: "https://api.exploop.io",
         APIKey:  os.Getenv("API_KEY"),
     })
     h := handler.NewRemoteHandler(&handler.RemoteHandlerConfig{
@@ -1923,16 +1923,16 @@ The SDK includes a built-in retry queue for handling failed uploads. This ensure
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/retry"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/retry"
 )
 
 // Create client with retry enabled
 c := client.New(&client.Config{
-    BaseURL:       "https://api.rediver.io",
+    BaseURL:       "https://api.exploop.io",
     APIKey:        os.Getenv("API_KEY"),
     RetryEnabled:  true,                        // Enable retry queue
-    RetryQueueDir: "/var/lib/rediver/queue",    // Queue storage path
+    RetryQueueDir: "/var/lib/exploop/queue",    // Queue storage path
 })
 
 // Push findings - automatically queued on failure
@@ -1949,11 +1949,11 @@ defer c.Close()
 ### Manual Queue Management
 
 ```go
-import "github.com/rediverio/sdk/pkg/retry"
+import "github.com/exploopio/sdk/pkg/retry"
 
 // Create queue directly
 queue, _ := retry.NewFileQueue(&retry.FileQueueConfig{
-    StoragePath:   "/var/lib/rediver/queue",
+    StoragePath:   "/var/lib/exploop/queue",
     MaxItems:      10000,
     MaxItemAge:    7 * 24 * time.Hour, // 7 days
     FlushInterval: 5 * time.Second,
@@ -2012,7 +2012,7 @@ The SDK uses fingerprints to deduplicate findings. Both SDK and backend use the 
 ### Shared Fingerprint Package
 
 ```go
-import "github.com/rediverio/sdk/pkg/shared/fingerprint"
+import "github.com/exploopio/sdk/pkg/shared/fingerprint"
 
 // Generate fingerprint based on finding type
 fp := fingerprint.Generate(fingerprint.Input{
@@ -2088,11 +2088,11 @@ The SDK includes a metrics package for collecting and exposing application metri
 ### Basic Usage
 
 ```go
-import "github.com/rediverio/sdk/pkg/metrics"
+import "github.com/exploopio/sdk/pkg/metrics"
 
 // Create Prometheus collector with default metrics
 collector := metrics.NewPrometheusCollector(&metrics.PrometheusConfig{
-    Namespace:              "rediverio",
+    Namespace:              .exploopio",
     RegisterDefaultMetrics: true,
 })
 
@@ -2100,16 +2100,16 @@ collector := metrics.NewPrometheusCollector(&metrics.PrometheusConfig{
 metrics.SetDefaultCollector(collector)
 
 // Use metrics
-metrics.GetDefaultCollector().CounterInc("rediverio_scanner_scans_total", "scanner", "semgrep", "status", "success")
-metrics.GetDefaultCollector().HistogramObserve("rediverio_scanner_scan_duration_seconds", 45.5, "scanner", "semgrep")
-metrics.GetDefaultCollector().GaugeSet("rediverio_agent_active_jobs", 3)
+metrics.GetDefaultCollector().CounterInc(.exploopio_scanner_scans_total", "scanner", "semgrep", "status", "success")
+metrics.GetDefaultCollector().HistogramObserve(.exploopio_scanner_scan_duration_seconds", 45.5, "scanner", "semgrep")
+metrics.GetDefaultCollector().GaugeSet(.exploopio_agent_active_jobs", 3)
 ```
 
 ### Timer Helper
 
 ```go
 // Measure operation duration
-timer := metrics.NewTimer(collector, "rediverio_http_request_duration_seconds", "method", "GET", "host", "api.rediverio.com")
+timer := metrics.NewTimer(collector, .exploopio_http_request_duration_seconds", "method", "GET", "host", "api.exploopio.com")
 // ... do operation ...
 duration := timer.ObserveDuration() // Records to histogram and returns duration
 ```
@@ -2128,13 +2128,13 @@ http.ListenAndServe(":8080", nil)
 
 | Metric | Type | Description |
 |--------|------|-------------|
-| `rediverio_scanner_scans_total` | Counter | Total scans executed |
-| `rediverio_scanner_scan_duration_seconds` | Histogram | Scan duration |
-| `rediverio_scanner_findings_total` | Counter | Total findings discovered |
-| `rediverio_agent_jobs_total` | Counter | Total jobs processed |
-| `rediverio_agent_active_jobs` | Gauge | Currently executing jobs |
-| `rediverio_enricher_cache_hits_total` | Counter | Cache hits |
-| `rediverio_http_requests_total` | Counter | HTTP requests made |
+| .exploopio_scanner_scans_total` | Counter | Total scans executed |
+| .exploopio_scanner_scan_duration_seconds` | Histogram | Scan duration |
+| .exploopio_scanner_findings_total` | Counter | Total findings discovered |
+| .exploopio_agent_jobs_total` | Counter | Total jobs processed |
+| .exploopio_agent_active_jobs` | Gauge | Currently executing jobs |
+| .exploopio_enricher_cache_hits_total` | Counter | Cache hits |
+| .exploopio_http_requests_total` | Counter | HTTP requests made |
 
 ### In-Memory Collector (Testing)
 
@@ -2156,7 +2156,7 @@ The SDK provides a credential management system for secure storage and retrieval
 ### Store Interface
 
 ```go
-import "github.com/rediverio/sdk/pkg/credentials"
+import "github.com/exploopio/sdk/pkg/credentials"
 
 // Get credential from default store (environment variables)
 cred, err := credentials.Get(ctx, "github.token")
@@ -2242,7 +2242,7 @@ The SDK includes Kubernetes-compatible health check endpoints for liveness and r
 ### Basic Setup
 
 ```go
-import "github.com/rediverio/sdk/pkg/health"
+import "github.com/exploopio/sdk/pkg/health"
 
 // Create health handler with version info
 h := health.NewHandler(
@@ -2302,7 +2302,7 @@ health.SetReady(false)
 ```go
 // HTTP endpoint check
 h.Register("api", &health.HTTPCheck{
-    URL:     "https://api.rediver.io/health",
+    URL:     "https://api.exploop.io/health",
     Timeout: 5 * time.Second,
 })
 
@@ -2355,7 +2355,7 @@ The SDK provides unified severity mapping across different scanner formats.
 ### Shared Severity Package
 
 ```go
-import "github.com/rediverio/sdk/pkg/shared/severity"
+import "github.com/exploopio/sdk/pkg/shared/severity"
 
 // Parse severity from various formats
 level := severity.FromString("HIGH")      // From Trivy
@@ -2414,20 +2414,20 @@ The SDK provides Docker images for easy deployment. See the [Docker Deployment G
 
 ```bash
 # Run scan with Docker
-docker run --rm -v $(pwd):/scan ghcr.io/rediverio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -verbose
 
 # Check tools
-docker run --rm ghcr.io/rediverio/agent:latest -check-tools
+docker run --rm ghcr.io/exploopio/agent:latest -check-tools
 ```
 
 ### Available Images
 
 | Image | Description |
 |-------|-------------|
-| `ghcr.io/rediverio/agent:latest` | Full image with all tools |
-| `ghcr.io/rediverio/agent:slim` | Minimal (tools mounted) |
-| `ghcr.io/rediverio/agent:ci` | CI/CD optimized |
+| `ghcr.io/exploopio/agent:latest` | Full image with all tools |
+| `ghcr.io/exploopio/agent:slim` | Minimal (tools mounted) |
+| `ghcr.io/exploopio/agent:ci` | CI/CD optimized |
 
 ---
 
@@ -2440,7 +2440,7 @@ The SDK includes components for managing agent resources efficiently when runnin
 Prevent disk bloat by automatically cleaning up uploaded chunk data:
 
 ```go
-import "github.com/rediverio/sdk/pkg/chunk"
+import "github.com/exploopio/sdk/pkg/chunk"
 
 cfg := &chunk.Config{
     AutoCleanupOnUpload:     true,   // Delete data after upload
@@ -2459,7 +2459,7 @@ defer manager.Close()
 Separate scan and upload processes for non-blocking operations:
 
 ```go
-import "github.com/rediverio/sdk/pkg/pipeline"
+import "github.com/exploopio/sdk/pkg/pipeline"
 
 p := pipeline.NewPipeline(&pipeline.PipelineConfig{
     QueueSize:     1000,            // Max pending uploads
@@ -2487,7 +2487,7 @@ stats := p.GetStats()
 Monitor CPU/memory and throttle jobs when resources are constrained:
 
 ```go
-import "github.com/rediverio/sdk/pkg/resource"
+import "github.com/exploopio/sdk/pkg/resource"
 
 controller := resource.NewController(&resource.ControllerConfig{
     CPUThreshold:      85.0,              // Pause above 85% CPU
@@ -2515,12 +2515,12 @@ if controller.AcquireSlot(ctx) {
 Comprehensive structured logging for debugging and compliance:
 
 ```go
-import "github.com/rediverio/sdk/pkg/audit"
+import "github.com/exploopio/sdk/pkg/audit"
 
 logger, _ := audit.NewLogger(&audit.LoggerConfig{
     AgentID:  "agent-001",
     TenantID: "tenant-123",
-    LogFile:  "~/.rediver/audit.log",
+    LogFile:  "~/.exploop/audit.log",
     Verbose:  true,
 })
 
@@ -2555,7 +2555,7 @@ See [Agent Resource Management Architecture](../architecture/agent-resource-mana
 
 Full working examples are available in the SDK repository:
 
-- [`examples/custom-scanner`](https://github.com/rediverio/sdk/tree/main/examples/custom-scanner) - Custom scanner implementation
-- [`examples/semgrep-test`](https://github.com/rediverio/sdk/tree/main/examples/semgrep-test) - Semgrep scanner integration
-- [`examples/integration-test`](https://github.com/rediverio/sdk/tree/main/examples/integration-test) - API client integration
-- [`cmd/agent`](https://github.com/rediverio/sdk/tree/main/cmd/agent) - CLI agent
+- [`examples/custom-scanner`](https://github.com/exploopio/sdk/tree/main/examples/custom-scanner) - Custom scanner implementation
+- [`examples/semgrep-test`](https://github.com/exploopio/sdk/tree/main/examples/semgrep-test) - Semgrep scanner integration
+- [`examples/integration-test`](https://github.com/exploopio/sdk/tree/main/examples/integration-test) - API client integration
+- [`cmd/agent`](https://github.com/exploopio/sdk/tree/main/cmd/agent) - CLI agent

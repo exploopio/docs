@@ -30,7 +30,7 @@ This guide focuses on building **PUSH-based tools** (collectors and scanners).
 ### 1. Register Your Data Source
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/sources \
+curl -X POST https://api.exploop.io/api/v1/sources \
   -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -55,7 +55,7 @@ Response:
 ### 2. Push Data Using RIS Format
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/agent/ingest/ris \
+curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
   -H "Authorization: Bearer rs_live_xxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"report": ...}'
@@ -420,7 +420,7 @@ Rediver supports direct SARIF 2.1.0 ingestion - no conversion needed:
 
 ```bash
 # Push SARIF directly to Rediver
-curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -505,7 +505,7 @@ Standard SARIF 2.1.0 format supported:
 semgrep --config auto --sarif -o results.sarif .
 
 # Push to Rediver
-curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -517,7 +517,7 @@ curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
 codeql database analyze /path/to/db --format=sarif-latest --output=results.sarif
 
 # Push to Rediver
-curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -529,7 +529,7 @@ curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
 trivy fs --format sarif --output results.sarif .
 
 # Push to Rediver
-curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -541,7 +541,7 @@ curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
 gitleaks detect --report-format sarif --report-path results.sarif
 
 # Push to Rediver
-curl -X POST https://api.rediver.io/api/v1/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -576,8 +576,8 @@ If you prefer programmatic conversion:
 
 ```go
 import (
-    "github.com/rediverio/api/pkg/parsers/ris"
-    "github.com/rediverio/api/pkg/parsers/sarif"
+    "github.com/exploopio/api/pkg/parsers/ris"
+    "github.com/exploopio/api/pkg/parsers/sarif"
 )
 
 // Parse SARIF
@@ -605,7 +605,7 @@ risReport := ris.FromSARIF(sarifLog, &ris.SARIFConvertOptions{
 package main
 
 import (
-    "github.com/rediverio/api/pkg/parsers/ris"
+    "github.com/exploopio/api/pkg/parsers/ris"
 )
 
 func main() {
@@ -645,7 +645,7 @@ func main() {
 package main
 
 import (
-    "github.com/rediverio/api/pkg/parsers/ris"
+    "github.com/exploopio/api/pkg/parsers/ris"
 )
 
 func buildWeb3Finding() ris.Finding {
@@ -713,10 +713,10 @@ def create_ris_report(findings):
         "findings": findings
     }
 
-def push_to_rediver(report, api_key):
+def push_to.exploop(report, api_key):
     """Push RIS report to Rediver."""
     response = requests.post(
-        "https://api.rediver.io/api/v1/ingest/findings",
+        "https://api.exploop.io/api/v1/ingest/findings",
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -742,7 +742,7 @@ finding = {
 }
 
 report = create_ris_report([finding])
-result = push_to_rediver(report, "rs_live_xxxx")
+result = push_to.exploop(report, "rs_live_xxxx")
 print(result)
 ```
 
@@ -976,7 +976,7 @@ import threading
 def heartbeat_loop(api_key, interval=60):
     while True:
         requests.post(
-            "https://api.rediver.io/api/v1/ingest/heartbeat",
+            "https://api.exploop.io/api/v1/ingest/heartbeat",
             headers={"Authorization": f"Bearer {api_key}"},
             json={"status": "active"}
         )
@@ -1023,7 +1023,7 @@ Link findings to specific assets:
 
 ## Example: Complete Web3 Scanner
 
-See the full example at: [github.com/rediverio/examples/web3-scanner](https://github.com/rediverio/examples)
+See the full example at: [github.com/exploopio/examples/web3-scanner](https://github.com/exploopio/examples)
 
 ```go
 package main
@@ -1036,7 +1036,7 @@ import (
     "os"
     "os/exec"
 
-    "github.com/rediverio/api/pkg/parsers/ris"
+    "github.com/exploopio/api/pkg/parsers/ris"
 )
 
 func main() {
@@ -1074,7 +1074,7 @@ func pushToRediver(report *ris.Report, apiKey string) error {
     data, _ := json.Marshal(report)
 
     req, _ := http.NewRequest("POST",
-        "https://api.rediver.io/api/v1/ingest/findings",
+        "https://api.exploop.io/api/v1/ingest/findings",
         bytes.NewBuffer(data))
     req.Header.Set("Authorization", "Bearer "+apiKey)
     req.Header.Set("Content-Type", "application/json")

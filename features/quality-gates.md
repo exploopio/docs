@@ -276,7 +276,7 @@ jobs:
       - name: Run Rediver Scan
         id: scan
         run: |
-          RESULT=$(curl -s -X POST https://api.rediver.io/api/v1/scans \
+          RESULT=$(curl -s -X POST https://api.exploop.io/api/v1/scans \
             -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{
@@ -291,7 +291,7 @@ jobs:
 
           # Wait for scan completion and check quality gate
           while true; do
-            STATUS=$(curl -s "https://api.rediver.io/api/v1/scans/$SCAN_ID" \
+            STATUS=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
               -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
               | jq -r '.status')
 
@@ -302,7 +302,7 @@ jobs:
           done
 
           # Check quality gate result
-          PASSED=$(curl -s "https://api.rediver.io/api/v1/scans/$SCAN_ID" \
+          PASSED=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
             -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
             | jq -r '.quality_gate_result.passed')
 
@@ -320,7 +320,7 @@ security-scan:
   stage: test
   script:
     - |
-      RESULT=$(curl -s -X POST https://api.rediver.io/api/v1/scans \
+      RESULT=$(curl -s -X POST https://api.exploop.io/api/v1/scans \
         -H "Authorization: Bearer $REDIVER_TOKEN" \
         -H "Content-Type: application/json" \
         -d "{
@@ -334,7 +334,7 @@ security-scan:
 
       # Poll for completion
       while true; do
-        SCAN=$(curl -s "https://api.rediver.io/api/v1/scans/$SCAN_ID" \
+        SCAN=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
           -H "Authorization: Bearer $REDIVER_TOKEN")
         STATUS=$(echo $SCAN | jq -r '.status')
 
@@ -359,7 +359,7 @@ security-scan:
 
 ```bash
 # Run scan with quality gate check
-rediver scan --profile production-ci \
+exploop scan --profile production-ci \
   --target . \
   --branch main \
   --commit $(git rev-parse HEAD) \

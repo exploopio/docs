@@ -7,7 +7,7 @@ nav_order: 1
 
 # Admin UI User Guide
 
-Complete guide for using the Rediver Platform Admin UI to manage platform agents, jobs, tokens, and administrators.
+Complete guide for using the Exploop Platform Admin UI to manage platform agents, jobs, tokens, and administrators.
 
 ---
 
@@ -50,7 +50,7 @@ The Admin UI is a web-based management console for platform administrators. It p
 
 ### Accessing the Admin UI
 
-1. Navigate to your Admin UI URL (e.g., `https://admin.rediver.io`)
+1. Navigate to your Admin UI URL (e.g., `https://admin.exploop.io`)
 2. Enter your API key on the login page
 3. Click "Sign In"
 
@@ -86,7 +86,7 @@ docker compose exec api ./bootstrap-admin \
 
 ```bash
 # Create admin via CLI (requires existing admin API key)
-rediver-admin create admin --email=you@company.com --role=ops_admin
+exploop-admin create admin --email=you@company.com --role=ops_admin
 ```
 
 **Output:**
@@ -283,7 +283,7 @@ After creating a token, use it to register a platform agent:
 ```bash
 ./agent -platform \
   -bootstrap-token=<full-token> \
-  -api-url=https://api.rediver.io \
+  -api-url=https://api.exploop.io \
   -region=us-east-1
 ```
 

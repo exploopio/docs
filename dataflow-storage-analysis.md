@@ -2,7 +2,7 @@
 
 ## 1. Đánh Giá Hiện Trạng
 
-### 1.1 RIS Schema (Input Layer)
+### 1.1 EIS Schema (Input Layer)
 **File**: `api/pkg/parsers/ris/types.go`
 
 ```go
@@ -136,9 +136,9 @@ type FindingFlowLocation struct {
 
 ## 2. Gap Analysis
 
-### 2.1 RIS → Database Mapping Gaps
+### 2.1 EIS → Database Mapping Gaps
 
-| RIS DataFlow Field | Database Column | Status |
+| EIS DataFlow Field | Database Column | Status |
 |--------------------|-----------------|--------|
 | `Sources[]` | `location_type='source'` | ✅ Có thể lưu |
 | `Intermediates[]` | `location_type='intermediate'` | ✅ Có thể lưu |
@@ -153,7 +153,7 @@ type FindingFlowLocation struct {
 | `CallPath` | ❌ **THIẾU** | ⚠️ Cần thêm |
 | `Summary` | `message` | ✅ Mapping hiện có |
 
-| RIS DataFlowLocation Field | Database Column | Status |
+| EIS DataFlowLocation Field | Database Column | Status |
 |---------------------------|-----------------|--------|
 | `Path` | `file_path` | ✅ |
 | `Line`, `EndLine` | `start_line`, `end_line` | ✅ |
@@ -287,12 +287,12 @@ type FindingFlowLocation struct {
 }
 ```
 
-### 4.3 RIS → Domain Converter
+### 4.3 EIS → Domain Converter
 
 ```go
 // api/internal/app/ingest/dataflow_converter.go
 
-func ConvertRISDataFlowToFindingDataFlows(
+func ConvertEISDataFlowToFindingDataFlows(
     findingID shared.ID,
     risDataFlow *ris.DataFlow,
 ) ([]*vulnerability.FindingDataFlow, []*vulnerability.FindingFlowLocation, error) {
@@ -300,7 +300,7 @@ func ConvertRISDataFlowToFindingDataFlows(
         return nil, nil, nil
     }
 
-    // Create single FindingDataFlow from RIS DataFlow
+    // Create single FindingDataFlow from EIS DataFlow
     flow, err := vulnerability.NewFindingDataFlow(findingID, 0, risDataFlow.Summary, "essential")
     if err != nil {
         return nil, nil, err
@@ -320,28 +320,28 @@ func ConvertRISDataFlowToFindingDataFlows(
 
     // Convert sources
     for _, src := range risDataFlow.Sources {
-        loc := convertRISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSource, src)
+        loc := convertEISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSource, src)
         locations = append(locations, loc)
         stepIndex++
     }
 
     // Convert intermediates
     for _, inter := range risDataFlow.Intermediates {
-        loc := convertRISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeIntermediate, inter)
+        loc := convertEISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeIntermediate, inter)
         locations = append(locations, loc)
         stepIndex++
     }
 
     // Convert sanitizers
     for _, san := range risDataFlow.Sanitizers {
-        loc := convertRISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSanitizer, san)
+        loc := convertEISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSanitizer, san)
         locations = append(locations, loc)
         stepIndex++
     }
 
     // Convert sinks
     for _, sink := range risDataFlow.Sinks {
-        loc := convertRISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSink, sink)
+        loc := convertEISLocationToDomain(flow.ID(), stepIndex, vulnerability.LocationTypeSink, sink)
         locations = append(locations, loc)
         stepIndex++
     }
@@ -349,7 +349,7 @@ func ConvertRISDataFlowToFindingDataFlows(
     return []*vulnerability.FindingDataFlow{flow}, locations, nil
 }
 
-func convertRISLocationToDomain(
+func convertEISLocationToDomain(
     dataFlowID shared.ID,
     stepIndex int,
     locType string,
@@ -393,7 +393,7 @@ func convertRISLocationToDomain(
 
 ## 5. Tool Compatibility Matrix
 
-| Tool | Output Format | RIS Mapping | DB Storage |
+| Tool | Output Format | EIS Mapping | DB Storage |
 |------|--------------|-------------|------------|
 | **Semgrep OSS** | SARIF | `codeFlows` → `DataFlow` | ✅ Full |
 | **Semgrep Pro** | SARIF + Extended | Full taint info | ✅ Full |

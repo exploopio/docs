@@ -1204,7 +1204,7 @@ interface GitHubSyncConfig {
   // Team mapping
   team_mappings: {
     github_team: string;      // "backend-developers"
-    rediver_group: string;    // "api-team"
+   .exploop_group: string;    // "api-team"
     sync_members: boolean;    // Sync team members
     sync_repos: boolean;      // Sync repo access as ownership
   }[];

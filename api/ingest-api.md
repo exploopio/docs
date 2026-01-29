@@ -2371,7 +2371,7 @@ Content-Length: 0
 #### Installation
 
 ```bash
-go get github.com/rediverio/sdk
+go get github.com/exploopio/sdk
 ```
 
 #### Example 1: Basic RIS Ingestion
@@ -2385,14 +2385,14 @@ import (
     "log"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
     // Create client
     client := ingest.NewClient(
-        "https://api.rediver.io",
+        "https://api.exploop.io",
         "your-api-key-here",
     )
 
@@ -2451,12 +2451,12 @@ import (
     "context"
     "log"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     finding := ris.Finding{
         Type:       "vulnerability",
@@ -2560,12 +2560,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     secrets := []ris.Finding{
         {
@@ -2653,12 +2653,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     report := &ris.Report{
         Version: "1.0",
@@ -2729,12 +2729,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     findings := []ris.Finding{
         {
@@ -2810,12 +2810,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     finding := ris.Finding{
         Type:     "vulnerability",
@@ -2887,12 +2887,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     assets := []ris.Asset{
         {
@@ -3019,13 +3019,13 @@ import (
     "log"
     "time"
 
-    "github.com/rediverio/sdk/pkg/chunk"
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/chunk"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     // Generate large report with many findings
     findings := make([]ris.Finding, 50000)
@@ -3102,8 +3102,8 @@ import (
     "fmt"
     "log"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // generateFingerprint creates a fingerprint for a finding
@@ -3119,7 +3119,7 @@ func generateFingerprint(f ris.Finding) string {
 }
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
     ctx := context.Background()
 
     // Findings from scanner
@@ -3191,12 +3191,12 @@ import (
     "os"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     // Get PR context from CI environment
     prNumber := os.Getenv("PR_NUMBER")
@@ -3271,12 +3271,12 @@ import (
     "context"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     reconInput := &ris.ReconToRISInput{
         ScannerName:    "subfinder",
@@ -3354,12 +3354,12 @@ import (
     "net/http"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
 
     report := &ris.Report{
         Version: "1.0",
@@ -3424,9 +3424,9 @@ import (
     "path/filepath"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
-    "github.com/rediverio/sdk/pkg/ris"
-    "github.com/rediverio/sdk/pkg/scanners/codeql"
+    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/scanners/codeql"
 )
 
 func main() {
@@ -3461,7 +3461,7 @@ func main() {
     }
 
     // Ingest to Rediver
-    client := ingest.NewClient("https://api.rediver.io", "api-key")
+    client := ingest.NewClient("https://api.exploop.io", "api-key")
     result, err := client.IngestRIS(ctx, report)
     if err != nil {
         log.Fatalf("Ingestion failed: %v", err)
@@ -3483,7 +3483,7 @@ import (
     "runtime"
     "time"
 
-    "github.com/rediverio/sdk/pkg/ingest"
+    "github.com/exploopio/sdk/pkg/ingest"
     "github.com/shirou/gopsutil/v3/cpu"
     "github.com/shirou/gopsutil/v3/mem"
 )
@@ -3499,7 +3499,7 @@ type Agent struct {
 
 func NewAgent(apiKey string) *Agent {
     return &Agent{
-        client:    ingest.NewClient("https://api.rediver.io", apiKey),
+        client:    ingest.NewClient("https://api.exploop.io", apiKey),
         startTime: time.Now(),
         stopCh:    make(chan struct{}),
     }
@@ -3578,7 +3578,7 @@ func (a *Agent) Stop() {
 }
 
 func main() {
-    agent := NewAgent(os.Getenv("REDIVER_API_KEY"))
+    agent := NewAgent(os.Getenv("EXPLOOP_API_KEY"))
 
     // Start heartbeat every 30 seconds
     go agent.StartHeartbeat(30 * time.Second)
@@ -3595,12 +3595,12 @@ func main() {
 ### Python SDK (Coming Soon)
 
 ```python
-# Installation: pip install rediver-sdk
+# Installation: pip install.exploop-sdk
 
-from rediver import Client, RISReport, Finding, Location
+from.exploop import Client, RISReport, Finding, Location
 
 client = Client(
-    base_url="https://api.rediver.io",
+    base_url="https://api.exploop.io",
     api_key="your-api-key"
 )
 
@@ -3642,7 +3642,7 @@ print(f"Created {result.findings_created} findings")
 #### Basic RIS Ingestion
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/agent/ingest/ris \
+curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -3672,7 +3672,7 @@ curl -X POST https://api.rediver.io/api/v1/agent/ingest/ris \
 
 ```bash
 # Compress and send
-cat report.json | gzip | curl -X POST https://api.rediver.io/api/v1/agent/ingest/ris \
+cat report.json | gzip | curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Content-Encoding: gzip" \
@@ -3682,7 +3682,7 @@ cat report.json | gzip | curl -X POST https://api.rediver.io/api/v1/agent/ingest
 #### SARIF Ingestion
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/agent/ingest/sarif \
+curl -X POST https://api.exploop.io/api/v1/agent/ingest/sarif \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d @codeql-results.sarif
@@ -3691,7 +3691,7 @@ curl -X POST https://api.rediver.io/api/v1/agent/ingest/sarif \
 #### Check Fingerprints
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/ingest/check \
+curl -X POST https://api.exploop.io/api/v1/ingest/check \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"fingerprints": ["fp1", "fp2", "fp3"]}'
@@ -3700,7 +3700,7 @@ curl -X POST https://api.rediver.io/api/v1/ingest/check \
 #### Heartbeat
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/agent/heartbeat \
+curl -X POST https://api.exploop.io/api/v1/agent/heartbeat \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

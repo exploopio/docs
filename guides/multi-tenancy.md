@@ -6,7 +6,7 @@ nav_order: 2
 ---
 # Multi-Tenancy Guide
 
-Guide to multi-tenant architecture in the Rediver CTEM Platform.
+Guide to multi-tenant architecture in the Exploop CTEM Platform.
 
 ---
 
@@ -218,8 +218,8 @@ refresh_token + tenant_id → access_token
 ### 2. URL Structure
 Use tenant slug in URLs for SEO and UX:
 ```
-https://app.rediver.io/{tenant-slug}/dashboard
-https://app.rediver.io/{tenant-slug}/assets
+https://app.exploop.io/{tenant-slug}/dashboard
+https://app.exploop.io/{tenant-slug}/assets
 ```
 
 ### 3. Default Tenant

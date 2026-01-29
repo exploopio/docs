@@ -7,7 +7,7 @@ permalink: /
 
 # Rediver Documentation
 
-Welcome to the **Rediver Platform** documentation - a Continuous Threat Exposure Management (CTEM) platform for discovering assets, scanning vulnerabilities, and prioritizing remediation.
+Welcome to the **Exploop Platform** documentation - a Continuous Threat Exposure Management (CTEM) platform for discovering assets, scanning vulnerabilities, and prioritizing remediation.
 
 ---
 
@@ -131,9 +131,9 @@ Platform administration console:
 
 | Link | Description |
 |------|-------------|
-| [Platform](https://app.rediver.io) | Live platform |
-| [API Docs](https://api.rediver.io/docs) | Interactive API explorer |
-| [GitHub](https://github.com/rediverio) | Source code |
+| [Platform](https://app.exploop.io) | Live platform |
+| [API Docs](https://api.exploop.io/docs) | Interactive API explorer |
+| [GitHub](https://github.com/exploopio) | Source code |
 
 ---
 
@@ -149,4 +149,4 @@ Please refer to the [Contributing Guide](../CONTRIBUTING.md) for contribution gu
 
 ---
 
-**Questions?** Browse the sidebar or visit [docs.rediver.io](https://docs.rediver.io)
+**Questions?** Browse the sidebar or visit [docs.exploop.io](https://docs.exploop.io)

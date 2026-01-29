@@ -113,7 +113,7 @@
 package app
 
 import (
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // LegacyToRISConverter converts legacy IngestInput to RIS Report
@@ -242,7 +242,7 @@ func (c *LegacyToRISConverter) mapAssetType(legacyType string) string {
 package app
 
 import (
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // SARIFToRISConverter converts SARIF to RIS format
@@ -440,9 +440,9 @@ import (
     "net/http"
     "strings"
 
-    "github.com/rediverio/api/internal/app"
-    "github.com/rediverio/api/pkg/apierror"
-    "github.com/rediverio/api/pkg/logger"
+    "github.com/exploopio/api/internal/app"
+    "github.com/exploopio/api/pkg/apierror"
+    "github.com/exploopio/api/pkg/logger"
 )
 
 // UnifiedIngestHandler handles all ingestion HTTP requests.

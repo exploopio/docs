@@ -276,7 +276,7 @@ Query Parameters:
 ```bash
 # Create first super admin
 ./bootstrap-admin \
-  -db=postgres://user:pass@localhost/rediver \
+  -db=postgres://user:pass@localhost.exploop \
   -email=admin@example.com \
   -role=super_admin
 

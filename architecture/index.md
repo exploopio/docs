@@ -8,7 +8,7 @@ permalink: /architecture/
 
 # Architecture
 
-Technical architecture and design documentation for the Rediver CTEM Platform.
+Technical architecture and design documentation for the Exploop CTEM Platform.
 
 ---
 

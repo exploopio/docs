@@ -4,13 +4,13 @@ title: Getting Started
 nav_order: 1
 ---
 
-# Getting Started with RediverIO Platform
+# Getting Started with Exploop Platform
 
 Get your security platform running in **5 minutes**.
 
-## What is RediverIO?
+## What is Exploop?
 
-RediverIO is a **Continuous Threat Exposure Management (CTEM)** platform that helps you discover assets, scan for vulnerabilities, and prioritize remediation across your entire attack surface.
+Exploop is a **Continuous Threat Exposure Management (CTEM)** platform that helps you discover assets, scan for vulnerabilities, and prioritize remediation across your entire attack surface.
 
 **Key Capabilities:**
 - 🔍 **Asset Discovery** - Auto-discover repositories, cloud resources, smart contracts
@@ -34,8 +34,8 @@ RediverIO is a **Continuous Threat Exposure Management (CTEM)** platform that he
 
 ```bash
 # Clone the meta-repository
-git clone https://github.com/rediverio/rediver-platform.git rediverio
-cd rediverio
+git clone https://github.com/exploopio.exploop-platform.git.exploopio
+cd.exploopio
 
 # Initialize all sub-repositories (api, agent, ui, sdk)
 make setup
@@ -73,7 +73,7 @@ Open your browser:
 **URL:** [http://localhost:3000](http://localhost:3000)
 
 **Default Credentials:**
-- Email: `admin@rediver.io`
+- Email: `admin@exploop.io`
 - Password: `Admin123!`
 
 ---
@@ -95,7 +95,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://localhost:8080 \
   -e API_KEY=your-api-key-here \
-  rediverio/agent:latest \
+  exploopio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 ```
 
@@ -210,9 +210,9 @@ Expected response: `{"status":"ok"}`
 
 ## Need Help?
 
-- 📚 **Documentation:** [docs.rediver.io](https://docs.rediver.io)
-- 💬 **Discord:** [discord.gg/rediverio](https://discord.gg/rediverio)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/rediverio/rediver-platform/issues)
+- 📚 **Documentation:** [docs.exploop.io](https://docs.exploop.io)
+- 💬 **Discord:** [discord.gg/exploopio](https://discord.gg/exploopio)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/exploopio.exploop-platform/issues)
 
 ---
 

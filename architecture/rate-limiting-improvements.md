@@ -242,9 +242,9 @@ import (
     "sync"
     "time"
 
-    "github.com/rediverio/api/internal/config"
-    "github.com/rediverio/api/pkg/apierror"
-    "github.com/rediverio/api/pkg/logger"
+    "github.com/exploopio/api/internal/config"
+    "github.com/exploopio/api/pkg/apierror"
+    "github.com/exploopio/api/pkg/logger"
 )
 
 // AuthRateLimiter provides rate limiting for authentication endpoints

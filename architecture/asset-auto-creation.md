@@ -49,7 +49,7 @@ Assets are identified by their **canonical name** which includes the provider do
 
 | Provider | Format | Example |
 |----------|--------|---------|
-| GitHub | `github.com/{owner}/{repo}` | `github.com/rediverio/api` |
+| GitHub | `github.com/{owner}/{repo}` | `github.com/exploopio/api` |
 | GitHub Enterprise | `github.mycompany.com/{owner}/{repo}` | `github.mycompany.com/team/project` |
 | GitLab | `gitlab.com/{namespace}/{project}` | `gitlab.com/myorg/myrepo` |
 | GitLab Self-hosted | `gitlab.mycompany.com/{namespace}/{project}` | `gitlab.mycompany.com/team/project` |
@@ -297,10 +297,10 @@ jobs:
 
       - name: Push to Rediver
         env:
-          REDIVER_API_URL: ${{ secrets.REDIVER_API_URL }}
-          REDIVER_API_KEY: ${{ secrets.REDIVER_API_KEY }}
+          EXPLOOP_API_URL: ${{ secrets.EXPLOOP_API_URL }}
+          EXPLOOP_API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
         run: |
-          rediver-agent push --scanner gitleaks --file gitleaks-report.json
+          exploop-agent push --scanner gitleaks --file gitleaks-report.json
 ```
 
 The agent automatically:

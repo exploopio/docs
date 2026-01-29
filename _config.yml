@@ -1,7 +1,7 @@
 title: Rediver Documentation
 description: Continuous Threat Exposure Management (CTEM) Platform Documentation
 baseurl: ""
-url: "https://docs.rediver.io"
+url: "https://docs.exploop.io"
 
 # Build settings
 remote_theme: just-the-docs/just-the-docs@v0.10.0
@@ -25,26 +25,26 @@ search:
   button: true
 
 # Footer
-footer_content: "Copyright &copy; 2026 Rediver. <a href=\"https://rediver.io\">rediver.io</a> | <a href=\"mailto:rediverio@gmail.com\">Contact</a>"
+footer_content: "Copyright &copy; 2026 Rediver. <a href=\"https://exploop.io\">exploop.io</a> | <a href=\"mailto:exploopio@gmail.com\">Contact</a>"
 
 # Header links
 aux_links:
   "Platform":
-    - "https://app.rediver.io"
+    - "https://app.exploop.io"
   "API Docs":
-    - "https://api.rediver.io/docs"
+    - "https://api.exploop.io/docs"
   "GitHub":
-    - "https://github.com/rediverio"
+    - "https://github.com/exploopio"
 
 aux_links_new_tab: true
 
 # Navigation
 nav_external_links:
   - title: Platform
-    url: https://app.rediver.io
+    url: https://app.exploop.io
     opens_in_new_tab: true
   - title: API
-    url: https://api.rediver.io/docs
+    url: https://api.exploop.io/docs
     opens_in_new_tab: true
 
 # Back to top link

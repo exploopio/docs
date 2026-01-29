@@ -512,14 +512,14 @@ curl -X POST /api/v1/admin/bootstrap-tokens \
 
 ```bash
 # Environment variables for agent
-export REDIVER_API_URL=https://api.rediver.io
+export EXPLOOP_API_URL=https://api.exploop.io
 export REDIVER_BOOTSTRAP_TOKEN=abc123.0123456789abcdef
 export AGENT_NAME=scanner-us-east-1-01
 export AGENT_REGION=us-east-1
 export AGENT_CAPABILITIES=nuclei,nmap,trivy
 
 # Run agent
-./rediver-agent --platform
+./exploop-agent --platform
 ```
 
 ### Step 4: Configure Tenant Plan Limits

@@ -10,7 +10,7 @@ nav_order: 3
 ---
 # SDK & API Integration Architecture
 
-This document describes how the Rediver SDK integrates with the Backend API for multi-tenant security data ingestion.
+This document describes how the Exploop SDK integrates with the Backend API for multi-tenant security data ingestion.
 
 ---
 
@@ -104,7 +104,7 @@ This document describes how the Rediver SDK integrates with the Backend API for 
 
 ```http
 POST /api/v1/ingest/findings HTTP/1.1
-Host: api.rediver.io
+Host: api.exploop.io
 Content-Type: application/json
 Authorization: Bearer rs_src_xxxxxxxxxxxxxxxxxxxxxxxx
 X-Rediver-Source-ID: src_abc123def456
@@ -165,7 +165,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 ```go
 client := client.New(&client.Config{
-    BaseURL:  "https://api.rediver.io",
+    BaseURL:  "https://api.exploop.io",
     APIKey:   "rs_src_xxxxxxxxxxxxxxxxxxxxxxxx", // Source API key
     SourceID: "src_abc123def456",                // Registered source ID
     Timeout:  30 * time.Second,
@@ -184,7 +184,7 @@ agent:
   heartbeat_interval: 1m
 
 server:
-  base_url: https://api.rediver.io
+  base_url: https://api.exploop.io
   api_key: ${API_KEY}      # Source API key
   source_id: ${SOURCE_ID}  # Registered source ID
   timeout: 30s

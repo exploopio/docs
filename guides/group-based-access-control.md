@@ -7,7 +7,7 @@ nav_order: 6
 
 # Group-Based Access Control Guide
 
-Complete guide to the Group-based Access Control system in Rediver CTEM platform.
+Complete guide to the Group-based Access Control system in Exploop CTEM platform.
 
 ---
 

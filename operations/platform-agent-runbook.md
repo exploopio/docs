@@ -8,7 +8,7 @@ nav_order: 14
 
 # Platform Agent Operations Runbook
 
-Complete operations guide for deploying, monitoring, and troubleshooting Rediver Platform Agents.
+Complete operations guide for deploying, monitoring, and troubleshooting Exploop Platform Agents.
 
 **Last Updated:** 2026-01-26
 
@@ -85,29 +85,29 @@ Platform Agents are Rediver-managed scan agents that provide shared scanning cap
 docker ps | grep platform-agent
 
 # Check agent logs (last 100 lines)
-docker logs --tail 100 rediver-platform-agent
+docker logs --tail 100 exploop-platform-agent
 
 # Check agent metrics
-curl -s http://localhost:9100/metrics | grep rediver_agent
+curl -s http://localhost:9100/metrics | grep.exploop_agent
 
 # Check API connectivity
-curl -s https://api.rediver.io/health
+curl -s https://api.exploop.io/health
 
 # List all agents via CLI
-rediver-admin get agents
+exploop-admin get agents
 
 # Get specific agent status
-rediver-admin describe agent <agent-name>
+exploop-admin describe agent <agent-name>
 
 # Get cluster overview
-rediver-admin cluster-info
+exploop-admin cluster-info
 ```
 
 ### Quick Status Verification
 
 ```bash
 # Verify agent is online
-rediver-admin get agents | grep <agent-name>
+exploop-admin get agents | grep <agent-name>
 
 # Expected output:
 # NAME              STATUS   REGION      JOBS    LAST SEEN
@@ -136,32 +136,32 @@ rediver-admin get agents | grep <agent-name>
 
 ```bash
 # 1. Create bootstrap token
-rediver-admin create token --max-uses=1 --expires=1h
+exploop-admin create token --max-uses=1 --expires=1h
 
 # 2. Run agent container
 docker run -d \
-  --name rediver-platform-agent \
+  --name exploop-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.rediver.io \
+  -e API_URL=https://api.exploop.io \
   -e BOOTSTRAP_TOKEN=<token-from-step-1> \
   -e REGION=us-east-1 \
   -e CAPABILITIES=sast,sca,secrets \
   -e MAX_CONCURRENT_JOBS=5 \
-  -v agent-data:/home/rediver/.rediver \
+  -v agent-data:/home/exploop/.exploop \
   --memory=4g \
   --cpus=2 \
-  rediverio/agent:platform
+  exploopio/agent:platform
 
 # 3. Verify registration
-docker logs rediver-platform-agent | grep "registered"
-rediver-admin get agents
+docker logs exploop-platform-agent | grep "registered"
+exploop-admin get agents
 ```
 
 #### Using Pre-assigned API Key
 
 ```bash
 # 1. Create agent record
-rediver-admin create agent \
+exploop-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca,secrets \
@@ -171,14 +171,14 @@ rediver-admin create agent \
 
 # 2. Run agent container
 docker run -d \
-  --name rediver-platform-agent \
+  --name exploop-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.rediver.io \
+  -e API_URL=https://api.exploop.io \
   -e API_KEY=ragent_xxxxx \
-  -v agent-data:/home/rediver/.rediver \
+  -v agent-data:/home/exploop/.exploop \
   --memory=4g \
   --cpus=2 \
-  rediverio/agent:platform
+  exploopio/agent:platform
 ```
 
 ### Kubernetes Deployment
@@ -188,10 +188,10 @@ See [Platform Admin Guide - Kubernetes Deployment](../guides/platform-admin.md#k
 **Quick Helm Install:**
 
 ```bash
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --create-namespace \
-  --set apiUrl=https://api.rediver.io \
+  --set apiUrl=https://api.exploop.io \
   --set bootstrapToken=<token> \
   --set replicaCount=3 \
   --set agent.region=us-east-1
@@ -201,7 +201,7 @@ helm install platform-agent rediver/platform-agent \
 
 After deployment, verify:
 
-- [ ] Agent appears in `rediver-admin get agents`
+- [ ] Agent appears in `exploop-admin get agents`
 - [ ] Status shows `online`
 - [ ] Capabilities are correct
 - [ ] Jobs counter increments when jobs are assigned
@@ -251,12 +251,12 @@ After deployment, verify:
 
 | Metric | Type | Alert Threshold |
 |--------|------|-----------------|
-| `rediver_agent_status` | Gauge | != 1 (online) |
-| `rediver_agent_jobs_running` | Gauge | > max_jobs * 0.9 |
-| `rediver_agent_jobs_completed_total` | Counter | Rate = 0 for 10m |
-| `rediver_agent_jobs_failed_total` | Counter | Rate > 5/min |
-| `rediver_agent_heartbeat_latency_seconds` | Histogram | p99 > 5s |
-| `rediver_agent_lease_ttl_seconds` | Gauge | < 30s |
+| .exploop_agent_status` | Gauge | != 1 (online) |
+| .exploop_agent_jobs_running` | Gauge | > max_jobs * 0.9 |
+| .exploop_agent_jobs_completed_total` | Counter | Rate = 0 for 10m |
+| .exploop_agent_jobs_failed_total` | Counter | Rate > 5/min |
+| .exploop_agent_heartbeat_latency_seconds` | Histogram | p99 > 5s |
+| .exploop_agent_lease_ttl_seconds` | Gauge | < 30s |
 
 ### Prometheus Alerts
 
@@ -265,7 +265,7 @@ groups:
   - name: platform-agents
     rules:
       - alert: PlatformAgentOffline
-        expr: rediver_agent_status != 1
+        expr:.exploop_agent_status != 1
         for: 2m
         labels:
           severity: critical
@@ -273,7 +273,7 @@ groups:
           summary: "Platform agent {{ $labels.agent_name }} is offline"
 
       - alert: PlatformAgentHighLoad
-        expr: rediver_agent_jobs_running / rediver_agent_max_jobs > 0.9
+        expr:.exploop_agent_jobs_running /.exploop_agent_max_jobs > 0.9
         for: 5m
         labels:
           severity: warning
@@ -281,7 +281,7 @@ groups:
           summary: "Agent {{ $labels.agent_name }} at 90%+ capacity"
 
       - alert: PlatformAgentHighFailureRate
-        expr: rate(rediver_agent_jobs_failed_total[5m]) > 0.1
+        expr: rate.exploop_agent_jobs_failed_total[5m]) > 0.1
         for: 5m
         labels:
           severity: warning
@@ -289,7 +289,7 @@ groups:
           summary: "Agent {{ $labels.agent_name }} failure rate elevated"
 
       - alert: PlatformAgentLeaseExpiring
-        expr: rediver_agent_lease_ttl_seconds < 30
+        expr:.exploop_agent_lease_ttl_seconds < 30
         for: 1m
         labels:
           severity: critical
@@ -339,7 +339,7 @@ Key panels to include:
 **Diagnosis:**
 ```bash
 # Check container logs
-docker logs rediver-platform-agent 2>&1 | head -50
+docker logs exploop-platform-agent 2>&1 | head -50
 
 # Common errors:
 # "invalid bootstrap token" - Token expired or revoked
@@ -351,7 +351,7 @@ docker logs rediver-platform-agent 2>&1 | head -50
 
 | Error | Solution |
 |-------|----------|
-| Invalid bootstrap token | Create new token with `rediver-admin create token` |
+| Invalid bootstrap token | Create new token with `exploop-admin create token` |
 | Connection refused | Check API_URL, verify network connectivity |
 | Authentication failed | Verify API key, check if admin disabled agent |
 | TLS handshake failed | Ensure API URL uses HTTPS, check certificates |
@@ -366,15 +366,15 @@ docker logs rediver-platform-agent 2>&1 | head -50
 docker ps | grep platform-agent
 
 # Check recent logs
-docker logs --tail 50 rediver-platform-agent
+docker logs --tail 50 exploop-platform-agent
 
 # Check when agent was last seen
-rediver-admin describe agent <name>
+exploop-admin describe agent <name>
 ```
 
 **Solutions:**
 
-1. **Container crashed**: Restart with `docker restart rediver-platform-agent`
+1. **Container crashed**: Restart with `docker restart exploop-platform-agent`
 2. **Network partition**: Check connectivity to API
 3. **Lease expired**: Agent will auto-recover on restart
 4. **API overloaded**: Check API health, scale API if needed
@@ -386,13 +386,13 @@ rediver-admin describe agent <name>
 **Diagnosis:**
 ```bash
 # Check queue status
-rediver-admin cluster-info
+exploop-admin cluster-info
 
 # Check for available agents
-rediver-admin get agents | grep online
+exploop-admin get agents | grep online
 
 # Check job details
-rediver-admin describe job <job-id>
+exploop-admin describe job <job-id>
 ```
 
 **Solutions:**
@@ -402,7 +402,7 @@ rediver-admin describe job <job-id>
 | No online agents | Start/restart agents |
 | All agents at capacity | Scale up agents or increase max_jobs |
 | No matching capabilities | Deploy agents with required capabilities |
-| Agent draining | Uncordon agents: `rediver-admin uncordon agent <name>` |
+| Agent draining | Uncordon agents: `exploop-admin uncordon agent <name>` |
 
 ### High Job Failure Rate
 
@@ -411,13 +411,13 @@ rediver-admin describe job <job-id>
 **Diagnosis:**
 ```bash
 # Check failed jobs
-rediver-admin get jobs --status=failed
+exploop-admin get jobs --status=failed
 
 # Get failure details
-rediver-admin describe job <job-id>
+exploop-admin describe job <job-id>
 
 # Check agent logs during failure
-docker logs --since 1h rediver-platform-agent | grep -i error
+docker logs --since 1h exploop-platform-agent | grep -i error
 ```
 
 **Common Causes:**
@@ -434,10 +434,10 @@ docker logs --since 1h rediver-platform-agent | grep -i error
 **Diagnosis:**
 ```bash
 # Check container stats
-docker stats rediver-platform-agent
+docker stats exploop-platform-agent
 
 # Check system resources
-top -p $(pgrep -f "rediver.*agent")
+top -p $(pgrep -f .exploop.*agent")
 ```
 
 **Solutions:**
@@ -455,84 +455,84 @@ top -p $(pgrep -f "rediver.*agent")
 
 ```bash
 # Stop gracefully (finishes current jobs)
-docker stop --time=300 rediver-platform-agent
+docker stop --time=300 exploop-platform-agent
 
 # Force stop (abandons current jobs)
-docker kill rediver-platform-agent
+docker kill exploop-platform-agent
 
 # Start
-docker start rediver-platform-agent
+docker start exploop-platform-agent
 
 # Restart
-docker restart rediver-platform-agent
+docker restart exploop-platform-agent
 ```
 
 ### Draining for Maintenance
 
 ```bash
 # 1. Drain agent (stop accepting new jobs)
-rediver-admin drain agent <agent-name>
+exploop-admin drain agent <agent-name>
 
 # 2. Wait for current jobs to complete
-watch -n 5 'rediver-admin describe agent <agent-name> | grep Jobs'
+watch -n 5 'exploop-admin describe agent <agent-name> | grep Jobs'
 
 # 3. Once jobs = 0, perform maintenance
-docker stop rediver-platform-agent
+docker stop exploop-platform-agent
 # ... maintenance ...
-docker start rediver-platform-agent
+docker start exploop-platform-agent
 
 # 4. Resume operations
-rediver-admin uncordon agent <agent-name>
+exploop-admin uncordon agent <agent-name>
 ```
 
 ### Updating Agent Version
 
 ```bash
 # 1. Drain agent
-rediver-admin drain agent <agent-name>
+exploop-admin drain agent <agent-name>
 
 # 2. Wait for jobs to complete
 
 # 3. Stop and remove container
-docker stop rediver-platform-agent
-docker rm rediver-platform-agent
+docker stop exploop-platform-agent
+docker rm exploop-platform-agent
 
 # 4. Pull new image
-docker pull rediverio/agent:platform
+docker pull exploopio/agent:platform
 
 # 5. Start with same config
 docker run -d ... # (same docker run command as before)
 
 # 6. Uncordon
-rediver-admin uncordon agent <agent-name>
+exploop-admin uncordon agent <agent-name>
 ```
 
 ### Rolling Update (Kubernetes)
 
 ```bash
 # Update image version
-kubectl set image deployment/rediver-platform-agent \
-  agent=rediverio/agent:platform-v2.0.0 \
-  -n rediver
+kubectl set image deployment/exploop-platform-agent \
+  agent=exploopio/agent:platform-v2.0.0 \
+  -n exploop
 
 # Watch rollout
-kubectl rollout status deployment/rediver-platform-agent -n rediver
+kubectl rollout status deployment/exploop-platform-agent -n exploop
 ```
 
 ### Rotating Agent Credentials
 
 ```bash
 # 1. Create new agent record
-rediver-admin create agent --name=agent-us-east-1-new --region=us-east-1
+exploop-admin create agent --name=agent-us-east-1-new --region=us-east-1
 
 # 2. Update agent container with new key
 # (update API_KEY environment variable)
 
 # 3. Drain old agent
-rediver-admin drain agent agent-us-east-1
+exploop-admin drain agent agent-us-east-1
 
 # 4. Delete old agent record
-rediver-admin delete agent agent-us-east-1
+exploop-admin delete agent agent-us-east-1
 ```
 
 ---
@@ -547,14 +547,14 @@ Add more agent replicas to handle increased load:
 ```yaml
 services:
   platform-agent:
-    image: rediverio/agent:platform
+    image: exploopio/agent:platform
     deploy:
       replicas: 5  # Increase this
 ```
 
 **Kubernetes:**
 ```bash
-kubectl scale deployment/rediver-platform-agent --replicas=5 -n rediver
+kubectl scale deployment/exploop-platform-agent --replicas=5 -n exploop
 ```
 
 ### Vertical Scaling
@@ -566,7 +566,7 @@ docker run -d \
   --cpus=4 \          # Increase CPU
   --memory=8g \       # Increase memory
   -e MAX_CONCURRENT_JOBS=10 \  # More parallel jobs
-  rediverio/agent:platform
+  exploopio/agent:platform
 ```
 
 ### Auto-Scaling (Kubernetes)
@@ -576,19 +576,19 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: platform-agent-hpa
-  namespace: rediver
+  namespace: exploop
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: rediver-platform-agent
+    name: exploop-platform-agent
   minReplicas: 3
   maxReplicas: 10
   metrics:
     - type: Pods
       pods:
         metric:
-          name: rediver_agent_jobs_running
+          name:.exploop_agent_jobs_running
         target:
           type: AverageValue
           averageValue: 4  # Scale when avg > 4 jobs
@@ -618,8 +618,8 @@ spec:
 
 ### SEV1: All Agents Offline
 
-1. **Verify**: `rediver-admin get agents` - all showing offline?
-2. **Check API**: `curl https://api.rediver.io/health`
+1. **Verify**: `exploop-admin get agents` - all showing offline?
+2. **Check API**: `curl https://api.exploop.io/health`
 3. **If API down**: Escalate to API team
 4. **If API up**: Check agent logs for common errors
 5. **Recovery**: Restart all agent containers
@@ -627,12 +627,12 @@ spec:
 
 ### SEV2: High Failure Rate
 
-1. **Identify**: `rediver-admin get jobs --status=failed`
+1. **Identify**: `exploop-admin get jobs --status=failed`
 2. **Check patterns**: Same scanner? Same tenant? Same error?
 3. **Check logs**: Look for common errors in agent logs
 4. **Mitigate**: Drain affected agents if isolated
 5. **Fix**: Address root cause (scanner bug, resource exhaustion)
-6. **Retry**: `rediver-admin retry job <id>` for failed jobs
+6. **Retry**: `exploop-admin retry job <id>` for failed jobs
 
 ### Post-Incident
 
@@ -649,13 +649,13 @@ spec:
 
 ```bash
 # Cluster health
-rediver-admin cluster-info
+exploop-admin cluster-info
 
 # Agent status
-rediver-admin get agents
+exploop-admin get agents
 
 # Failed jobs (last 24h)
-rediver-admin get jobs --status=failed
+exploop-admin get jobs --status=failed
 ```
 
 ### Weekly Tasks
@@ -679,10 +679,10 @@ If using custom certificates:
 ```bash
 # 1. Update certificate files
 # 2. Restart agents to pick up new certs
-docker restart rediver-platform-agent
+docker restart exploop-platform-agent
 
 # Or for Kubernetes:
-kubectl rollout restart deployment/rediver-platform-agent -n rediver
+kubectl rollout restart deployment/exploop-platform-agent -n exploop
 ```
 
 ---

@@ -344,8 +344,8 @@ package app
 import (
     "context"
 
-    "github.com/rediverio/api/internal/domain/agent"
-    "github.com/rediverio/api/internal/domain/shared"
+    "github.com/exploopio/api/internal/domain/agent"
+    "github.com/exploopio/api/internal/domain/shared"
 )
 
 // PlatformAgentLimits contains the platform agent limits for a tenant.

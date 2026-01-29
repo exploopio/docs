@@ -10,7 +10,7 @@ nav_order: 12
 
 **Last Updated:** 2026-01-14
 
-Deploy Rediver Platform to a Staging environment.
+Deploy Exploop Platform to a Staging environment.
 
 ---
 
@@ -64,7 +64,7 @@ docker compose version
 ```bash
 # 1. Clone repository
 git clone <your-repo-url>
-cd rediverio
+cd.exploopio
 
 # 2. Create environment file
 cp .env.staging.example .env.staging
@@ -80,7 +80,7 @@ make staging-up-seed
 open http://localhost:3000
 
 # Login credentials:
-# Email: admin@rediver.io
+# Email: admin@exploop.io
 # Password: Password123
 ```
 
@@ -93,7 +93,7 @@ open http://localhost:3000
 ```bash
 # Clone the project
 git clone <your-repo-url>
-cd rediverio
+cd.exploopio
 
 # Verify structure
 ls -la
@@ -188,9 +188,9 @@ make docker-seed-vnsecurity
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DB_USER` | Yes | rediver | Database username |
+| `DB_USER` | Yes |.exploop | Database username |
 | `DB_PASSWORD` | Yes | - | Database password |
-| `DB_NAME` | Yes | rediver | Database name |
+| `DB_NAME` | Yes |.exploop | Database name |
 | `AUTH_JWT_SECRET` | Yes | - | JWT signing secret (min 64 chars) |
 | `CSRF_SECRET` | Yes | - | CSRF token secret (min 32 chars) |
 | `NEXT_PUBLIC_APP_URL` | Yes | http://localhost:3000 | Public URL |
@@ -262,7 +262,7 @@ cd api
 make docker-seed-vnsecurity
 
 # Verify
-docker compose exec postgres psql -U rediver -d rediver -c \
+docker compose exec postgres psql -U.exploop -d.exploop -c \
   "SELECT asset_type, COUNT(*) FROM assets GROUP BY asset_type ORDER BY asset_type;"
 ```
 
@@ -270,7 +270,7 @@ docker compose exec postgres psql -U rediver -d rediver -c \
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@rediver.io | Password123 |
+| Admin | admin@exploop.io | Password123 |
 | User | nguyen.an@techviet.vn | Password123 |
 
 ---
@@ -485,11 +485,11 @@ docker compose version
 ```bash
 # Option 1: Git clone
 git clone <your-repo-url>
-cd rediverio
+cd.exploopio
 
 # Option 2: rsync from local
 rsync -avz --exclude 'node_modules' --exclude '.git' \
-  /path/to/rediverio/ user@server:/home/user/rediverio/
+  /path/to/exploopio/ user@server:/home/user/exploopio/
 ```
 
 ### Step 3: Configure for Server
@@ -536,7 +536,7 @@ sudo ufw enable
 sudo apt install nginx
 
 # Create config
-sudo nano /etc/nginx/sites-available/rediver
+sudo nano /etc/nginx/sites-available.exploop
 
 # Add:
 server {
@@ -557,7 +557,7 @@ server {
 }
 
 # Enable site
-sudo ln -s /etc/nginx/sites-available/rediver /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available.exploop /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -607,7 +607,7 @@ jobs:
           username: ${{ secrets.STAGING_USER }}
           key: ${{ secrets.STAGING_SSH_KEY }}
           script: |
-            cd ~/rediverio
+            cd ~.exploopio
             git pull origin develop
             make staging-rebuild
 ```
@@ -645,7 +645,7 @@ jobs:
 
 ## Support
 
-- **Issues:** https://github.com/your-org/rediver/issues
+- **Issues:** https://github.com/your-org/exploop/issues
 - **Documentation:** Check `docs/` folder in each service
 - **API Docs:** http://localhost:3000/api/docs (when running)
 {% endraw %}

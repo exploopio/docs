@@ -22,9 +22,9 @@ The database schema is organized into logical domains, supporting the clean arch
 
 | Environment | Host | Port | Database | User |
 |-------------|------|------|----------|------|
-| Development | `localhost` | `5432` | `rediver` | `postgres` |
-| Docker | `postgres` | `5432` | `rediver` | `postgres` |
-| Production | `<managed-db-host>` | `5432` | `rediver` | `<app-user>` |
+| Development | `localhost` | `5432` | .exploop` | `postgres` |
+| Docker | `postgres` | `5432` | .exploop` | `postgres` |
+| Production | `<managed-db-host>` | `5432` | .exploop` | `<app-user>` |
 
 ## Key Concepts
 

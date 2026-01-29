@@ -76,9 +76,9 @@ api/
 ```protobuf
 syntax = "proto3";
 
-package rediver.v1;
+package.exploop.v1;
 
-option go_package = "github.com/rediverio/api/api/proto/v1";
+option go_package = "github.com/exploopio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 
@@ -130,9 +130,9 @@ enum AgentStatus {
 ```protobuf
 syntax = "proto3";
 
-package rediver.v1;
+package.exploop.v1;
 
-option go_package = "github.com/rediverio/api/api/proto/v1";
+option go_package = "github.com/exploopio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "common.proto";
@@ -215,9 +215,9 @@ message ShutdownRequest {
 ```protobuf
 syntax = "proto3";
 
-package rediver.v1;
+package.exploop.v1;
 
-option go_package = "github.com/rediverio/api/api/proto/v1";
+option go_package = "github.com/exploopio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
@@ -307,9 +307,9 @@ message FailResponse {
 ```protobuf
 syntax = "proto3";
 
-package rediver.v1;
+package.exploop.v1;
 
-option go_package = "github.com/rediverio/api/api/proto/v1";
+option go_package = "github.com/exploopio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";

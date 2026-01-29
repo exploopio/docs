@@ -20,7 +20,7 @@ cp agent.yaml.template agent.yaml
 2. Update with your settings:
 ```yaml
 server:
-  base_url: "https://api.rediver.io"
+  base_url: "https://api.exploop.io"
   api_key: "your-api-key"
 ```
 
@@ -40,7 +40,7 @@ agent:
   name: "My Scanner"
 
 server:
-  base_url: "https://api.rediver.io"
+  base_url: "https://api.exploop.io"
   api_key: "your-api-key"
 
 scanners:
@@ -61,7 +61,7 @@ agent:
 
 # Platform Connection
 server:
-  base_url: "https://api.rediver.io"
+  base_url: "https://api.exploop.io"
   api_key: "your-api-key"
   worker_id: ""  # Auto-generated if empty
   timeout: 30s
@@ -263,15 +263,15 @@ agent -config agent.yaml -daemon -verbose
 docker run --rm \
   -v $(pwd):/scan \
   -v $(pwd)/agent.yaml:/config/agent.yaml \
-  rediverio/agent:latest \
+  exploopio/agent:latest \
   -config /config/agent.yaml -target /scan
 
 # With environment variables
 docker run --rm \
   -v $(pwd):/scan \
-  -e API_URL=https://api.rediver.io \
+  -e API_URL=https://api.exploop.io \
   -e API_KEY=your-key \
-  rediverio/agent:latest \
+  exploopio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push
 ```
 
@@ -355,7 +355,7 @@ platform:
 - **Lease expiry handling**: Jobs auto-cancel when lease expires
 - **Template security**: Path traversal prevention, size limits, hash verification
 
-See [SDK Security Guide](https://github.com/rediverio/sdk#security) for detailed information.
+See [SDK Security Guide](https://github.com/exploopio/sdk#security) for detailed information.
 
 ---
 
@@ -365,6 +365,6 @@ See [SDK Security Guide](https://github.com/rediverio/sdk#security) for detailed
 - [Data Flow Analysis Guide](data-flow-analysis.md) - Using attack path information
 - [Docker Deployment Guide](./docker-deployment.md)
 - [SDK Development Guide](./sdk-development.md)
-- [SDK Security Guide](https://github.com/rediverio/sdk#security)
+- [SDK Security Guide](https://github.com/exploopio/sdk#security)
 - [Agent Key Management](../architecture/agent-key-management.md)
-- [CI/CD Examples](https://github.com/rediverio/sdk/tree/main/examples/ci-cd)
+- [CI/CD Examples](https://github.com/exploopio/sdk/tree/main/examples/ci-cd)

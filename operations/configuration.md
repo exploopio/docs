@@ -21,7 +21,7 @@ Complete reference for all environment variables across ReDiver services.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `APP_NAME` | No | `rediver` | Application name for logging |
+| `APP_NAME` | No | .exploop` | Application name for logging |
 | `APP_ENV` | No | `development` | Environment: `development`, `staging`, `production` |
 | `APP_DEBUG` | No | `true` | Enable debug mode |
 
@@ -318,7 +318,7 @@ SECURE_COOKIES=false
 APP_ENV=staging
 APP_DEBUG=false
 LOG_LEVEL=info
-CORS_ALLOWED_ORIGINS=https://staging.rediver.io
+CORS_ALLOWED_ORIGINS=https://staging.exploop.io
 
 # Frontend
 NODE_ENV=production
@@ -332,7 +332,7 @@ SECURE_COOKIES=true
 APP_ENV=production
 APP_DEBUG=false
 LOG_LEVEL=warn
-CORS_ALLOWED_ORIGINS=https://rediver.io
+CORS_ALLOWED_ORIGINS=https://exploop.io
 DB_SSLMODE=require
 
 # Frontend
@@ -350,8 +350,8 @@ Configuration for the nginx reverse proxy that serves both UI and API domains.
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `NGINX_HOST` | Yes | `localhost` | UI domain (e.g., `rediver.io`) |
-| `API_HOST` | Yes | `api.localhost` | API domain (e.g., `api.rediver.io`) |
+| `NGINX_HOST` | Yes | `localhost` | UI domain (e.g., `exploop.io`) |
+| `API_HOST` | Yes | `api.localhost` | API domain (e.g., `api.exploop.io`) |
 
 ### Configuration by Environment
 
@@ -363,14 +363,14 @@ API_HOST=api.localhost
 
 #### Staging
 ```bash
-NGINX_HOST=staging.rediver.io
-API_HOST=api.staging.rediver.io
+NGINX_HOST=staging.exploop.io
+API_HOST=api.staging.exploop.io
 ```
 
 #### Production
 ```bash
-NGINX_HOST=rediver.io
-API_HOST=api.rediver.io
+NGINX_HOST=exploop.io
+API_HOST=api.exploop.io
 ```
 
 ### Rate Limiting
@@ -390,7 +390,7 @@ The API nginx configuration allows CORS requests from:
 - `localhost` (development)
 - `127.0.0.1` (development)
 - `${NGINX_HOST}` (UI domain)
-- `*.rediver.io` (all Rediver subdomains)
+- `*.exploop.io` (all Rediver subdomains)
 
 ### SSL Certificates
 

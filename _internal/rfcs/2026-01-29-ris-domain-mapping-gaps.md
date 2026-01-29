@@ -315,7 +315,7 @@ func TestIngest_AllFieldsPreserved_Secret(t *testing.T) {
 
 ## References
 
-- [RIS Schema Types](/home/ubuntu/rediverio/sdk/pkg/ris/types.go)
-- [Domain Finding Entity](/home/ubuntu/rediverio/api/internal/domain/vulnerability/finding.go)
-- [Ingest Processor](/home/ubuntu/rediverio/api/internal/app/ingest/processor_findings.go)
-- [JSON Schemas](/home/ubuntu/rediverio/schemas/ris/v1/)
+- [RIS Schema Types](/home/ubuntu/exploopio/sdk/pkg/ris/types.go)
+- [Domain Finding Entity](/home/ubuntu/exploopio/api/internal/domain/vulnerability/finding.go)
+- [Ingest Processor](/home/ubuntu/exploopio/api/internal/app/ingest/processor_findings.go)
+- [JSON Schemas](/home/ubuntu/exploopio/schemas/ris/v1/)

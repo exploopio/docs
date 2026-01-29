@@ -1,22 +1,22 @@
 ---
 layout: default
-title: Rediver CTEM Platform
+title: Exploop CTEM Platform
 nav_exclude: true
 search_exclude: true
 ---
 
-# Rediver CTEM Platform
+# Exploop CTEM Platform
 
 **Continuous Threat Exposure Management Platform**
 
 Unified Attack Surface Management & Vulnerability Management
 
-[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://github.com/rediverio/api)
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)](https://github.com/rediverio/ui)
-[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/u/rediverio)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://github.com/exploopio/api)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)](https://github.com/exploopio/ui)
+[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/u.exploopio)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Website](https://rediver.io) | [Platform](https://app.rediver.io) | [API Docs](https://api.rediver.io/docs) | [Getting Started](./getting-started/)
+[Website](https://exploop.io) | [Platform](https://app.exploop.io) | [API Docs](https://api.exploop.io/docs) | [Getting Started](./getting-started/)
 
 ---
 
@@ -55,7 +55,7 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Rediver Platform                                │
+│                              Exploop Platform                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐ │
@@ -118,7 +118,7 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 | Document | Description |
 |----------|-------------|
 | [API Reference](./backend/api-reference) | Complete API endpoints |
-| [RIS Schema](https://github.com/rediverio/schemas) | Rediver Ingest Schema |
+| [RIS Schema](https://github.com/exploopio/schemas) | Rediver Ingest Schema |
 
 ### Operations
 | Document | Description |
@@ -132,8 +132,8 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 
 ```bash
 # Clone repository
-git clone https://github.com/rediverio/rediver.git
-cd rediver
+git clone https://github.com/exploopio.exploop.git
+cd.exploop
 
 # Configure
 cd api && cp .env.example .env && cd ..
@@ -145,9 +145,9 @@ docker compose up -d
 
 | Service | Local | Production |
 |---------|-------|------------|
-| Frontend | http://localhost:3000 | https://app.rediver.io |
-| Backend API | http://localhost:8080 | https://api.rediver.io |
-| API Docs | http://localhost:8080/docs | https://api.rediver.io/docs |
+| Frontend | http://localhost:3000 | https://app.exploop.io |
+| Backend API | http://localhost:8080 | https://api.exploop.io |
+| API Docs | http://localhost:8080/docs | https://api.exploop.io/docs |
 
 ---
 
@@ -166,14 +166,14 @@ docker compose up -d
 
 | Repository | Description |
 |------------|-------------|
-| [api](https://github.com/rediverio/api) | Backend REST API (Go) |
-| [ui](https://github.com/rediverio/ui) | Frontend Application (Next.js) |
-| [sdk](https://github.com/rediverio/sdk) | Go SDK for building tools |
-| [agent](https://github.com/rediverio/agent) | Security scanning agent |
-| [setup](https://github.com/rediverio/setup) | Deployment & Docker Compose |
-| [schemas](https://github.com/rediverio/schemas) | RIS JSON Schemas |
-| [keycloak](https://github.com/rediverio/keycloak) | Keycloak Configuration |
-| [docs](https://github.com/rediverio/docs) | Documentation (this repo) |
+| [api](https://github.com/exploopio/api) | Backend REST API (Go) |
+| [ui](https://github.com/exploopio/ui) | Frontend Application (Next.js) |
+| [sdk](https://github.com/exploopio/sdk) | Go SDK for building tools |
+| [agent](https://github.com/exploopio/agent) | Security scanning agent |
+| [setup](https://github.com/exploopio/setup) | Deployment & Docker Compose |
+| [schemas](https://github.com/exploopio/schemas) | RIS JSON Schemas |
+| [keycloak](https://github.com/exploopio/keycloak) | Keycloak Configuration |
+| [docs](https://github.com/exploopio/docs) | Documentation (this repo) |
 
 ---
 
@@ -181,9 +181,9 @@ docker compose up -d
 
 We welcome contributions! Please see:
 
-- [Contributing Guide](https://github.com/rediverio/api/blob/main/CONTRIBUTING.md)
-- [Code of Conduct](https://github.com/rediverio/api/blob/main/CODE_OF_CONDUCT.md)
-- [Security Policy](https://github.com/rediverio/api/blob/main/SECURITY.md)
+- [Contributing Guide](https://github.com/exploopio/api/blob/main/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/exploopio/api/blob/main/CODE_OF_CONDUCT.md)
+- [Security Policy](https://github.com/exploopio/api/blob/main/SECURITY.md)
 
 ---
 
@@ -201,12 +201,12 @@ If you find Rediver useful, consider supporting the project:
 
 ## 📧 Contact
 
-- **Website:** https://rediver.io
-- **Email:** rediverio@gmail.com
-- **GitHub:** https://github.com/rediverio
+- **Website:** https://exploop.io
+- **Email:** exploopio@gmail.com
+- **GitHub:** https://github.com/exploopio
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](https://github.com/rediverio/api/blob/main/LICENSE)
+MIT License - see [LICENSE](https://github.com/exploopio/api/blob/main/LICENSE)

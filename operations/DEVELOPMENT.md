@@ -7,11 +7,11 @@ nav_order: 10
 
 # Development Guide
 
-This guide details the workflow for developing on the RediverIO platform.
+This guide details the workflow for developing on the Exploop platform.
 
 ## Architecture Overview
 
-RediverIO follows a Polyrepo structure managed via a central Workspace (Meta-Repo).
+Exploop follows a Polyrepo structure managed via a central Workspace (Meta-Repo).
 
 *   **API**: Core business logic and REST endpoints.
 *   **Agent**: Distributed security scanner that runs on customer infrastructure/CI.
@@ -25,13 +25,13 @@ We avoid Git Submodules in favor of a simpler "Meta-Repo" approach handling by `
 ### Directory Layout
 
 ```
-rediverio/               # Root Workspace (Meta-Repo)
+exploopio/               # Root Workspace (Meta-Repo)
 ├── Makefile             # Global orchestration
 ├── go.work              # Go Workspace config
 ├── setup-workspace.sh   # Ops script
-├── api/                 # -> git@github.com:rediverio/api.git
-├── agent/               # -> git@github.com:rediverio/agent.git
-├── sdk/                 # -> git@github.com:rediverio/sdk.git
+├── api/                 # -> git@github.com:exploopio/api.git
+├── agent/               # -> git@github.com:exploopio/agent.git
+├── sdk/                 # -> git@github.com:exploopio/sdk.git
 └── ...
 ```
 
@@ -56,7 +56,7 @@ If you need to add a feature to `sdk` and use it in `api`:
 3.  Because `go.work` exists in root, the `api` build will automatically use your local `sdk` code.
     ```go
     // In api/main.go
-    import "github.com/rediverio/sdk/pkg/newfeature" // Works immediately!
+    import "github.com/exploopio/sdk/pkg/newfeature" // Works immediately!
     ```
 4.  **Commit Sequence:**
     *   Commit & Push `sdk` first.
@@ -65,7 +65,7 @@ If you need to add a feature to `sdk` and use it in `api`:
 
         ```bash
         cd api
-        go get github.com/rediverio/sdk@latest
+        go get github.com/exploopio/sdk@latest
         ```
     *   Commit & Push `api`.
 
@@ -151,7 +151,7 @@ make down      # Stop everything
 ### Go Module Issues
 
 If VSCode complains about modules:
-1.  Open the **Root Folder** (`rediverio/`).
+1.  Open the **Root Folder** (`exploopio/`).
 2.  Run `go work sync`.
 3.  Restart VSCode/Go Language Server.
 
@@ -169,7 +169,7 @@ docker system prune -a
 
 ### Overview
 
-RediverIO uses a **hybrid JWT + Redis permission system**:
+Exploop uses a **hybrid JWT + Redis permission system**:
 - **JWT tokens** contain minimal user identity (~200 bytes)
 - **Permissions** are fetched from Redis cache (<1ms) or PostgreSQL
 

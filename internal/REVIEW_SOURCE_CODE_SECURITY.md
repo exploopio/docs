@@ -207,7 +207,7 @@ h.logger.Info("activities accessed",
 
 #### Issue #8: CI Template Exposes API Key Pattern
 
-**Location**: `ci/gitlab/rediver-security.yml`
+**Location**: `ci/gitlab/exploop-security.yml`
 
 **Problem**: Template shows where API keys are stored (`$REDIVER_API_TOKEN`), making it easier for attackers to target.
 

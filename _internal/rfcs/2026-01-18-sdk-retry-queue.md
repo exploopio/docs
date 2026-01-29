@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for a **persistent retry queue** in the Rediver SDK. The goal is to ensure that scan data is never lost due to temporary network failures or server unavailability.
+This document outlines the implementation plan for a **persistent retry queue** in the Exploop SDK. The goal is to ensure that scan data is never lost due to temporary network failures or server unavailability.
 
 ---
 
@@ -89,7 +89,7 @@ package retry
 
 import (
     "time"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 // QueueItem represents an item in the retry queue.
@@ -201,7 +201,7 @@ type FileRetryQueue struct {
 
 // FileQueueConfig configures the file-based queue.
 type FileQueueConfig struct {
-    Dir     string // Directory path (default: ~/.rediver/retry-queue)
+    Dir     string // Directory path (default: ~/.exploop/retry-queue)
     Verbose bool   // Verbose logging
 }
 
@@ -209,7 +209,7 @@ type FileQueueConfig struct {
 func NewFileRetryQueue(cfg *FileQueueConfig) (*FileRetryQueue, error) {
     if cfg.Dir == "" {
         home, _ := os.UserHomeDir()
-        cfg.Dir = filepath.Join(home, ".rediver", "retry-queue")
+        cfg.Dir = filepath.Join(home, ".exploop", "retry-queue")
     }
 
     // Ensure directory exists
@@ -239,7 +239,7 @@ import (
     "sync"
     "time"
 
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 // RetryWorker processes the retry queue in the background.
@@ -338,10 +338,10 @@ func (c *Client) PushFindings(ctx context.Context, report *ris.Report) (*core.Pu
         if queueErr := c.retryQueue.Enqueue(ctx, item); queueErr != nil {
             // Log but don't fail - original error is more important
             if c.verbose {
-                fmt.Printf("[rediver] Failed to queue for retry: %v\n", queueErr)
+                fmt.Printf(".exploop] Failed to queue for retry: %v\n", queueErr)
             }
         } else if c.verbose {
-            fmt.Printf("[rediver] Queued for retry: %s\n", item.ID)
+            fmt.Printf(".exploop] Queued for retry: %s\n", item.ID)
         }
     }
 
@@ -363,14 +363,14 @@ agent:
   scan_interval: 1h
   verbose: true
 
-rediver:
+exploop:
   base_url: ${API_URL}
   api_key: ${API_KEY}
   worker_id: ${WORKER_ID}
 
   # Retry queue configuration
   enable_retry_queue: true
-  retry_queue_dir: /var/lib/rediver/retry-queue  # Default: ~/.rediver/retry-queue
+  retry_queue_dir: /var/lib/exploop/retry-queue  # Default: ~/.exploop/retry-queue
   retry_interval: 5m       # How often to process queue
   retry_max_attempts: 10   # Max retries per item
   retry_ttl: 168h          # 7 days - items older than this are deleted
@@ -387,7 +387,7 @@ scanners:
 export ENABLE_RETRY_QUEUE=true
 
 # Custom queue directory
-export RETRY_QUEUE_DIR=/var/lib/rediver/retry-queue
+export RETRY_QUEUE_DIR=/var/lib/exploop/retry-queue
 
 # Retry settings
 export RETRY_INTERVAL=5m

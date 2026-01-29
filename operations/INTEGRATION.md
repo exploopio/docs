@@ -61,13 +61,13 @@ Use the Rediver Agent binary for quick integration.
 
 ```bash
 # Install
-go install github.com/rediverio/agent@latest
+go install github.com/exploopio/agent@latest
 
 # Run scan
 agent -tools semgrep,trivy,gitleaks \
       -target . \
       -push \
-      -api-url https://api.rediver.io \
+      -api-url https://api.exploop.io \
       -api-key $API_KEY
 ```
 
@@ -77,16 +77,16 @@ Integrate the SDK into your Go application.
 
 ```go
 import (
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/scanners"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/scanners"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
     // Initialize client
     c := client.New(&client.Config{
-        BaseURL:  "https://api.rediver.io",
-        APIKey:   os.Getenv("REDIVER_API_KEY"),
+        BaseURL:  "https://api.exploop.io",
+        APIKey:   os.Getenv("EXPLOOP_API_KEY"),
         WorkerID: "my-integration-001",
     })
 
@@ -108,7 +108,7 @@ func main() {
 Call the REST API directly.
 
 ```bash
-curl -X POST https://api.rediver.io/api/v1/agent/ingest \
+curl -X POST https://api.exploop.io/api/v1/agent/ingest \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -172,7 +172,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Run Rediver Scan
-        uses: docker://rediverio/agent:ci
+        uses: docker://exploopio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -180,28 +180,28 @@ jobs:
             -auto-ci
             -push
         env:
-          API_URL: ${{ secrets.REDIVER_API_URL }}
-          API_KEY: ${{ secrets.REDIVER_API_KEY }}
+          API_URL: ${{ secrets.EXPLOOP_API_URL }}
+          API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
 ```
 
 ### GitLab CI
 
 ```yaml
 security-scan:
-  image: rediverio/agent:ci
+  image: exploopio/agent:ci
   script:
     - agent -tools semgrep,gitleaks,trivy -target . -auto-ci -push
   variables:
-    API_URL: $REDIVER_API_URL
-    API_KEY: $REDIVER_API_KEY
+    API_URL: $EXPLOOP_API_URL
+    API_KEY: $EXPLOOP_API_KEY
 ```
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `API_URL` / `REDIVER_API_URL` | Yes | Platform API URL |
-| `API_KEY` / `REDIVER_API_KEY` | Yes | API authentication key |
+| `API_URL` / `EXPLOOP_API_URL` | Yes | Platform API URL |
+| `API_KEY` / `EXPLOOP_API_KEY` | Yes | API authentication key |
 | `WORKER_ID` | No | Custom worker identifier |
 | `GRPC_ADDR` | No | gRPC server address |
 
@@ -230,7 +230,7 @@ security-scan:
 
 ## Support
 
-- **Documentation**: https://docs.rediver.io
-- **API Reference**: https://api.rediver.io/docs
-- **SDK Source**: https://github.com/rediverio/sdk
+- **Documentation**: https://docs.exploop.io
+- **API Reference**: https://api.exploop.io/docs
+- **SDK Source**: https://github.com/exploopio/sdk
 {% endraw %}

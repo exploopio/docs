@@ -7,7 +7,7 @@ nav_order: 20
 
 # Security Best Practices
 
-Comprehensive security guidelines for deploying and operating RediverIO in production.
+Comprehensive security guidelines for deploying and operating Exploop in production.
 
 ---
 
@@ -82,7 +82,7 @@ Expire Passwords: 90 days
 export JWT_SECRET="mysecret123"
 
 # ✅ CORRECT - Use secret management
-export JWT_SECRET=$(kubectl get secret rediver-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+export JWT_SECRET=$(kubectl get secret.exploop-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
 ```
 
 ### Kubernetes Secrets
@@ -91,18 +91,18 @@ export JWT_SECRET=$(kubectl get secret rediver-secrets -o jsonpath='{.data.jwt-s
 
 ```bash
 # Create secret
-kubectl create secret generic rediver-secrets \
+kubectl create secret generic.exploop-secrets \
   --from-literal=jwt-secret=$(openssl rand -base64 64) \
   --from-literal=csrf-secret=$(openssl rand -base64 32) \
   --from-literal=db-password=$(openssl rand -base64 32) \
-  --namespace=rediver
+  --namespace.exploop
 
 # Reference in deployment
 env:
   - name: JWT_SECRET
     valueFrom:
       secretKeyRef:
-        name: rediver-secrets
+        name:.exploop-secrets
         key: jwt-secret
 ```
 
@@ -152,8 +152,8 @@ server {
 // Backend CORS
 cors.New(cors.Options{
     AllowedOrigins: []string{
-        "https://app.rediver.io",
-        "https://staging.rediver.io",
+        "https://app.exploop.io",
+        "https://staging.exploop.io",
     },
     AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
     AllowedHeaders: []string{"Authorization", "Content-Type"},
@@ -189,7 +189,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: rediver-api
+      app: exploop-api
   policyTypes:
   - Ingress
   - Egress
@@ -197,7 +197,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app: rediver-ui
+          app:.exploop-ui
     ports:
     - protocol: TCP
       port: 8080
@@ -214,12 +214,12 @@ spec:
 ```sql
 -- Create read-only user for replicas
 CREATE ROLE readonly WITH LOGIN PASSWORD 'strong_password';
-GRANT CONNECT ON DATABASE rediver TO readonly;
+GRANT CONNECT ON DATABASE.exploop TO readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
 
 -- Revoke public schema permissions
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO rediver_admin;
+GRANT ALL ON SCHEMA public TO.exploop_admin;
 
 -- Enable SSL connections only
 ALTER SYSTEM SET ssl = on;
@@ -415,7 +415,7 @@ npm audit
 npm audit fix
 
 # Docker images
-trivy image rediverio/api:latest
+trivy image exploopio/api:latest
 ```
 
 ### Automated Dependency Updates

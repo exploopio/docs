@@ -40,7 +40,7 @@ This guide walks you through a **complete security scan workflow** from creating
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 **Default credentials:**
-- Email: `admin@rediver.io`
+- Email: `admin@exploop.io`
 - Password: `Admin123!`
 
 ### 1.2 Add a Repository
@@ -99,7 +99,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://localhost:8080 \
   -e API_KEY=your-api-key-here \
-  rediverio/agent:latest \
+  exploopio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 ```
 
@@ -145,17 +145,17 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Rediver Scan
-        uses: docker://rediverio/agent:ci
+        uses: docker://exploopio/agent:ci
         env:
-          API_URL: ${{ secrets.REDIVER_API_URL }}
-          API_KEY: ${{ secrets.REDIVER_API_KEY }}
+          API_URL: ${{ secrets.EXPLOOP_API_URL }}
+          API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
         with:
           args: -tools semgrep,gitleaks,trivy -target . -push -comments
 ```
 
 **Required Secrets:**
-- `REDIVER_API_URL` - Your API endpoint
-- `REDIVER_API_KEY` - Agent API key from Step 2
+- `EXPLOOP_API_URL` - Your API endpoint
+- `EXPLOOP_API_KEY` - Agent API key from Step 2
 
 ---
 
@@ -303,7 +303,7 @@ agent:
   heartbeat_interval: 1m
 
 server:
-  base_url: https://api.rediver.io
+  base_url: https://api.exploop.io
   api_key: your-api-key
 
 scanners:
@@ -343,7 +343,7 @@ jobs:
           repository: myorg/${{ matrix.repo }}
 
       - name: Scan
-        uses: docker://rediverio/agent:ci
+        uses: docker://exploopio/agent:ci
         # ... (scan steps)
 ```
 
@@ -358,9 +358,9 @@ Build a custom scanner with the SDK:
 package main
 
 import (
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/core"
-    "github.com/rediverio/sdk/pkg/ris"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/ris"
 )
 
 func main() {
@@ -372,7 +372,7 @@ func main() {
 
     // Push to platform
     apiClient := client.New(&client.Config{
-        BaseURL: "https://api.rediver.io",
+        BaseURL: "https://api.exploop.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -380,7 +380,7 @@ func main() {
 }
 ```
 
-See [SDK Documentation](https://github.com/rediverio/sdk#readme) for details.
+See [SDK Documentation](https://github.com/exploopio/sdk#readme) for details.
 
 ---
 
@@ -434,9 +434,9 @@ docker run --network=host ...
 ## Next Steps
 
 - **[Production Deployment](../operations/PRODUCTION_DEPLOYMENT.md)** - Deploy to Kubernetes/Cloud
-- **[Agent Configuration](https://github.com/rediverio/agent#configuration)** - Advanced agent.yaml options
+- **[Agent Configuration](https://github.com/exploopio/agent#configuration)** - Advanced agent.yaml options
 - **[API Reference](../backend/api-reference.md)** - Full API documentation
-- **[SDK Guide](https://github.com/rediverio/sdk#readme)** - Build custom tools
+- **[SDK Guide](https://github.com/exploopio/sdk#readme)** - Build custom tools
 
 ---
 

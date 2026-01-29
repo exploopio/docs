@@ -65,7 +65,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://host.docker.internal:8080 \
   -e API_KEY=rdv_your_key_here \
-  rediverio/agent:latest \
+  exploopio/agent:latest \
   -tools semgrep,gitleaks,trivy \
   -target /scan \
   -push \
@@ -85,7 +85,7 @@ docker run --rm \
 
 ```bash
 # Download the agent binary
-curl -LO https://github.com/rediverio/agent/releases/latest/download/agent-linux-amd64
+curl -LO https://github.com/exploopio/agent/releases/latest/download/agent-linux-amd64
 chmod +x agent-linux-amd64
 
 # Run scan

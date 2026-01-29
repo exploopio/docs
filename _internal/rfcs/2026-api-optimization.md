@@ -209,11 +209,11 @@ import (
     "net/http"
     "sync"
 
-    "github.com/rediverio/api/internal/app"
-    "github.com/rediverio/api/internal/domain/shared"
-    "github.com/rediverio/api/internal/infra/http/middleware"
-    "github.com/rediverio/api/pkg/apierror"
-    "github.com/rediverio/api/pkg/logger"
+    "github.com/exploopio/api/internal/app"
+    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/exploopio/api/internal/infra/http/middleware"
+    "github.com/exploopio/api/pkg/apierror"
+    "github.com/exploopio/api/pkg/logger"
     "golang.org/x/sync/errgroup"
 )
 

@@ -14,7 +14,7 @@ This document lists all planned features that are not yet implemented. These fea
 
 ## Overview
 
-The Rediver CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure Management) framework:
+The Exploop CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure Management) framework:
 
 | Phase | Status | Description |
 |-------|--------|-------------|

@@ -78,7 +78,7 @@ If you didn't save the API key:
 ### Option A: Download Pre-built Binary
 ```bash
 # Download latest release
-curl -L https://github.com/rediverio/api/releases/latest/download/agent-linux-amd64 -o agent
+curl -L https://github.com/exploopio/api/releases/latest/download/agent-linux-amd64 -o agent
 chmod +x agent
 ```
 
@@ -90,7 +90,7 @@ go build -o agent ./cmd/agent
 
 ### Option C: Docker
 ```bash
-docker pull rediver/agent:latest
+docker pull exploop/agent:latest
 ```
 
 ---
@@ -124,9 +124,9 @@ agent:
   command_poll_interval: 30s         # How often to poll for commands
   heartbeat_interval: 1m             # How often to send heartbeat
 
-# Rediver Platform Connection
+# Exploop Platform Connection
 server:
-  base_url: https://api.rediver.io   # Your Rediver API URL
+  base_url: https://api.exploop.io   # Your Rediver API URL
   api_key: rda_xxxxxxxxxxxxxxxxxx    # API key from Step 2
   agent_id: 76d81868-25cd-...        # Optional: Agent UUID from UI
   timeout: 30s
@@ -155,7 +155,7 @@ targets:
 You can also use environment variables:
 
 ```bash
-export API_URL=https://api.rediver.io
+export API_URL=https://api.exploop.io
 export API_KEY=rda_xxxxxxxxxxxxxxxxxx
 export AGENT_ID=76d81868-25cd-45e6-ba66-6adfda4d0573
 ```
@@ -213,7 +213,7 @@ docker run -d \
   -v /opt/code:/code:ro \
   -v ./agent.yaml:/app/agent.yaml \
   -e API_KEY=rda_xxx \
-  rediver/agent:latest \
+  exploop/agent:latest \
   -daemon -config /app/agent.yaml
 ```
 
@@ -227,10 +227,10 @@ After=network.target
 
 [Service]
 Type=simple
-User=rediver
-Group=rediver
-WorkingDirectory=/opt/rediver
-ExecStart=/opt/rediver/agent -daemon -config /opt/rediver/agent.yaml
+User.exploop
+Group.exploop
+WorkingDirectory=/opt.exploop
+ExecStart=/opt/exploop/agent -daemon -config /opt/exploop/agent.yaml
 Restart=always
 RestartSec=10
 Environment=API_KEY=rda_xxx
@@ -362,7 +362,7 @@ agent:
 
 ### Manually via API
 ```bash
-curl -X POST https://api.rediver.io/api/v1/commands \
+curl -X POST https://api.exploop.io/api/v1/commands \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -552,13 +552,13 @@ Response:
 
 ### Deploying Platform Agents (Administrators)
 
-If you're a Rediver administrator deploying platform agents, use the `rediver-admin` CLI:
+If you're a Rediver administrator deploying platform agents, use the `exploop-admin` CLI:
 
 #### Step 1: Create a Bootstrap Token
 
 ```bash
 # Using CLI (recommended)
-rediver-admin create token --max-uses=5 --expires=24h
+exploop-admin create token --max-uses=5 --expires=24h
 
 # Output:
 # token/tok-abc123 created
@@ -567,7 +567,7 @@ rediver-admin create token --max-uses=5 --expires=24h
 #   abc123.xxxxxxxxxxxxxxxx
 #
 # Use this token to register a platform agent:
-#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.rediver.io
+#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.exploop.io
 ```
 
 #### Step 2: Start the Agent with Bootstrap Token
@@ -576,7 +576,7 @@ rediver-admin create token --max-uses=5 --expires=24h
 # Binary - with specific executors enabled
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.rediver.io \
+  -api-url=https://api.exploop.io \
   -region=us-east-1 \
   -enable-recon \
   -enable-vulnscan \
@@ -587,14 +587,14 @@ docker run -d \
   --name platform-agent \
   --restart unless-stopped \
   -e BOOTSTRAP_TOKEN=abc123.xxxxxxxxxxxxxxxx \
-  -e API_URL=https://api.rediver.io \
-  -v agent-data:/home/rediver/.rediver \
-  rediverio/agent:platform
+  -e API_URL=https://api.exploop.io \
+  -v agent-data:/home/exploop/.exploop \
+  exploopio/agent:platform
 
 # Hybrid build (uses Go libraries for better performance)
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.rediver.io \
+  -api-url=https://api.exploop.io \
   -region=us-east-1 \
   -enable-recon
 ```
@@ -620,22 +620,22 @@ For Kubernetes deployments, use the Helm chart:
 
 ```bash
 # Add Rediver Helm repo
-helm repo add rediver https://charts.rediver.io
+helm repo add.exploop https://charts.exploop.io
 helm repo update
 
 # Install with bootstrap token (auto-registration)
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --create-namespace \
-  --set apiUrl=https://api.rediver.io \
+  --set apiUrl=https://api.exploop.io \
   --set bootstrapToken=abc123.xxxxxxxxxxxxxxxx \
   --set replicaCount=3 \
   --set agent.region=us-east-1
 
 # Or install with pre-assigned API key
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
-  --set apiUrl=https://api.rediver.io \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
+  --set apiUrl=https://api.exploop.io \
   --set apiKey=ragent_xxxxx \
   --set useStatefulSet=false
 ```
@@ -646,26 +646,26 @@ See [Platform Administration Guide - Kubernetes Deployment](./platform-admin.md#
 
 ```bash
 # List all platform agents
-rediver-admin get agents
+exploop-admin get agents
 
 # Watch in real-time
-rediver-admin get agents -w
+exploop-admin get agents -w
 
 # Get details
-rediver-admin describe agent <agent-name>
+exploop-admin describe agent <agent-name>
 ```
 
 #### Step 4: Maintenance Operations
 
 ```bash
 # Stop agent from accepting new jobs (for maintenance)
-rediver-admin drain agent <agent-name>
+exploop-admin drain agent <agent-name>
 
 # Resume operations
-rediver-admin uncordon agent <agent-name>
+exploop-admin uncordon agent <agent-name>
 
 # Remove agent
-rediver-admin delete agent <agent-name>
+exploop-admin delete agent <agent-name>
 ```
 
 See [Platform Administration Guide](./platform-admin.md) for complete CLI documentation.
@@ -718,7 +718,7 @@ All operations are logged for debugging:
 
 ```yaml
 audit:
-  log_file: ~/.rediver/audit.log
+  log_file: ~/.exploop/audit.log
   max_size_mb: 100
   max_age_days: 30
   verbose: true

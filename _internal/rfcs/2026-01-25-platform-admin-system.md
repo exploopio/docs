@@ -564,11 +564,11 @@ func (c *AgentHealthController) Reconcile(ctx context.Context) error {
 │  1. BOOTSTRAP (one-time)                                                 │
 │     ┌─────────────────────────────────────────────────────────────┐     │
 │     │ Admin creates bootstrap token:                               │     │
-│     │   rediver-admin create token --max-uses=5 --expires=24h     │     │
+│     │   exploop-admin create token --max-uses=5 --expires=24h     │     │
 │     │   → rdv-bt-abc123...                                         │     │
 │     │                                                              │     │
 │     │ Agent starts with token:                                     │     │
-│     │   rediver-agent --bootstrap-token=rdv-bt-abc123...          │     │
+│     │   exploop-agent --bootstrap-token=rdv-bt-abc123...          │     │
 │     │                                                              │     │
 │     │ Agent registers:                                             │     │
 │     │   POST /api/v1/platform/register                            │     │
@@ -795,7 +795,7 @@ Based on analysis of current SDK (`/sdk/`) and Agent (`/agent/`) architecture:
 │     ┌────────────────────────────────────────────────────────────────┐  │
 │     │ --platform              Enable platform agent mode              │  │
 │     │ --bootstrap-token       Bootstrap token for registration       │  │
-│     │ --credentials-dir       Where to store credentials (~/.rediver)│  │
+│     │ --credentials-dir       Where to store credentials (~/.exploop)│  │
 │     │ --lease-duration        Lease duration (default: 60s)          │  │
 │     │ --holder-identity       Override holder identity (auto-detect) │  │
 │     └────────────────────────────────────────────────────────────────┘  │
@@ -820,14 +820,14 @@ Based on analysis of current SDK (`/sdk/`) and Agent (`/agent/`) architecture:
 │     ┌────────────────────────────────────────────────────────────────┐  │
 │     │ # Platform agent Docker deployment                              │  │
 │     │ docker run -d \                                                 │  │
-│     │   --name rediver-platform-agent \                               │  │
+│     │   --name exploop-platform-agent \                               │  │
 │     │   -e REDIVER_PLATFORM_AGENT=true \                              │  │
-│     │   -e REDIVER_API_URL=https://api.rediver.io \                   │  │
+│     │   -e EXPLOOP_API_URL=https://api.exploop.io \                   │  │
 │     │   -e REDIVER_BOOTSTRAP_TOKEN=rdv-bt-xxx... \                    │  │
 │     │   -e REDIVER_CAPABILITIES=sast,sca,dast \                       │  │
 │     │   -e REDIVER_REGION=ap-southeast-1 \                            │  │
-│     │   -v /var/lib/rediver:/data \                                   │  │
-│     │   rediver/agent:latest                                          │  │
+│     │   -v /var/lib.exploop:/data \                                   │  │
+│     │   exploop/agent:latest                                          │  │
 │     │                                                                  │  │
 │     │ # Credentials are stored in:                                     │  │
 │     │ # /data/credentials.json (agent_id, api_key, registered_at)     │  │
@@ -892,8 +892,8 @@ When platform runs in Docker, admin CLI needs to be designed for flexible operat
 │  │                                                                    │   │
 │  │   Operator Machine                    Docker Host                  │   │
 │  │  ┌──────────────────┐              ┌─────────────────────────┐   │   │
-│  │  │ rediver-admin    │──HTTPS:443──▶│ Platform API Container  │   │   │
-│  │  │ ~/.rediver/      │              │ :8080                   │   │   │
+│  │  │ exploop-admin    │──HTTPS:443──▶│ Platform API Container  │   │   │
+│  │  │ ~/.exploop/      │              │ :8080                   │   │   │
 │  │  │   config.yaml    │              └─────────────────────────┘   │   │
 │  │  └──────────────────┘                                            │   │
 │  │                                                                    │   │
@@ -906,7 +906,7 @@ When platform runs in Docker, admin CLI needs to be designed for flexible operat
 │  Option B: CLI Inside API Container (docker exec)                        │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
 │  │                                                                    │   │
-│  │   $ docker exec -it rediver-api rediver-admin get agents          │   │
+│  │   $ docker exec -it exploop-api exploop-admin get agents          │   │
 │  │                                                                    │   │
 │  │   ✓ No port exposure needed for admin                             │   │
 │  │   ✓ Good for quick troubleshooting                                │   │
@@ -920,19 +920,19 @@ When platform runs in Docker, admin CLI needs to be designed for flexible operat
 │  │                                                                    │   │
 │  │   services:                                                        │   │
 │  │     api:                                                           │   │
-│  │       image: rediver/platform:latest                               │   │
+│  │       image: exploop/platform:latest                               │   │
 │  │       networks: [internal]                                         │   │
 │  │                                                                    │   │
 │  │     admin-cli:                                                     │   │
-│  │       image: rediver/admin-cli:latest                              │   │
+│  │       image: exploop/admin-cli:latest                              │   │
 │  │       environment:                                                 │   │
-│  │         - REDIVER_API_URL=http://api:8080                          │   │
-│  │         - REDIVER_API_KEY_FILE=/run/secrets/admin_key              │   │
+│  │         - EXPLOOP_API_URL=http://api:8080                          │   │
+│  │         - EXPLOOP_API_KEY_FILE=/run/secrets/admin_key              │   │
 │  │       networks: [internal]                                         │   │
 │  │       stdin_open: true                                             │   │
 │  │       tty: true                                                    │   │
 │  │                                                                    │   │
-│  │   $ docker-compose exec admin-cli rediver-admin get agents         │   │
+│  │   $ docker-compose exec admin-cli exploop-admin get agents         │   │
 │  │                                                                    │   │
 │  │   ✓ Isolated CLI environment                                       │   │
 │  │   ✓ Can have different config per environment                     │   │
@@ -944,12 +944,12 @@ When platform runs in Docker, admin CLI needs to be designed for flexible operat
 │  ┌──────────────────────────────────────────────────────────────────┐   │
 │  │                                                                    │   │
 │  │   # Install as kubectl plugin                                      │   │
-│  │   $ kubectl krew install rediver                                   │   │
-│  │   $ kubectl rediver get agents                                     │   │
+│  │   $ kubectl krew install.exploop                                   │   │
+│  │   $ kubectl.exploop get agents                                     │   │
 │  │                                                                    │   │
 │  │   # Or run as Job                                                  │   │
-│  │   $ kubectl run admin-task --rm -it --image=rediver/admin-cli \    │   │
-│  │       -- rediver-admin get agents                                  │   │
+│  │   $ kubectl run admin-task --rm -it --image=exploop/admin-cli \    │   │
+│  │       -- exploop-admin get agents                                  │   │
 │  │                                                                    │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
 │                                                                          │
@@ -961,30 +961,30 @@ When platform runs in Docker, admin CLI needs to be designed for flexible operat
 ```yaml
 # Priority order (highest to lowest):
 # 1. Command line flags: --api-url, --api-key
-# 2. Environment variables: REDIVER_API_URL, REDIVER_API_KEY
-# 3. Config file: ~/.rediver/config.yaml (or /etc/rediver/config.yaml in container)
+# 2. Environment variables: EXPLOOP_API_URL, EXPLOOP_API_KEY
+# 3. Config file: ~/.exploop/config.yaml (or /etc/exploop/config.yaml in container)
 # 4. In-cluster detection (for sidecar mode)
 
-# Example: ~/.rediver/config.yaml
-apiVersion: admin.rediver.io/v1
+# Example: ~/.exploop/config.yaml
+apiVersion: admin.exploop.io/v1
 kind: Config
 current-context: production
 
 contexts:
   - name: production
     context:
-      api-url: https://api.rediver.io
-      api-key-file: ~/.rediver/prod-key  # Store key separately
+      api-url: https://api.exploop.io
+      api-key-file: ~/.exploop/prod-key  # Store key separately
 
   - name: staging
     context:
-      api-url: https://api.staging.rediver.io
-      api-key-file: ~/.rediver/staging-key
+      api-url: https://api.staging.exploop.io
+      api-key-file: ~/.exploop/staging-key
 
   - name: local-docker
     context:
       api-url: http://localhost:8080
-      # No api-key for local dev, uses REDIVER_API_KEY env var
+      # No api-key for local dev, uses EXPLOOP_API_KEY env var
 ```
 
 #### Docker-Compose Full Example
@@ -996,7 +996,7 @@ version: '3.8'
 services:
   # Main API service
   api:
-    image: rediver/platform:latest
+    image: exploop/platform:latest
     ports:
       - "8080:8080"          # Main API (tenant)
       - "8081:8081"          # Admin API (restricted)
@@ -1015,10 +1015,10 @@ services:
 
   # Admin CLI sidecar (optional)
   admin:
-    image: rediver/admin-cli:latest
+    image: exploop/admin-cli:latest
     environment:
-      - REDIVER_API_URL=http://api:8081
-      - REDIVER_API_KEY=${ADMIN_API_KEY}
+      - EXPLOOP_API_URL=http://api:8081
+      - EXPLOOP_API_KEY=${ADMIN_API_KEY}
     networks:
       - internal
     profiles:
@@ -1056,7 +1056,7 @@ func detectInCluster() bool {
 }
 
 func defaultAPIURL() string {
-    if url := os.Getenv("REDIVER_API_URL"); url != "" {
+    if url := os.Getenv("EXPLOOP_API_URL"); url != "" {
         return url
     }
 
@@ -1074,7 +1074,7 @@ func defaultAPIURL() string {
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  COMMAND PATTERN: rediver-admin <verb> <resource> [name] [flags]   │
+│  COMMAND PATTERN: exploop-admin <verb> <resource> [name] [flags]   │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  Verbs:                                                              │
@@ -1110,83 +1110,83 @@ func defaultAPIURL() string {
 # ═══════════════════════════════════════════════════════════════════
 
 # Setup contexts
-rediver-admin config set-context prod --api-url=https://api.rediver.io
-rediver-admin config set-context staging --api-url=https://api.staging.rediver.io
-rediver-admin config use-context prod
-rediver-admin config current-context
-rediver-admin config get-contexts
+exploop-admin config set-context prod --api-url=https://api.exploop.io
+exploop-admin config set-context staging --api-url=https://api.staging.exploop.io
+exploop-admin config use-context prod
+exploop-admin config current-context
+exploop-admin config get-contexts
 
 # ═══════════════════════════════════════════════════════════════════
 # AGENT MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════
 
 # List & Get
-rediver-admin get agents                     # List all
-rediver-admin get agents -o wide             # Extended info
-rediver-admin get agents -o json             # JSON output
-rediver-admin get agents --status=online     # Filter
-rediver-admin get agent agent-us-e1          # Get by name
-rediver-admin describe agent agent-us-e1     # Detailed view
+exploop-admin get agents                     # List all
+exploop-admin get agents -o wide             # Extended info
+exploop-admin get agents -o json             # JSON output
+exploop-admin get agents --status=online     # Filter
+exploop-admin get agent agent-us-e1          # Get by name
+exploop-admin describe agent agent-us-e1     # Detailed view
 
 # Create
-rediver-admin create agent \
+exploop-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca \
   --max-jobs=10
 
 # Or from file
-rediver-admin apply -f agent.yaml
+exploop-admin apply -f agent.yaml
 
 # Operations
-rediver-admin drain agent agent-us-e1        # Stop new jobs
-rediver-admin uncordon agent agent-us-e1     # Resume
-rediver-admin delete agent agent-us-e1
+exploop-admin drain agent agent-us-e1        # Stop new jobs
+exploop-admin uncordon agent agent-us-e1     # Resume
+exploop-admin delete agent agent-us-e1
 
 # Watch
-rediver-admin get agents -w                  # Real-time updates
+exploop-admin get agents -w                  # Real-time updates
 
 # ═══════════════════════════════════════════════════════════════════
 # TOKEN MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════
 
-rediver-admin get tokens
-rediver-admin create token --max-uses=5 --expires=24h
-rediver-admin revoke token tok-abc123 --reason="Compromised"
+exploop-admin get tokens
+exploop-admin create token --max-uses=5 --expires=24h
+exploop-admin revoke token tok-abc123 --reason="Compromised"
 
 # ═══════════════════════════════════════════════════════════════════
 # JOB MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════
 
-rediver-admin get jobs --status=pending
-rediver-admin describe job job-xyz
-rediver-admin logs job job-xyz -f            # Follow logs
-rediver-admin delete job job-xyz             # Cancel
+exploop-admin get jobs --status=pending
+exploop-admin describe job job-xyz
+exploop-admin logs job job-xyz -f            # Follow logs
+exploop-admin delete job job-xyz             # Cancel
 
 # ═══════════════════════════════════════════════════════════════════
 # ADMIN MANAGEMENT (super_admin only)
 # ═══════════════════════════════════════════════════════════════════
 
-rediver-admin get admins
-rediver-admin create admin --email=ops@rediver.io --role=ops_admin
-rediver-admin rotate-key admin admin-xyz
+exploop-admin get admins
+exploop-admin create admin --email=ops@exploop.io --role=ops_admin
+exploop-admin rotate-key admin admin-xyz
 
 # ═══════════════════════════════════════════════════════════════════
 # SYSTEM STATUS
 # ═══════════════════════════════════════════════════════════════════
 
-rediver-admin cluster-info                   # Overview
-rediver-admin top agents                     # Resource usage
-rediver-admin top jobs                       # Queue stats
-rediver-admin api-resources                  # List resources
-rediver-admin explain agent                  # Schema help
+exploop-admin cluster-info                   # Overview
+exploop-admin top agents                     # Resource usage
+exploop-admin top jobs                       # Queue stats
+exploop-admin api-resources                  # List resources
+exploop-admin explain agent                  # Schema help
 ```
 
 ### 5.3 YAML Configuration Format
 
 ```yaml
 # agent.yaml
-apiVersion: admin.rediver.io/v1
+apiVersion: admin.exploop.io/v1
 kind: Agent
 metadata:
   name: agent-us-east-1
@@ -1208,7 +1208,7 @@ spec:
     scanTimeout: 30m
 ---
 # token.yaml
-apiVersion: admin.rediver.io/v1
+apiVersion: admin.exploop.io/v1
 kind: BootstrapToken
 metadata:
   name: prod-deploy-token
@@ -1278,7 +1278,7 @@ To ensure complete separation of permissions and reduce management complexity, A
 #### Project Structure (Feature-Based, Inspired by ui/)
 
 ```
-rediverio/
+exploopio/
 ├── ui/                              # Tenant UI (existing - unchanged)
 │
 ├── admin-ui/                        # NEW: Separate Admin UI project
@@ -1547,7 +1547,7 @@ import { AgentList, useAgents } from '@/features/agents';
 │  │  ┌──────────────────────────────────────────────────────────┐      │ │
 │  │  │           Platform Admin Console                          │      │ │
 │  │  │                                                           │      │ │
-│  │  │   Email:    [admin@rediver.io            ]               │      │ │
+│  │  │   Email:    [admin@exploop.io            ]               │      │ │
 │  │  │   API Key:  [rdv-admin-xxxxxxxxxxxxxx    ]               │      │ │
 │  │  │                                                           │      │ │
 │  │  │             [Sign In]                                     │      │ │
@@ -1599,7 +1599,7 @@ version: '3.8'
 services:
   # Admin UI - Internal only
   admin-ui:
-    image: rediver/admin-ui:latest
+    image: exploop/admin-ui:latest
     build:
       context: ./admin-ui
       dockerfile: Dockerfile
@@ -1615,7 +1615,7 @@ services:
 
   # Tenant UI - Public
   ui:
-    image: rediver/ui:latest
+    image: exploop/ui:latest
     ports:
       - "3000:3000"
     networks:
@@ -1624,7 +1624,7 @@ services:
 
   # API
   api:
-    image: rediver/api:latest
+    image: exploop/api:latest
     ports:
       - "8080:8080"
     networks:
@@ -1647,7 +1647,7 @@ Option 2: **Create shared package** (cleaner, more work)
 ```json
 // packages/ui-kit/package.json
 {
-  "name": "@rediver/ui-kit",
+  "name": "@exploop/ui-kit",
   "version": "1.0.0",
   "exports": {
     "./button": "./src/button.tsx",
@@ -1658,7 +1658,7 @@ Option 2: **Create shared package** (cleaner, more work)
 // admin-ui/package.json
 {
   "dependencies": {
-    "@rediver/ui-kit": "workspace:*"
+    "@exploop/ui-kit": "workspace:*"
   }
 }
 ```
@@ -1694,7 +1694,7 @@ Option 2: **Create shared package** (cleaner, more work)
 │  │ │ Audit    │ │  │  │ 10:32 Agent agent-us-e1 went offline        │ │ │
 │  │ └──────────┘ │  │  │ 10:30 Job scan-123 completed                 │ │ │
 │  │              │  │  │ 10:28 Token tok-abc expired                  │ │ │
-│  │ ──────────── │  │  │ 10:25 Admin john@rediver.io logged in        │ │ │
+│  │ ──────────── │  │  │ 10:25 Admin john@exploop.io logged in        │ │ │
 │  │ Settings     │  │  └─────────────────────────────────────────────┘ │ │
 │  │              │  │                                                   │ │
 │  └──────────────┘  └──────────────────────────────────────────────────┘ │
@@ -1773,7 +1773,7 @@ Option 2: **Create shared package** (cleaner, more work)
   "id": "uuid",
   "timestamp": "2026-01-25T10:30:00Z",
   "admin_id": "uuid",
-  "admin_email": "ops@rediver.io",
+  "admin_email": "ops@exploop.io",
   "action": "agent.create",
   "resource_type": "agent",
   "resource_id": "uuid",
@@ -1786,7 +1786,7 @@ Option 2: **Create shared package** (cleaner, more work)
     "status": 201
   },
   "ip_address": "1.2.3.4",
-  "user_agent": "rediver-admin/1.0"
+  "user_agent": "exploop-admin/1.0"
 }
 ```
 
@@ -2057,7 +2057,7 @@ CREATE INDEX idx_agent_leases_expiry
 
 | # | Task | Priority | Status |
 |---|------|----------|--------|
-| 5.1 | Setup CLI structure (cobra) in cmd/rediver-admin/ | P0 | ✅ Done |
+| 5.1 | Setup CLI structure (cobra) in cmd/exploop-admin/ | P0 | ✅ Done |
 | 5.2 | Implement config/context management | P0 | ✅ Done |
 | 5.3 | Implement `get agents/jobs/tokens/admins` | P0 | ✅ Done |
 | 5.4 | Implement `describe agent/job/token` | P1 | ✅ Done |
@@ -2071,7 +2071,7 @@ CREATE INDEX idx_agent_leases_expiry
 | 5.12 | Build Docker image for CLI | P1 | ✅ Done |
 
 **Phase 5 Implementation Notes:**
-- Created `api/cmd/rediver-admin/` with Cobra CLI structure:
+- Created `api/cmd/exploop-admin/` with Cobra CLI structure:
   - `main.go` - Entry point
   - `cmd/root.go` - Root command with version, completion subcommands
   - `cmd/config.go` - Context management (set-context, use-context, current-context)
@@ -2084,7 +2084,7 @@ CREATE INDEX idx_agent_leases_expiry
 - Created `api/cmd/bootstrap-admin/main.go` - Direct database bootstrap tool
 - Created `api/Dockerfile.admin-cli` - Multi-binary distroless image
 - Output formats: table (default), json, yaml, wide
-- Config stored in `~/.rediver/config.yaml`
+- Config stored in `~/.exploop/config.yaml`
 - `cmd/apply.go` - Declarative resource creation from YAML manifests (kubectl-style)
   - Supports Agent, Token, Admin resource types
   - Reads from file or stdin (`-f -`)
@@ -2369,7 +2369,7 @@ CREATE INDEX idx_agent_leases_expiry
 │  │   {                                                                  │ │
 │  │     "sub": "job_id",                                                │ │
 │  │     "aud": "platform_agent",                                        │ │
-│  │     "iss": "rediver",                                               │ │
+│  │     "iss": .exploop",                                               │ │
 │  │     "exp": now + 1h,                                                │ │
 │  │     "iat": now,                                                     │ │
 │  │     "jti": unique_token_id, // For revocation                       │ │
@@ -3035,7 +3035,7 @@ API (Go Backend):
 │   └── controller/                          # Controller workers (TODO)
 │
 └── api/cmd/
-    └── rediver-admin/main.go                # Admin CLI (TODO)
+    └── exploop-admin/main.go                # Admin CLI (TODO)
 
 SDK (Go):
 ├── sdk/pkg/

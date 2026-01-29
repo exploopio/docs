@@ -193,7 +193,7 @@ agent:
   renew_interval: 20s
 
 api:
-  base_url: "https://api.rediver.io"
+  base_url: "https://api.exploop.io"
 
 executors:
   recon:
@@ -468,7 +468,7 @@ spec:
     spec:
       containers:
       - name: agent
-        image: ghcr.io/rediverio/platform-agent:latest
+        image: ghcr.io/exploopio/platform-agent:latest
         args:
           - --enable-recon
           - --disable-vulnscan
@@ -500,7 +500,7 @@ spec:
     spec:
       containers:
       - name: agent
-        image: ghcr.io/rediverio/platform-agent:latest
+        image: ghcr.io/exploopio/platform-agent:latest
         args:
           - --disable-recon
           - --enable-vulnscan

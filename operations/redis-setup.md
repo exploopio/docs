@@ -32,9 +32,9 @@ This guide covers Redis setup, configuration, and monitoring for the permission 
 
 ```bash
 docker run -d \
-  --name rediver-redis \
+  --name.exploop-redis \
   -p 6379:6379 \
-  -v rediver-redis-data:/data \
+  -v.exploop-redis-data:/data \
   redis:7-alpine \
   redis-server --appendonly yes
 ```

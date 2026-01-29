@@ -8,7 +8,7 @@ permalink: /guides/
 
 # Platform Guides
 
-Comprehensive guides for using the Rediver CTEM Platform.
+Comprehensive guides for using the Exploop CTEM Platform.
 
 ---
 

@@ -363,7 +363,7 @@ codeql database analyze db \
 **SDK Usage:**
 
 ```go
-import "github.com/rediverio/sdk/pkg/scanners"
+import "github.com/exploopio/sdk/pkg/scanners"
 
 // Create CodeQL scanner for Go
 scanner := scanners.CodeQLGo()

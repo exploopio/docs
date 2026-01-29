@@ -8,7 +8,7 @@ permalink: /getting-started/
 
 # Getting Started with Rediver
 
-Get your Rediver CTEM platform up and running quickly.
+Get your Exploop CTEM platform up and running quickly.
 
 ---
 
@@ -52,5 +52,5 @@ After completing the getting started guides:
 ## Need Help?
 
 - **Documentation**: Browse the sections in the left sidebar
-- **API Reference**: [api.rediver.io/docs](https://api.rediver.io/docs)
-- **GitHub Issues**: [github.com/rediverio](https://github.com/rediverio)
+- **API Reference**: [api.exploop.io/docs](https://api.exploop.io/docs)
+- **GitHub Issues**: [github.com/exploopio](https://github.com/exploopio)

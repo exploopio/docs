@@ -9,7 +9,7 @@ nav_order: 3
 
 [![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://go.dev)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/r/rediverio/api)
+[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/r/exploopio/api)
 
 Unified Exposure Management platform built with Clean Architecture in Go.
 
@@ -46,7 +46,7 @@ Unified Exposure Management platform built with Clean Architecture in Go.
 ## Project Structure
 
 ```
-rediver/
+exploop/
 ├── cmd/server/              # Application entry point
 ├── internal/
 │   ├── domain/              # Core business logic (entities, value objects)
@@ -91,7 +91,7 @@ rediver/
 
 ```bash
 # Clone
-git clone https://github.com/rediverio/api.git
+git clone https://github.com/exploopio/api.git
 cd api
 
 # Setup environment

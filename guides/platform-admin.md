@@ -69,7 +69,7 @@ docker-compose exec api ./bootstrap-admin \
 
 ```bash
 # If using plain docker (not compose)
-docker exec -it rediver-api ./bootstrap-admin \
+docker exec -it exploop-api ./bootstrap-admin \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 ```
@@ -82,9 +82,9 @@ docker exec -it rediver-api ./bootstrap-admin \
 docker run --rm \
   --network your-network \
   --entrypoint /usr/local/bin/bootstrap-admin \
-  -e DATABASE_URL="postgres://user:pass@db:5432/rediver?sslmode=disable" \
+  -e DATABASE_URL="postgres://user:pass@db:5432/exploop?sslmode=disable" \
   -e ADMIN_EMAIL="admin@yourcompany.com" \
-  rediverio/admin-cli:latest
+  exploopio/admin-cli:latest
 ```
 
 #### Option 5: Kubernetes Job (Recommended for K8s)
@@ -95,7 +95,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: bootstrap-admin-config
-  namespace: rediver
+  namespace: exploop
 type: Opaque
 stringData:
   ADMIN_EMAIL: "admin@yourcompany.com"
@@ -104,7 +104,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: bootstrap-admin
-  namespace: rediver
+  namespace: exploop
 spec:
   ttlSecondsAfterFinished: 300  # Clean up after 5 minutes
   template:
@@ -112,29 +112,29 @@ spec:
       restartPolicy: Never
       containers:
         - name: bootstrap-admin
-          image: rediverio/api:latest
+          image: exploopio/api:latest
           command: ["./bootstrap-admin"]
           args: ["-role", "super_admin"]
           env:
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
-                  name: rediver-db-credentials
+                  name: exploop-db-credentials
                   key: host
             - name: DB_PORT
               value: "5432"
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: rediver-db-credentials
+                  name: exploop-db-credentials
                   key: username
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: rediver-db-credentials
+                  name: exploop-db-credentials
                   key: password
             - name: DB_NAME
-              value: rediver
+              value: exploop
             - name: DB_SSLMODE
               value: require
             - name: ADMIN_EMAIL
@@ -149,17 +149,17 @@ spec:
 kubectl apply -f bootstrap-admin-job.yaml
 
 # Watch for completion and get the API key from logs
-kubectl logs -f job/bootstrap-admin -n rediver
+kubectl logs -f job/bootstrap-admin -n exploop
 
 # Clean up (or wait for ttlSecondsAfterFinished)
-kubectl delete job bootstrap-admin -n rediver
+kubectl delete job bootstrap-admin -n exploop
 ```
 
 #### Option 6: kubectl exec (Quick method for K8s)
 
 ```bash
 # If API pod is already running
-kubectl exec -it deploy/rediver-api -n rediver -- \
+kubectl exec -it deploy/exploop-api -n exploop -- \
   ./bootstrap-admin -email "admin@yourcompany.com" -role "super_admin"
 ```
 
@@ -168,7 +168,7 @@ kubectl exec -it deploy/rediver-api -n rediver -- \
 ```bash
 # Only for local development with direct DB access
 ./bootstrap-admin \
-  -db "postgres://user:pass@localhost:5432/rediver?sslmode=disable" \
+  -db "postgres://user:pass@localhost:5432/exploop?sslmode=disable" \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 ```
@@ -185,15 +185,15 @@ API Key (save this, it won't be shown again):
   radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 
 Configure the CLI:
-  export REDIVER_API_KEY=radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
-  export REDIVER_API_URL=https://your-api-url
+  export EXPLOOP_API_KEY=radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  export EXPLOOP_API_URL=https://your-api-url
 
   # Or save to config file:
-  rediver-admin config set-context prod --api-url=https://your-api-url --api-key=radm_...
-  rediver-admin config use-context prod
+  exploop-admin config set-context prod --api-url=https://your-api-url --api-key=radm_...
+  exploop-admin config use-context prod
 
 Test the connection:
-  rediver-admin cluster-info
+  exploop-admin cluster-info
 ```
 
 > **Important**: Save the API key immediately! It cannot be retrieved later.
@@ -208,9 +208,9 @@ Test the connection:
 
 ---
 
-## Admin CLI (rediver-admin)
+## Admin CLI (exploop-admin)
 
-The `rediver-admin` CLI provides kubectl-style commands for platform management.
+The `exploop-admin` CLI provides kubectl-style commands for platform management.
 
 ### Installation
 
@@ -218,26 +218,26 @@ The `rediver-admin` CLI provides kubectl-style commands for platform management.
 
 ```bash
 # Download from releases
-curl -LO https://github.com/rediverio/api/releases/latest/download/rediver-admin-linux-amd64
-chmod +x rediver-admin-linux-amd64
-sudo mv rediver-admin-linux-amd64 /usr/local/bin/rediver-admin
+curl -LO https://github.com/exploopio/api/releases/latest/download/exploop-admin-linux-amd64
+chmod +x exploop-admin-linux-amd64
+sudo mv exploop-admin-linux-amd64 /usr/local/bin/exploop-admin
 
 # Verify installation
-rediver-admin version
+exploop-admin version
 ```
 
 #### Using Docker
 
 ```bash
 # Create alias for convenience
-alias rediver-admin='docker run --rm -it \
-  -e REDIVER_API_URL=$REDIVER_API_URL \
-  -e REDIVER_API_KEY=$REDIVER_API_KEY \
-  -v ~/.rediver:/root/.rediver \
-  rediverio/admin-cli:latest'
+alias exploop-admin='docker run --rm -it \
+  -e EXPLOOP_API_URL=$EXPLOOP_API_URL \
+  -e EXPLOOP_API_KEY=$EXPLOOP_API_KEY \
+  -v ~/.exploop:/root/.exploop \
+  exploopio/admin-cli:latest'
 
 # Use normally
-rediver-admin get agents
+exploop-admin get agents
 ```
 
 ### Configuration
@@ -247,57 +247,57 @@ The CLI supports three configuration methods (in priority order):
 #### 1. Command Line Flags (Highest Priority)
 
 ```bash
-rediver-admin --api-url=https://api.rediver.io --api-key=radm_xxx get agents
+exploop-admin --api-url=https://api.exploop.io --api-key=radm_xxx get agents
 ```
 
 #### 2. Environment Variables
 
 ```bash
-export REDIVER_API_URL=https://api.rediver.io
-export REDIVER_API_KEY=radm_a1b2c3d4e5f6...
-rediver-admin get agents
+export EXPLOOP_API_URL=https://api.exploop.io
+export EXPLOOP_API_KEY=radm_a1b2c3d4e5f6...
+exploop-admin get agents
 ```
 
-#### 3. Config File (~/.rediver/config.yaml)
+#### 3. Config File (~/.exploop/config.yaml)
 
 ```bash
 # Create context
-rediver-admin config set-context prod \
-  --api-url=https://api.rediver.io \
+exploop-admin config set-context prod \
+  --api-url=https://api.exploop.io \
   --api-key=radm_a1b2c3d4e5f6...
 
 # Or use key file for security
-echo "radm_a1b2c3d4e5f6..." > ~/.rediver/prod-key
-chmod 600 ~/.rediver/prod-key
-rediver-admin config set-context prod \
-  --api-url=https://api.rediver.io \
-  --api-key-file=~/.rediver/prod-key
+echo "radm_a1b2c3d4e5f6..." > ~/.exploop/prod-key
+chmod 600 ~/.exploop/prod-key
+exploop-admin config set-context prod \
+  --api-url=https://api.exploop.io \
+  --api-key-file=~/.exploop/prod-key
 
 # Switch contexts
-rediver-admin config use-context prod
+exploop-admin config use-context prod
 
 # List contexts
-rediver-admin config get-contexts
+exploop-admin config get-contexts
 ```
 
 **Config file format:**
 
 ```yaml
-# ~/.rediver/config.yaml
-apiVersion: admin.rediver.io/v1
+# ~/.exploop/config.yaml
+apiVersion: admin.exploop.io/v1
 kind: Config
 current-context: prod
 
 contexts:
   - name: prod
     context:
-      api-url: https://api.rediver.io
-      api-key-file: ~/.rediver/prod-key
+      api-url: https://api.exploop.io
+      api-key-file: ~/.exploop/prod-key
 
   - name: staging
     context:
-      api-url: https://api.staging.rediver.io
-      api-key-file: ~/.rediver/staging-key
+      api-url: https://api.staging.exploop.io
+      api-key-file: ~/.exploop/staging-key
 
   - name: local
     context:
@@ -325,7 +325,7 @@ All commands support these global flags:
 
 ```bash
 # Get platform status
-rediver-admin cluster-info
+exploop-admin cluster-info
 
 # Output:
 # Platform Cluster Info
@@ -353,35 +353,35 @@ rediver-admin cluster-info
 
 ```bash
 # List agents
-rediver-admin get agents
-rediver-admin get agents -o wide
-rediver-admin get agents -o json
+exploop-admin get agents
+exploop-admin get agents -o wide
+exploop-admin get agents -o json
 
 # Get specific agent
-rediver-admin describe agent agent-us-east-1
+exploop-admin describe agent agent-us-east-1
 
 # Create agent (for manual registration)
-rediver-admin create agent \
+exploop-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca,secrets \
   --max-jobs=10
 
 # Maintenance operations
-rediver-admin drain agent agent-us-east-1      # Stop accepting new jobs
-rediver-admin uncordon agent agent-us-east-1   # Resume operations
-rediver-admin delete agent agent-us-east-1     # Remove agent
+exploop-admin drain agent agent-us-east-1      # Stop accepting new jobs
+exploop-admin uncordon agent agent-us-east-1   # Resume operations
+exploop-admin delete agent agent-us-east-1     # Remove agent
 ```
 
 #### Bootstrap Token Management
 
 ```bash
 # List tokens
-rediver-admin get tokens
-rediver-admin get tokens -o wide
+exploop-admin get tokens
+exploop-admin get tokens -o wide
 
 # Create token for agent registration
-rediver-admin create token --max-uses=5 --expires=24h
+exploop-admin create token --max-uses=5 --expires=24h
 
 # Output:
 # token/tok-abc123 created
@@ -395,20 +395,20 @@ rediver-admin create token --max-uses=5 --expires=24h
 #   abc123.xxxxxxxxxxxxxxxx
 #
 # Use this token to register a platform agent:
-#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.rediver.io
+#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.exploop.io
 
 # Revoke token
-rediver-admin revoke token tok-abc123 --reason="No longer needed"
+exploop-admin revoke token tok-abc123 --reason="No longer needed"
 ```
 
 #### Admin User Management (super_admin only)
 
 ```bash
 # List admins
-rediver-admin get admins
+exploop-admin get admins
 
 # Create new admin
-rediver-admin create admin --email=ops@company.com --role=ops_admin
+exploop-admin create admin --email=ops@company.com --role=ops_admin
 
 # Output includes the new admin's API key
 ```
@@ -417,22 +417,22 @@ rediver-admin create admin --email=ops@company.com --role=ops_admin
 
 ```bash
 # List jobs
-rediver-admin get jobs
-rediver-admin get jobs --status=pending
-rediver-admin get jobs --status=running
-rediver-admin get jobs -o wide
+exploop-admin get jobs
+exploop-admin get jobs --status=pending
+exploop-admin get jobs --status=running
+exploop-admin get jobs -o wide
 
 # Job details
-rediver-admin describe job job-xyz123
+exploop-admin describe job job-xyz123
 
 # View job logs
-rediver-admin logs job job-xyz123
+exploop-admin logs job job-xyz123
 
 # Follow job logs in real-time (updates every 2s)
-rediver-admin logs job job-xyz123 -f
+exploop-admin logs job job-xyz123 -f
 
 # Show last N lines
-rediver-admin logs job job-xyz123 --tail=100
+exploop-admin logs job job-xyz123 --tail=100
 ```
 
 #### Declarative Configuration (apply)
@@ -441,17 +441,17 @@ Similar to `kubectl apply`, you can create resources from YAML files:
 
 ```bash
 # Apply from file
-rediver-admin apply -f agent.yaml
+exploop-admin apply -f agent.yaml
 
 # Apply from stdin
-cat agent.yaml | rediver-admin apply -f -
+cat agent.yaml | exploop-admin apply -f -
 ```
 
 **Agent manifest example:**
 
 ```yaml
 # agent.yaml
-apiVersion: admin.rediver.io/v1
+apiVersion: admin.exploop.io/v1
 kind: Agent
 metadata:
   name: agent-us-east-1
@@ -470,7 +470,7 @@ spec:
 
 ```yaml
 # token.yaml
-apiVersion: admin.rediver.io/v1
+apiVersion: admin.exploop.io/v1
 kind: Token
 metadata:
   name: bootstrap-token-prod
@@ -483,7 +483,7 @@ spec:
 
 ```yaml
 # admin.yaml
-apiVersion: admin.rediver.io/v1
+apiVersion: admin.exploop.io/v1
 kind: Admin
 metadata:
   name: ops-team
@@ -496,39 +496,39 @@ spec:
 
 ```bash
 # Delete an agent (with confirmation prompt)
-rediver-admin delete agent agent-us-east-1
+exploop-admin delete agent agent-us-east-1
 
 # Force delete without confirmation
-rediver-admin delete agent agent-us-east-1 --force
+exploop-admin delete agent agent-us-east-1 --force
 
 # Delete a token
-rediver-admin delete token tok-abc123 --force
+exploop-admin delete token tok-abc123 --force
 ```
 
 ### Output Formats
 
 ```bash
 # Default table format
-rediver-admin get agents
+exploop-admin get agents
 
 # Wide table with more columns
-rediver-admin get agents -o wide
+exploop-admin get agents -o wide
 
 # JSON output (for scripting)
-rediver-admin get agents -o json
+exploop-admin get agents -o json
 
 # YAML output
-rediver-admin get agents -o yaml
+exploop-admin get agents -o yaml
 
 # Just names (for scripting)
-rediver-admin get agents -o name
+exploop-admin get agents -o name
 ```
 
 ### Watch Mode
 
 ```bash
 # Real-time updates (refreshes every 2s)
-rediver-admin get agents -w
+exploop-admin get agents -w
 ```
 
 ---
@@ -543,12 +543,12 @@ Platform agents are Rediver-managed agents that can be used by multiple tenants.
 
 ```bash
 # 1. Create bootstrap token (on admin machine)
-rediver-admin create token --max-uses=1 --expires=1h
+exploop-admin create token --max-uses=1 --expires=1h
 
 # 2. Start agent with token (on agent machine)
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.rediver.io \
+  -api-url=https://api.exploop.io \
   -region=us-east-1 \
   -capabilities=sast,sca,secrets
 
@@ -562,7 +562,7 @@ rediver-admin create token --max-uses=1 --expires=1h
 
 ```bash
 # 1. Create agent record (on admin machine)
-rediver-admin create agent \
+exploop-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca
@@ -571,7 +571,7 @@ rediver-admin create agent \
 # 3. Start agent with key (on agent machine)
 ./agent -platform \
   -api-key=ragent_xxxxx \
-  -api-url=https://api.rediver.io
+  -api-url=https://api.exploop.io
 ```
 
 ### Docker Deployment
@@ -579,20 +579,20 @@ rediver-admin create agent \
 ```bash
 # Using bootstrap token
 docker run -d \
-  --name rediver-platform-agent \
+  --name exploop-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.rediver.io \
+  -e API_URL=https://api.exploop.io \
   -e BOOTSTRAP_TOKEN=abc123.xxxxxxxxxxxxxxxx \
-  -v agent-data:/home/rediver/.rediver \
-  rediverio/agent:platform
+  -v agent-data:/home/exploop/.exploop \
+  exploopio/agent:platform
 
 # Using pre-assigned API key
 docker run -d \
-  --name rediver-platform-agent \
+  --name exploop-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.rediver.io \
+  -e API_URL=https://api.exploop.io \
   -e API_KEY=ragent_xxxxx \
-  rediverio/agent:platform
+  exploopio/agent:platform
 ```
 
 ### Kubernetes Deployment
@@ -601,12 +601,12 @@ docker run -d \
 
 ```bash
 # 1. Create agent and get API key
-rediver-admin create agent --name=agent-k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
+exploop-admin create agent --name=agent-k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
 
 # 2. Create secret with the API key
-kubectl create secret generic rediver-agent-credentials \
+kubectl create secret generic exploop-agent-credentials \
   --from-literal=api-key=ragent_xxxxx \
-  -n rediver
+  -n exploop
 ```
 
 ```yaml
@@ -614,28 +614,28 @@ kubectl create secret generic rediver-agent-credentials \
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rediver-platform-agent
-  namespace: rediver
+  name: exploop-platform-agent
+  namespace: exploop
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: rediver-platform-agent
+      app: exploop-platform-agent
   template:
     metadata:
       labels:
-        app: rediver-platform-agent
+        app: exploop-platform-agent
     spec:
       containers:
         - name: agent
-          image: rediverio/agent:platform
+          image: exploopio/agent:platform
           env:
             - name: API_URL
-              value: "https://api.rediver.io"
+              value: "https://api.exploop.io"
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: rediver-agent-credentials
+                  name: exploop-agent-credentials
                   key: api-key
             - name: REGION
               value: "us-east-1"
@@ -650,7 +650,7 @@ spec:
               cpu: "2000m"
           volumeMounts:
             - name: agent-data
-              mountPath: /home/rediver/.rediver
+              mountPath: /home/exploop/.exploop
       volumes:
         - name: agent-data
           emptyDir: {}
@@ -662,12 +662,12 @@ For dynamic scaling where each pod registers independently:
 
 ```bash
 # 1. Create bootstrap token with enough uses for your replicas
-rediver-admin create token --max-uses=10 --expires=24h
+exploop-admin create token --max-uses=10 --expires=24h
 
 # 2. Create secret with the bootstrap token
-kubectl create secret generic rediver-bootstrap-token \
+kubectl create secret generic.exploop-bootstrap-token \
   --from-literal=token=abc123.xxxxxxxxxxxxxxxx \
-  -n rediver
+  -n exploop
 ```
 
 ```yaml
@@ -675,29 +675,29 @@ kubectl create secret generic rediver-bootstrap-token \
 apiVersion: apps/v1
 kind: StatefulSet  # StatefulSet ensures unique agent names
 metadata:
-  name: rediver-platform-agent
-  namespace: rediver
+  name: exploop-platform-agent
+  namespace: exploop
 spec:
-  serviceName: rediver-platform-agent
+  serviceName: exploop-platform-agent
   replicas: 3
   selector:
     matchLabels:
-      app: rediver-platform-agent
+      app: exploop-platform-agent
   template:
     metadata:
       labels:
-        app: rediver-platform-agent
+        app: exploop-platform-agent
     spec:
       containers:
         - name: agent
-          image: rediverio/agent:platform
+          image: exploopio/agent:platform
           env:
             - name: API_URL
-              value: "https://api.rediver.io"
+              value: "https://api.exploop.io"
             - name: BOOTSTRAP_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: rediver-bootstrap-token
+                  name:.exploop-bootstrap-token
                   key: token
             - name: REGION
               value: "us-east-1"
@@ -717,7 +717,7 @@ spec:
               cpu: "2000m"
           volumeMounts:
             - name: agent-data
-              mountPath: /home/rediver/.rediver
+              mountPath: /home/exploop/.exploop
   volumeClaimTemplates:
     - metadata:
         name: agent-data
@@ -735,7 +735,7 @@ Helm chart simplifies deployment with sensible defaults and easy configuration.
 **Add Repository:**
 
 ```bash
-helm repo add rediver https://charts.rediver.io
+helm repo add.exploop https://charts.exploop.io
 helm repo update
 ```
 
@@ -745,13 +745,13 @@ Best for dynamic scaling where each pod registers as a unique agent.
 
 ```bash
 # 1. Create bootstrap token
-rediver-admin create token --max-uses=10 --expires=24h
+exploop-admin create token --max-uses=10 --expires=24h
 
 # 2. Install with bootstrap token
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --create-namespace \
-  --set apiUrl=https://api.rediver.io \
+  --set apiUrl=https://api.exploop.io \
   --set bootstrapToken=abc123.xxxxxxxxxxxxxxxx \
   --set replicaCount=3 \
   --set agent.region=us-east-1 \
@@ -764,13 +764,13 @@ Best for production with fixed replicas sharing the same agent identity.
 
 ```bash
 # 1. Create agent
-rediver-admin create agent --name=k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
+exploop-admin create agent --name=k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
 
 # 2. Install with API key (uses Deployment instead of StatefulSet)
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --create-namespace \
-  --set apiUrl=https://api.rediver.io \
+  --set apiUrl=https://api.exploop.io \
   --set apiKey=ragent_xxxxx \
   --set useStatefulSet=false \
   --set replicaCount=3
@@ -782,16 +782,16 @@ Use credentials stored in an existing Kubernetes secret.
 
 ```bash
 # 1. Create secret with credentials
-kubectl create secret generic rediver-agent-creds \
+kubectl create secret generic exploop-agent-creds \
   --from-literal=api-key=ragent_xxxxx \
-  -n rediver
+  -n exploop
 
 # 2. Install using existing secret
-helm install platform-agent rediver/platform-agent \
-  --namespace rediver \
-  --set apiUrl=https://api.rediver.io \
+helm install platform-agent exploop/platform-agent \
+  --namespace.exploop \
+  --set apiUrl=https://api.exploop.io \
   --set existingSecret.enabled=true \
-  --set existingSecret.name=rediver-agent-creds \
+  --set existingSecret.name=exploop-agent-creds \
   --set useStatefulSet=false
 ```
 
@@ -814,24 +814,24 @@ helm install platform-agent rediver/platform-agent \
 
 ```bash
 # Scale up
-helm upgrade platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm upgrade platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --reuse-values \
   --set replicaCount=5
 
 # Upgrade chart version
-helm upgrade platform-agent rediver/platform-agent \
-  --namespace rediver \
+helm upgrade platform-agent exploop/platform-agent \
+  --namespace.exploop \
   --reuse-values
 
 # Uninstall
-helm uninstall platform-agent -n rediver
+helm uninstall platform-agent -n exploop
 
 # If using StatefulSet, also delete PVCs
-kubectl delete pvc -l app.kubernetes.io/instance=platform-agent -n rediver
+kubectl delete pvc -l app.kubernetes.io/instance=platform-agent -n exploop
 ```
 
-For full documentation, see the [Helm chart README](https://github.com/rediverio/charts/tree/main/charts/platform-agent).
+For full documentation, see the [Helm chart README](https://github.com/exploopio/charts/tree/main/charts/platform-agent).
 
 ---
 
@@ -868,8 +868,8 @@ For full documentation, see the [Helm chart README](https://github.com/rediverio
 │                                                                           │
 │  Operator Workstation              Load Balancer                          │
 │  ┌─────────────────┐              ┌─────────────────┐                    │
-│  │ rediver-admin   │──HTTPS:443──▶│   nginx/ALB     │                    │
-│  │ ~/.rediver/     │              │   :443          │                    │
+│  │ exploop-admin   │──HTTPS:443──▶│   nginx/ALB     │                    │
+│  │ ~/.exploop/     │              │   :443          │                    │
 │  │   config.yaml   │              └────────┬────────┘                    │
 │  └─────────────────┘                       │                              │
 │                                            ▼                              │
@@ -909,15 +909,15 @@ For full documentation, see the [Helm chart README](https://github.com/rediverio
 2. **Use key files instead of inline keys in config**
    ```bash
    # Good: key in separate file with restricted permissions
-   echo "radm_xxx" > ~/.rediver/prod-key
-   chmod 600 ~/.rediver/prod-key
+   echo "radm_xxx" > ~/.exploop/prod-key
+   chmod 600 ~/.exploop/prod-key
 
    # Bad: key directly in config.yaml
    ```
 
 3. **Rotate keys periodically**
    ```bash
-   rediver-admin rotate-key admin <admin-id>
+   exploop-admin rotate-key admin <admin-id>
    ```
 
 4. **Use least-privilege roles**
@@ -947,23 +947,23 @@ For full documentation, see the [Helm chart README](https://github.com/rediverio
 
 ```bash
 # Check configuration
-rediver-admin config view
+exploop-admin config view
 
 # Test with verbose output
-rediver-admin --verbose get agents
+exploop-admin --verbose get agents
 
 # Verify network connectivity
-curl -v https://api.rediver.io/health
+curl -v https://api.exploop.io/health
 ```
 
 ### Agent Not Registering
 
 ```bash
 # Check token validity
-rediver-admin get tokens
+exploop-admin get tokens
 
 # Check agent logs
-docker logs rediver-platform-agent
+docker logs exploop-platform-agent
 
 # Verify bootstrap token format: xxxxxx.yyyyyyyyyyyyyyyy
 ```
@@ -972,7 +972,7 @@ docker logs rediver-platform-agent
 
 ```bash
 # Verify your role
-rediver-admin get admins | grep your-email
+exploop-admin get admins | grep your-email
 
 # Check if operation requires super_admin
 # Operations like "create admin" require super_admin role
@@ -986,47 +986,47 @@ rediver-admin get admins | grep your-email
 
 ```bash
 # === CLUSTER INFO ===
-rediver-admin cluster-info              # Platform overview
-rediver-admin version                   # CLI version
+exploop-admin cluster-info              # Platform overview
+exploop-admin version                   # CLI version
 
 # === AGENTS ===
-rediver-admin get agents                # List all agents
-rediver-admin get agents -o wide        # Detailed list
-rediver-admin get agents -w             # Watch mode (auto-refresh)
-rediver-admin describe agent <name>     # Agent details
-rediver-admin create agent --name=<n> --region=<r> --capabilities=sast,sca
-rediver-admin drain agent <name>        # Stop accepting new jobs
-rediver-admin uncordon agent <name>     # Resume operations
-rediver-admin delete agent <name>       # Remove agent
+exploop-admin get agents                # List all agents
+exploop-admin get agents -o wide        # Detailed list
+exploop-admin get agents -w             # Watch mode (auto-refresh)
+exploop-admin describe agent <name>     # Agent details
+exploop-admin create agent --name=<n> --region=<r> --capabilities=sast,sca
+exploop-admin drain agent <name>        # Stop accepting new jobs
+exploop-admin uncordon agent <name>     # Resume operations
+exploop-admin delete agent <name>       # Remove agent
 
 # === TOKENS ===
-rediver-admin get tokens                # List bootstrap tokens
-rediver-admin create token --max-uses=5 --expires=24h
-rediver-admin describe token <id>       # Token details
-rediver-admin revoke token <id> --reason="..."
-rediver-admin delete token <id>         # Remove token
+exploop-admin get tokens                # List bootstrap tokens
+exploop-admin create token --max-uses=5 --expires=24h
+exploop-admin describe token <id>       # Token details
+exploop-admin revoke token <id> --reason="..."
+exploop-admin delete token <id>         # Remove token
 
 # === JOBS ===
-rediver-admin get jobs                  # List platform jobs
-rediver-admin get jobs --status=pending # Filter by status
-rediver-admin describe job <id>         # Job details
-rediver-admin logs job <id>             # View job logs
-rediver-admin logs job <id> -f          # Follow logs in real-time
+exploop-admin get jobs                  # List platform jobs
+exploop-admin get jobs --status=pending # Filter by status
+exploop-admin describe job <id>         # Job details
+exploop-admin logs job <id>             # View job logs
+exploop-admin logs job <id> -f          # Follow logs in real-time
 
 # === ADMINS ===
-rediver-admin get admins                # List admin users
-rediver-admin create admin --email=<e> --role=ops_admin
+exploop-admin get admins                # List admin users
+exploop-admin create admin --email=<e> --role=ops_admin
 
 # === CONFIG ===
-rediver-admin config set-context <name> --api-url=<url> --api-key=<key>
-rediver-admin config use-context <name> # Switch context
-rediver-admin config current-context    # Show current
-rediver-admin config get-contexts       # List all contexts
-rediver-admin config view               # Show full config
+exploop-admin config set-context <name> --api-url=<url> --api-key=<key>
+exploop-admin config use-context <name> # Switch context
+exploop-admin config current-context    # Show current
+exploop-admin config get-contexts       # List all contexts
+exploop-admin config view               # Show full config
 
 # === DECLARATIVE ===
-rediver-admin apply -f agent.yaml       # Apply from file
-cat manifest.yaml | rediver-admin apply -f -  # Apply from stdin
+exploop-admin apply -f agent.yaml       # Apply from file
+cat manifest.yaml | exploop-admin apply -f -  # Apply from stdin
 ```
 
 ### Resource Aliases
@@ -1076,7 +1076,7 @@ go build -o ./bin/bootstrap-admin ./cmd/bootstrap-admin
 
 # Run with database connection
 ./bin/bootstrap-admin \
-  -db "postgres://rediver:rediver@localhost:5432/rediver?sslmode=disable" \
+  -db "postgres:/.exploop.exploop@localhost:5432/exploop?sslmode=disable" \
   -email "admin@localhost" \
   -name "Dev Admin" \
   -role "super_admin"
@@ -1142,7 +1142,7 @@ go run -e 'import "golang.org/x/crypto/bcrypt"; hash, _ := bcrypt.GenerateFromPa
 
 ```sql
 -- Connect to database
-psql -h localhost -U rediver -d rediver
+psql -h localhost -U.exploop -d.exploop
 
 -- Insert admin user
 INSERT INTO admin_users (
@@ -1195,23 +1195,23 @@ curl -X GET http://localhost:8080/api/v1/admin/bootstrap-tokens \
   -H "X-Admin-API-Key: $ADMIN_API_KEY"
 ```
 
-#### 3. Admin CLI (rediver-admin)
+#### 3. Admin CLI (exploop-admin)
 
 ```bash
 # Set environment variables
-export REDIVER_API_URL=http://localhost:8080
-export REDIVER_API_KEY=rdv-admin-your-key-here
+export EXPLOOP_API_URL=http://localhost:8080
+export EXPLOOP_API_KEY=rdv-admin-your-key-here
 
 # Or create a config context
-rediver-admin config set-context local \
+exploop-admin config set-context local \
   --api-url=http://localhost:8080 \
   --api-key=rdv-admin-your-key-here
 
-rediver-admin config use-context local
+exploop-admin config use-context local
 
 # Now use commands
-rediver-admin get agents
-rediver-admin get tokens
+exploop-admin get agents
+exploop-admin get tokens
 ```
 
 ### Environment Variables for Development
@@ -1298,7 +1298,7 @@ Create a `scripts/dev-setup-admin.sh` for convenience:
 
 set -e
 
-DB_URL="${DB_URL:-postgres://rediver:rediver@localhost:5432/rediver?sslmode=disable}"
+DB_URL="${DB_URL:-postgres:/.exploop.exploop@localhost:5432/exploop?sslmode=disable}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@localhost}"
 ADMIN_ROLE="${ADMIN_ROLE:-super_admin}"
 

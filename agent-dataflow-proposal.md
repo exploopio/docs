@@ -69,7 +69,7 @@ select sink, sourceNode, sinkNode,
 **SDK Integration (Implemented):**
 
 ```go
-import "github.com/rediverio/sdk/pkg/scanners"
+import "github.com/exploopio/sdk/pkg/scanners"
 
 // Use language-specific preset
 scanner := scanners.CodeQLGo()

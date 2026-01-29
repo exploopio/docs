@@ -458,8 +458,8 @@ INSERT INTO tenants (
     updated_at
 ) VALUES (
     '00000000-0000-0000-0000-000000000001',
-    'Rediver Platform',
-    'rediver-platform',
+    'Exploop Platform',
+    .exploop-platform',
     (SELECT id FROM plans WHERE slug = 'enterprise'),
     '{"is_system_tenant": true}'::jsonb,
     NOW(),
@@ -2610,14 +2610,14 @@ func (s *AgentJoinService) JoinWithBootstrapToken(
 
 ### 11.1 CLI Overview
 
-The `rediver-admin` CLI provides administrative commands for platform management, similar to `kubectl` or `kubeadm`:
+The `exploop-admin` CLI provides administrative commands for platform management, similar to `kubectl` or `kubeadm`:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         ADMIN CLI COMMANDS                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  rediver-admin                                                               │
+│  exploop-admin                                                               │
 │  ├── token                    # Bootstrap token management                  │
 │  │   ├── create              # Create new bootstrap token                   │
 │  │   ├── list                # List all tokens                              │
@@ -2654,7 +2654,7 @@ The `rediver-admin` CLI provides administrative commands for platform management
 # =============================================================================
 
 # Basic token (24h, single-use)
-$ rediver-admin token create
+$ exploop-admin token create
 ✓ Bootstrap token created
 
 Token:        rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef
@@ -2663,11 +2663,11 @@ Expires:      2024-01-26 10:00:00 UTC (in 24 hours)
 Max Uses:     1
 
 Join command:
-  rediver-agent join --token=rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef \
-                     --server=https://api.rediver.io
+  exploop-agent join --token=rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef \
+                     --server=https://api.exploop.io
 
 # Token with custom options
-$ rediver-admin token create \
+$ exploop-admin token create \
     --description "US East scanners" \
     --expires 48h \
     --max-uses 5 \
@@ -2685,27 +2685,27 @@ Required:     capabilities=[sast,sca,secrets] tools=[semgrep,trivy,gitleaks]
 Region:       us-east-1
 
 Join command:
-  rediver-agent join --token=rbt_AbCdEfGhIjKlMnOpQrStUvWx1234567890 \
-                     --server=https://api.rediver.io
+  exploop-agent join --token=rbt_AbCdEfGhIjKlMnOpQrStUvWx1234567890 \
+                     --server=https://api.exploop.io
 
 # Print only the join command (for scripting)
-$ rediver-admin token create --print-join-command
-rediver-agent join --token=rbt_XyZ123... --server=https://api.rediver.io
+$ exploop-admin token create --print-join-command
+exploop-agent join --token=rbt_XyZ123... --server=https://api.exploop.io
 
 # Output as JSON
-$ rediver-admin token create --output json
+$ exploop-admin token create --output json
 {
   "token": "rbt_...",
   "token_id": "...",
   "expires_at": "2024-01-26T10:00:00Z",
-  "join_command": "rediver-agent join --token=... --server=..."
+  "join_command": "exploop-agent join --token=... --server=..."
 }
 
 # =============================================================================
 # LIST TOKENS
 # =============================================================================
 
-$ rediver-admin token list
+$ exploop-admin token list
 
 ID                                    PREFIX        STATUS    USES    EXPIRES              DESCRIPTION
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -2715,13 +2715,13 @@ c3d4e5f6-a7b8-9012-cdef-123456789012  rbt_XyZa...   used      1/1     2024-01-25
 d4e5f6a7-b8c9-0123-def0-234567890123  rbt_QwEr...   revoked   0/1     2024-01-28 10:00     Revoked: security
 
 # Filter by status
-$ rediver-admin token list --status active
+$ exploop-admin token list --status active
 
 # =============================================================================
 # GET TOKEN DETAILS
 # =============================================================================
 
-$ rediver-admin token get a1b2c3d4-e5f6-7890-abcd-ef1234567890
+$ exploop-admin token get a1b2c3d4-e5f6-7890-abcd-ef1234567890
 
 Token ID:              a1b2c3d4-e5f6-7890-abcd-ef1234567890
 Prefix:                rbt_7Hj9...
@@ -2740,25 +2740,25 @@ Used By Agents:        (none)
 # REVOKE TOKEN
 # =============================================================================
 
-$ rediver-admin token revoke a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+$ exploop-admin token revoke a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
     --reason "No longer needed"
 
 ✓ Token revoked
 
 # Force revoke without confirmation
-$ rediver-admin token revoke <id> --force
+$ exploop-admin token revoke <id> --force
 
 # =============================================================================
 # CLEANUP EXPIRED TOKENS
 # =============================================================================
 
-$ rediver-admin token cleanup
+$ exploop-admin token cleanup
 
 Found 15 expired tokens
 ✓ Deleted 15 expired tokens
 
 # Dry run
-$ rediver-admin token cleanup --dry-run
+$ exploop-admin token cleanup --dry-run
 Would delete 15 expired tokens (dry run)
 ```
 
@@ -2769,7 +2769,7 @@ Would delete 15 expired tokens (dry run)
 # LIST AGENTS
 # =============================================================================
 
-$ rediver-admin agent list
+$ exploop-admin agent list
 
 ID          NAME                  STATUS    HEALTH    JOBS    REGION       LAST SEEN
 ─────────────────────────────────────────────────────────────────────────────────────
@@ -2781,14 +2781,14 @@ jkl012...   scanner-ap-01         disabled  offline   0/5     ap-south-1   2 hou
 Total: 4 agents (2 online, 2 offline)
 
 # Filter
-$ rediver-admin agent list --status active --health online
-$ rediver-admin agent list --region us-east-1
+$ exploop-admin agent list --status active --health online
+$ exploop-admin agent list --region us-east-1
 
 # =============================================================================
 # GET AGENT DETAILS
 # =============================================================================
 
-$ rediver-admin agent get abc123
+$ exploop-admin agent get abc123
 
 Agent ID:              abc123...
 Name:                  scanner-us-east-01
@@ -2824,17 +2824,17 @@ Statistics:
 # DISABLE/ENABLE AGENT
 # =============================================================================
 
-$ rediver-admin agent disable abc123 --reason "Maintenance"
+$ exploop-admin agent disable abc123 --reason "Maintenance"
 ✓ Agent abc123 disabled
 
-$ rediver-admin agent enable abc123
+$ exploop-admin agent enable abc123
 ✓ Agent abc123 enabled
 
 # =============================================================================
 # ROTATE API KEY
 # =============================================================================
 
-$ rediver-admin agent rotate-key abc123
+$ exploop-admin agent rotate-key abc123
 
 ⚠ This will invalidate the current API key immediately.
   The agent will need to be reconfigured with the new key.
@@ -2847,13 +2847,13 @@ New API Key:     rda_p_NewKeyHere123456789...
 Agent must be reconfigured with this key.
 
 # Force without confirmation
-$ rediver-admin agent rotate-key abc123 --force
+$ exploop-admin agent rotate-key abc123 --force
 
 # =============================================================================
 # DELETE AGENT
 # =============================================================================
 
-$ rediver-admin agent delete abc123
+$ exploop-admin agent delete abc123
 
 ⚠ This will permanently delete the agent.
   Agent ID: abc123
@@ -2865,10 +2865,10 @@ Continue? [y/N] y
 ✓ Agent deleted
 
 # Cannot delete agent with active jobs
-$ rediver-admin agent delete def456
+$ exploop-admin agent delete def456
 ✗ Error: Agent has 5 active jobs. Wait for jobs to complete or use --force.
 
-$ rediver-admin agent delete def456 --force
+$ exploop-admin agent delete def456 --force
 ⚠ Force deleting agent with active jobs. Jobs will be returned to queue.
 ✓ Agent deleted, 5 jobs returned to queue
 ```
@@ -2880,7 +2880,7 @@ $ rediver-admin agent delete def456 --force
 # QUEUE STATUS
 # =============================================================================
 
-$ rediver-admin queue status
+$ exploop-admin queue status
 
 Platform Agent Queue Status
 ═══════════════════════════════════════════════════════════════════
@@ -2907,7 +2907,7 @@ By Priority:
 # LIST QUEUED JOBS
 # =============================================================================
 
-$ rediver-admin queue list
+$ exploop-admin queue list
 
 ID          TENANT              TOOL      PRIORITY   QUEUED              WAIT TIME
 ────────────────────────────────────────────────────────────────────────────────────
@@ -2916,14 +2916,14 @@ cmd456...   Beta Inc            trivy     150        2024-01-25 09:55    10m
 cmd789...   Startup LLC         semgrep   75         2024-01-25 09:30    35m
 
 # Filter by tool, tenant, or priority
-$ rediver-admin queue list --tool nuclei
-$ rediver-admin queue list --min-wait 30m
+$ exploop-admin queue list --tool nuclei
+$ exploop-admin queue list --min-wait 30m
 
 # =============================================================================
 # FLUSH STUCK JOBS
 # =============================================================================
 
-$ rediver-admin queue flush --stuck-for 2h
+$ exploop-admin queue flush --stuck-for 2h
 
 Found 5 jobs stuck for more than 2 hours:
   cmd111... - dispatched 3h ago, agent offline
@@ -2943,52 +2943,52 @@ Return to queue? [y/N] y
 # =============================================================================
 
 # Set API server
-$ rediver-admin config set-server https://api.rediver.io
+$ exploop-admin config set-server https://api.exploop.io
 ✓ Server URL saved
 
 # Set admin token (interactive)
-$ rediver-admin config set-token
+$ exploop-admin config set-token
 Enter admin API token: ********
 ✓ Token saved
 
 # Set admin token (non-interactive)
-$ rediver-admin config set-token --token "rat_admin_token_here"
+$ exploop-admin config set-token --token "rat_admin_token_here"
 ✓ Token saved
 
 # Or use environment variables
-$ export REDIVER_ADMIN_SERVER=https://api.rediver.io
+$ export REDIVER_ADMIN_SERVER=https://api.exploop.io
 $ export REDIVER_ADMIN_TOKEN=rat_admin_token_here
 
 # Show current config
-$ rediver-admin config show
-Server:     https://api.rediver.io
+$ exploop-admin config show
+Server:     https://api.exploop.io
 Token:      rat_abc... (configured)
-Config Dir: ~/.config/rediver-admin/
+Config Dir: ~/.config/exploop-admin/
 
-# Config file location: ~/.config/rediver-admin/config.yaml
+# Config file location: ~/.config/exploop-admin/config.yaml
 # config.yaml:
-# server: https://api.rediver.io
+# server: https://api.exploop.io
 # token: rat_admin_token_here
 ```
 
 ### 11.6 CLI Implementation Structure
 
 ```go
-// cmd/rediver-admin/main.go
+// cmd/exploop-admin/main.go
 package main
 
 import (
     "github.com/spf13/cobra"
-    "github.com/rediverio/admin-cli/cmd/token"
-    "github.com/rediverio/admin-cli/cmd/agent"
-    "github.com/rediverio/admin-cli/cmd/queue"
-    "github.com/rediverio/admin-cli/cmd/config"
+    "github.com/exploopio/admin-cli/cmd/token"
+    "github.com/exploopio/admin-cli/cmd/agent"
+    "github.com/exploopio/admin-cli/cmd/queue"
+    "github.com/exploopio/admin-cli/cmd/config"
 )
 
 func main() {
     rootCmd := &cobra.Command{
-        Use:   "rediver-admin",
-        Short: "Rediver Platform Administration CLI",
+        Use:   "exploop-admin",
+        Short: "Exploop Platform Administration CLI",
     }
 
     rootCmd.AddCommand(
@@ -3007,7 +3007,7 @@ func main() {
     }
 }
 
-// cmd/rediver-admin/cmd/token/create.go
+// cmd/exploop-admin/cmd/token/create.go
 package token
 
 func NewCreateCmd() *cobra.Command {
@@ -3061,22 +3061,22 @@ func runCreate(cmd *cobra.Command, args []string) error {
 # Installation options:
 
 # 1. Binary download
-$ curl -LO https://github.com/rediverio/rediver-admin/releases/latest/download/rediver-admin-linux-amd64
-$ chmod +x rediver-admin-linux-amd64
-$ sudo mv rediver-admin-linux-amd64 /usr/local/bin/rediver-admin
+$ curl -LO https://github.com/exploopio/exploop-admin/releases/latest/download/exploop-admin-linux-amd64
+$ chmod +x exploop-admin-linux-amd64
+$ sudo mv exploop-admin-linux-amd64 /usr/local/bin/exploop-admin
 
 # 2. Homebrew (macOS/Linux)
-$ brew install rediverio/tap/rediver-admin
+$ brew install exploopio/tap/exploop-admin
 
 # 3. Go install
-$ go install github.com/rediverio/rediver-admin@latest
+$ go install github.com/exploopio/exploop-admin@latest
 
 # 4. Docker
-$ docker run --rm -it rediverio/admin-cli token create
+$ docker run --rm -it exploopio/admin-cli token create
 
 # Verify installation
-$ rediver-admin version
-rediver-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
+$ exploop-admin version
+exploop-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
 ```
 
 ---
@@ -3870,7 +3870,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 | **Dispatch** | Assigning a queued job to a specific agent |
 | **Bootstrap Token** | Short-lived, limited-use token for platform agent self-registration (v3.2) |
 | **Agent Join** | Process where a platform agent registers itself using a bootstrap token (v3.2) |
-| **rediver-admin** | CLI tool for platform administrators to manage tokens, agents, and queues (v3.2) |
+| **exploop-admin** | CLI tool for platform administrators to manage tokens, agents, and queues (v3.2) |
 | **Heartbeat TTL** | Redis key with automatic expiry (30s) for agent liveness detection (v3.2) |
 | **Job Dispatch Lock** | Redis SETNX lock preventing multiple agents from claiming same job (v3.2) |
 
@@ -3904,7 +3904,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 | 2.0 | 2025-01-25 | Embedded token in commands table, multi-use tokens |
 | 3.0 | 2025-01-25 | Auto-allocation model: removed explicit assignment, added concurrent limits |
 | 3.1 | 2025-01-25 | **Queue Management**: global queue, priority scheduling, fair queuing with age bonus, failure recovery |
-| 3.2 | 2025-01-25 | **Agent State & Join**: Redis state management, Bootstrap Token join mechanism, Admin CLI (rediver-admin) |
+| 3.2 | 2025-01-25 | **Agent State & Join**: Redis state management, Bootstrap Token join mechanism, Admin CLI (exploop-admin) |
 
 ### E. References
 
@@ -4049,7 +4049,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 - [ ] **Task #21**: Update ScanHandler for platform agent selection
   - Add use_platform_agent option, queue position response
 
-- [ ] **Task #22**: Create Admin CLI (rediver-admin)
+- [ ] **Task #22**: Create Admin CLI (exploop-admin)
   - token create/list/revoke, agent list/disable/enable, queue status
 
 ### Phase 7: UI Implementation (5 tasks)

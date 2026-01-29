@@ -1,6 +1,6 @@
 # Source Code Security - Implementation Plan
 
-> **Project**: Rediver CTEM Platform
+> **Project**: Exploop CTEM Platform
 > **Goal**: Complete source code security scanning with CI/CD integration
 > **Timeline**: Release-critical feature
 > **Last Updated**: January 28, 2026 (Finding Activities completed, AI Triage plan added, Module assessment completed)
@@ -70,7 +70,7 @@ After thorough analysis of the existing codebase, we concluded that **NO NEW MOD
 **What's NOT needed:**
 - ❌ New `source-security` API module - Use existing `vulnerability` + `findings` endpoints
 - ❌ New `code-security` UI feature - Enhance existing `findings` feature
-- ❌ New CLI tool `rediver` - Enhance existing `agent` binary
+- ❌ New CLI tool .exploop` - Enhance existing `agent` binary
 
 **What IS needed:**
 - ✅ Enhancements to existing modules (source context, AI triage)
@@ -101,7 +101,7 @@ After thorough analysis of the existing codebase, we concluded that **NO NEW MOD
 │       └──────────────┴──────────────┴──────────────┴──────────────┘        │
 │                                     │                                       │
 │                            ┌────────▼────────┐                             │
-│                            │  rediver CLI    │                             │
+│                            │ .exploop CLI    │                             │
 │                            │  (scan + push)  │                             │
 │                            └────────┬────────┘                             │
 └─────────────────────────────────────┼───────────────────────────────────────┘
@@ -765,10 +765,10 @@ agent -tool semgrep -target . -output table
 ```yaml
 # .gitlab-ci.yml
 include:
-  - remote: 'https://cdn.rediver.io/ci/gitlab/v1/templates.yml'
+  - remote: 'https://cdn.exploop.io/ci/gitlab/v1/templates.yml'
 
 variables:
-  API_URL: https://api.rediver.io
+  API_URL: https://api.exploop.io
   API_KEY: $REDIVER_API_TOKEN
 
 stages:
@@ -779,7 +779,7 @@ stages:
 # Option 1: All-in-one scan (using agent binary)
 security-scan:
   stage: security
-  image: ghcr.io/rediverio/agent:latest
+  image: ghcr.io/exploopio/agent:latest
   script:
     - agent -tools semgrep,gitleaks,trivy-fs
         -target .
@@ -798,52 +798,52 @@ security-scan:
 # Option 2: Separate scan jobs (recommended for parallel execution)
 sast-scan:
   stage: security
-  image: ghcr.io/rediverio/agent:latest
+  image: ghcr.io/exploopio/agent:latest
   script:
     - agent -tool semgrep -target . -push -auto-ci -fail-on critical
   allow_failure: false
 
 sca-scan:
   stage: security
-  image: ghcr.io/rediverio/agent:latest
+  image: ghcr.io/exploopio/agent:latest
   script:
     - agent -tool trivy-fs -target . -push -auto-ci -fail-on high
   allow_failure: true
 
 secret-scan:
   stage: security
-  image: ghcr.io/rediverio/agent:latest
+  image: ghcr.io/exploopio/agent:latest
   script:
     - agent -tool gitleaks -target . -push -auto-ci -fail-on high
   allow_failure: false
 
 container-scan:
   stage: security
-  image: ghcr.io/rediverio/agent:latest
+  image: ghcr.io/exploopio/agent:latest
   script:
     - agent -tool trivy-image -target $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -push -auto-ci -fail-on critical
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Option 3: Using templates (extends pattern)
-.rediver-base:
-  image: ghcr.io/rediverio/agent:latest
+.exploop-base:
+  image: ghcr.io/exploopio/agent:latest
   variables:
-    API_URL: https://api.rediver.io
+    API_URL: https://api.exploop.io
     API_KEY: $REDIVER_API_TOKEN
 
-.rediver-sast:
-  extends: .rediver-base
+.exploop-sast:
+  extends: .exploop-base
   script:
     - agent -tool semgrep -target . -push -auto-ci -fail-on ${FAIL_ON:-critical}
 
-.rediver-sca:
-  extends: .rediver-base
+.exploop-sca:
+  extends: .exploop-base
   script:
     - agent -tool trivy-fs -target . -push -auto-ci -fail-on ${FAIL_ON:-high}
 
-.rediver-secrets:
-  extends: .rediver-base
+.exploop-secrets:
+  extends: .exploop-base
   script:
     - agent -tool gitleaks -target . -push -auto-ci -fail-on ${FAIL_ON:-high}
 ```
@@ -851,12 +851,12 @@ container-scan:
 ### 4.3 Configuration File
 
 ```yaml
-# .rediver.yml
+# .exploop.yml
 version: "1"
 
 # API configuration
 api:
-  url: https://api.rediver.io
+  url: https://api.exploop.io
   # token from environment: REDIVER_API_TOKEN
 
 # Repository settings
@@ -1276,7 +1276,7 @@ const DeveloperDashboard: React.FC = () => {
 - [ ] Implement `-fail-on` security gate logic
 - [ ] Add SARIF output format support
 - [ ] Add source context to pushed results
-- [ ] Create Docker image `ghcr.io/rediverio/agent:latest`
+- [ ] Create Docker image `ghcr.io/exploopio/agent:latest`
 
 **SDK Updates:**
 - [ ] Add SourceContext to RIS Finding struct

@@ -8,21 +8,21 @@ nav_order: 10
 
 # SDK Quick Start Guide
 
-Get started with the Rediver SDK to run security scans and push results to the platform.
+Get started with the Exploop SDK to run security scans and push results to the platform.
 
 ---
 
 ## Installation
 
 ```bash
-go get github.com/rediverio/sdk@latest
+go get github.com/exploopio/sdk@latest
 ```
 
 For private repositories:
 
 ```bash
 # Set GOPRIVATE to bypass public proxy
-export GOPRIVATE=github.com/rediverio/*
+export GOPRIVATE=github.com/exploopio/*
 
 # Configure Git authentication (SSH recommended)
 git config --global url."git@github.com:".insteadOf "https://github.com/"
@@ -42,8 +42,8 @@ import (
     "fmt"
     "os"
 
-    "github.com/rediverio/sdk/pkg/client"
-    "github.com/rediverio/sdk/pkg/core"
+    "github.com/exploopio/sdk/pkg/client"
+    "github.com/exploopio/sdk/pkg/core"
 )
 
 func main() {
@@ -69,7 +69,7 @@ func main() {
 
     // 4. Push to Rediver platform
     apiClient := client.New(&client.Config{
-        BaseURL: "https://api.rediver.io",
+        BaseURL: "https://api.exploop.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -147,10 +147,10 @@ result, err := scanner.Scan(ctx, target, &core.ScanOptions{
 ### Create API Client
 
 ```go
-import "github.com/rediverio/sdk/pkg/client"
+import "github.com/exploopio/sdk/pkg/client"
 
 apiClient := client.New(&client.Config{
-    BaseURL:  "https://api.rediver.io",
+    BaseURL:  "https://api.exploop.io",
     APIKey:   os.Getenv("API_KEY"),
     WorkerID: "worker-uuid",  // Optional: for tracking
     Timeout:  30 * time.Second,
@@ -203,7 +203,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Security Scan
-        uses: docker://rediverio/agent:ci
+        uses: docker://exploopio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -221,7 +221,7 @@ jobs:
 
 ```yaml
 security-scan:
-  image: rediverio/agent:ci
+  image: exploopio/agent:ci
   script:
     - agent -tools semgrep,gitleaks,trivy -target . -auto-ci -push
   variables:

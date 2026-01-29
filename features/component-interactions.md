@@ -7,7 +7,7 @@ nav_order: 6
 
 # Component Interactions
 
-This document provides a comprehensive overview of how the major components in the Rediver CTEM Platform interact with each other.
+This document provides a comprehensive overview of how the major components in the Exploop CTEM Platform interact with each other.
 
 ---
 

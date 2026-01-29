@@ -342,7 +342,7 @@ Scans complete: 42 findings
 You can test suppression matching without the platform:
 
 ```go
-import "github.com/rediverio/agent/internal/gate"
+import "github.com/exploopio/agent/internal/gate"
 
 rules := []client.SuppressionRule{
     {RuleID: "sql-injection", ToolName: "semgrep"},
@@ -502,7 +502,7 @@ For each suppression, create an equivalent platform rule:
 
 ```bash
 # Convert .semgrepignore entry to API call
-curl -X POST https://api.rediver.io/api/v1/suppressions \
+curl -X POST https://api.exploop.io/api/v1/suppressions \
   -H "Authorization: Bearer $API_KEY" \
   -d '{
     "path_pattern": "tests/fixtures/**",

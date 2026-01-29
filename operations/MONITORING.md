@@ -8,7 +8,7 @@ nav_order: 7
 
 # Monitoring & Observability Guide
 
-Complete guide for monitoring and observability in production RediverIO deployments.
+Complete guide for monitoring and observability in production Exploop deployments.
 
 ---
 
@@ -84,12 +84,12 @@ func main() {
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: rediver-api
-  namespace: rediver
+  name: exploop-api
+  namespace: exploop
 spec:
   selector:
     matchLabels:
-      app: rediver-api
+      app: exploop-api
   endpoints:
   - port: metrics
     interval: 30s
@@ -116,16 +116,16 @@ rate(http_requests_total{status=~"5.."}[5m])
 
 ```promql
 # Active findings
-rediver_findings_total{status="open"}
+exploop_findings_total{status="open"}
 
 # Scan queue depth
-rediver_scan_queue_depth
+exploop_scan_queue_depth
 
 # Agent heartbeats
-rate(rediver_agent_heartbeats_total[5m])
+rate.exploop_agent_heartbeats_total[5m])
 
 # Database connections
-rediver_db_connections{state="active"}
+exploop_db_connections{state="active"}
 ```
 
 #### Infrastructure Metrics
@@ -150,19 +150,19 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'rediver-api'
+  - job_name: 'exploop-api'
     kubernetes_sd_configs:
       - role: pod
         namespaces:
-          names: [rediver]
+          names: .exploop]
     relabel_configs:
       - source_labels: [__meta_kubernetes_pod_label_app]
-        regex: rediver-api
+        regex: exploop-api
         action: keep
 
-  - job_name: 'rediver-ui'
+  - job_name: .exploop-ui'
     static_configs:
-      - targets: ['rediver-ui:3000']
+      - targets: [.exploop-ui:3000']
 
   - job_name: 'postgres'
     static_configs:
@@ -258,17 +258,17 @@ spec:
 
 ```logql
 # All API errors
-{app="rediver-api"} |= "error"
+{app="exploop-api"} |= "error"
 
 # Failed logins
-{app="rediver-api"} |= "login" |= "failed"
+{app="exploop-api"} |= "login" |= "failed"
 
 # Slow queries (>1s)
-{app="rediver-api"} | json | duration > 1s
+{app="exploop-api"} | json | duration > 1s
 
 # Top errors by tenant
 topk(10, sum by (tenant_id) (
-  rate({app="rediver-api"} |= "error" [5m])
+  rate({app="exploop-api"} |= "error" [5m])
 ))
 ```
 
@@ -290,7 +290,7 @@ func InitTracing() {
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
         trace.WithResource(resource.NewWithAttributes(
-            semconv.ServiceNameKey.String("rediver-api"),
+            semconv.ServiceNameKey.String("exploop-api"),
         )),
     )
     otel.SetTracerProvider(tp)
@@ -337,7 +337,7 @@ spec:
 ```yaml
 # alerts.yaml
 groups:
-  - name: rediver_api
+  - name:.exploop_api
     interval: 30s
     rules:
       # High error rate
@@ -353,7 +353,7 @@ groups:
 
       # API down
       - alert: APIDown
-        expr: up{job="rediver-api"} == 0
+        expr: up{job="exploop-api"} == 0
         for: 1m
         labels:
           severity: critical
@@ -375,8 +375,8 @@ groups:
       # Database connection pool exhausted
       - alert: DBConnectionPoolExhausted
         expr: |
-          rediver_db_connections{state="in_use"} 
-          / rediver_db_connections_max > 0.9
+         .exploop_db_connections{state="in_use"} 
+          /.exploop_db_connections_max > 0.9
         for: 5m
         labels:
           severity: warning
@@ -508,10 +508,10 @@ histogram_quantile(0.95,
 
 ```promql
 # Total findings by severity
-sum by (severity) (rediver_findings_total{status="open"})
+sum by (severity) .exploop_findings_total{status="open"})
 
 # Scan completion rate
-rate(rediver_scans_total{status="completed"}[1h])
+rate.exploop_scans_total{status="completed"}[1h])
 ```
 
 ---

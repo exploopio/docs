@@ -9,9 +9,9 @@ title: SDK Deployment Modes
 parent: Architecture
 nav_order: 2
 ---
-# Rediver SDK Deployment Modes
+# Exploop SDK Deployment Modes
 
-This document describes the different ways to deploy and use the Rediver SDK based on real-world use cases.
+This document describes the different ways to deploy and use the Exploop SDK based on real-world use cases.
 
 ---
 
@@ -65,7 +65,7 @@ This document describes the different ways to deploy and use the Rediver SDK bas
 │          │                                                       │
 │          ▼                                                       │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │  rediver scan --tool semgrep --target ./ --push           │  │
+│  │ .exploop scan --tool semgrep --target ./ --push           │  │
 │  │                                                            │  │
 │  │  [Scan] → [Parse SARIF] → [Push to Rediver] → [Exit 0]   │  │
 │  └───────────────────────────────────────────────────────────┘  │
@@ -82,10 +82,10 @@ This document describes the different ways to deploy and use the Rediver SDK bas
 # GitHub Actions
 - name: Run Rediver Scan
   run: |
-    rediver scan \
+   .exploop scan \
       --tool semgrep \
       --target . \
-      --api-url https://api.rediver.io \
+      --api-url https://api.exploop.io \
       --api-key ${{ secrets.API_KEY }} \
       --source-id ${{ secrets.SOURCE_ID }} \
       --push
@@ -93,7 +93,7 @@ This document describes the different ways to deploy and use the Rediver SDK bas
 # GitLab CI
 security_scan:
   script:
-    - rediver scan --tool trivy-fs --target . --push
+    -.exploop scan --tool trivy-fs --target . --push
 ```
 
 **When to use:**
@@ -197,7 +197,7 @@ collectors:
     poll_interval: 1h            # Collect from GitHub every hour
 
 server:
-  base_url: https://api.rediver.io
+  base_url: https://api.exploop.io
   api_key: ${API_KEY}
   source_id: ${SOURCE_ID}
 ```
@@ -262,14 +262,14 @@ server:
 
 ```bash
 # One-shot mode - collect once and exit
-rediver collect \
+exploop collect \
   --source github \
   --token $GITHUB_TOKEN \
   --org myorg \
   --push
 
 # Daemon mode - continuous collection
-rediver collect \
+exploop collect \
   --source github \
   --token $GITHUB_TOKEN \
   --org myorg \
@@ -382,47 +382,47 @@ Start
 ### Runner Commands
 ```bash
 # Single tool scan
-rediver scan --tool semgrep --target ./src --push
+exploop scan --tool semgrep --target ./src --push
 
 # Multiple tools
-rediver scan --tools semgrep,gitleaks,trivy-fs --target . --push
+exploop scan --tools semgrep,gitleaks,trivy-fs --target . --push
 
 # With custom config
-rediver scan --tool semgrep --config ./semgrep.yml --target . --push
+exploop scan --tool semgrep --config ./semgrep.yml --target . --push
 
 # Dry run (no push)
-rediver scan --tool semgrep --target . --output ./report.json
+exploop scan --tool semgrep --target . --output ./report.json
 ```
 
 ### Agent Commands
 ```bash
 # Start agent with config file
-rediver agent --config ./agent.yaml
+exploop agent --config ./agent.yaml
 
 # Start with inline config
-rediver agent \
+exploop agent \
   --name my-scanner \
   --scan-interval 6h \
   --target /opt/code \
   --tool semgrep,gitleaks
 
 # Standalone mode (no server polling)
-rediver agent --config ./agent.yaml --standalone
+exploop agent --config ./agent.yaml --standalone
 
 # With server control enabled
-rediver agent --config ./agent.yaml --enable-commands
+exploop agent --config ./agent.yaml --enable-commands
 ```
 
 ### Collector Commands
 ```bash
 # One-shot GitHub collection
-rediver collect github --token $TOKEN --org myorg --push
+exploop collect github --token $TOKEN --org myorg --push
 
 # Daemon mode
-rediver collect github --token $TOKEN --org myorg --daemon --interval 1h
+exploop collect github --token $TOKEN --org myorg --daemon --interval 1h
 
 # Multiple sources
-rediver collect --config ./collectors.yaml --daemon
+exploop collect --config ./collectors.yaml --daemon
 ```
 
 ---

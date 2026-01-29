@@ -165,7 +165,7 @@ Tool that generated this report.
 ```json
 {
   "version": "1.0",
-  "$schema": "https://schemas.rediver.io/ris/v1/report.json",
+  "$schema": "https://schemas.exploop.io/ris/v1/report.json",
   "metadata": {
     "id": "scan-2026-01-29-001",
     "timestamp": "2026-01-29T10:30:00Z",

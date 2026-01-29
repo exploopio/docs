@@ -205,7 +205,7 @@ FindingLifecycleSchedulerConfig{
     # - GITHUB_SHA (commit)
     # - GITHUB_EVENT_NAME (push/pull_request)
     # - Default branch from GITHUB_EVENT_PATH
-    rediver-agent scan --target .
+    exploop-agent scan --target .
 ```
 
 ### GitLab CI
@@ -218,7 +218,7 @@ security_scan:
     # - CI_COMMIT_SHA (commit)
     # - CI_DEFAULT_BRANCH (default branch)
     # - CI_MERGE_REQUEST_IID (MR number)
-    - rediver-agent scan --target .
+    - exploop-agent scan --target .
 ```
 
 ## Metrics

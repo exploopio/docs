@@ -38,7 +38,7 @@ Rediver uses JWT (JSON Web Tokens) for authentication with a **hybrid approach**
   "is_admin": true,
   "exp": 1737589200,
   "iat": 1737588300,
-  "iss": "rediver-api"
+  "iss": "exploop-api"
 }
 ```
 
@@ -53,7 +53,7 @@ Rediver uses JWT (JSON Web Tokens) for authentication with a **hybrid approach**
 | `is_admin` | boolean | Whether user is a tenant administrator |
 | `exp` | int64 | Token expiration time (Unix timestamp) |
 | `iat` | int64 | Token issued at time (Unix timestamp) |
-| `iss` | string | Token issuer ("rediver-api") |
+| `iss` | string | Token issuer ("exploop-api") |
 
 > **📌 Note:** `permissions` array is **NOT** included in JWT. Permissions are fetched from Redis/DB on each request.
 
@@ -255,7 +255,7 @@ func (c *Client) GenerateTenantScopedAccessToken(
         RegisteredClaims: jwt.RegisteredClaims{
             ExpiresAt: jwt.NewNumericDate(now.Add(c.accessTokenDuration)),
             IssuedAt:  jwt.NewNumericDate(now),
-            Issuer:    "rediver-api",
+            Issuer:    "exploop-api",
         },
     }
     

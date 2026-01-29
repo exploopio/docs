@@ -166,7 +166,7 @@ Unified storage infrastructure for the Rediver platform that supports:
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           OBJECT STORAGE                                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  Bucket: rediver-storage                                            │   │
+│  │  Bucket:.exploop-storage                                            │   │
 │  │  ├── tenants/                                                       │   │
 │  │  │   ├── {tenant_id}/                                               │   │
 │  │  │   │   ├── avatars/                                               │   │
@@ -349,7 +349,7 @@ CREATE TABLE tenant_storage_configs (
 
     -- ===== Common Settings =====
     cdn_base_url VARCHAR(500),             -- Optional CDN prefix
-    path_prefix VARCHAR(255) DEFAULT '',   -- e.g., "rediver/" or ""
+    path_prefix VARCHAR(255) DEFAULT '',   -- e.g., "exploop/" or ""
 
     -- Which file types use this config
     enabled_for_purposes TEXT[] DEFAULT ARRAY['all'],
@@ -1820,7 +1820,7 @@ export function StorageConfigForm() {
               <div className="space-y-2">
                 <label>Path Prefix (optional)</label>
                 <Input
-                  placeholder="rediver/"
+                  placeholder="exploop/"
                   {...form.register('path_prefix')}
                 />
               </div>
@@ -2343,13 +2343,13 @@ Key metrics to display:
 ```bash
 # Default Storage (Platform-managed R2)
 STORAGE_DEFAULT_ENDPOINT=https://xxx.r2.cloudflarestorage.com
-STORAGE_DEFAULT_BUCKET=rediver-storage
+STORAGE_DEFAULT_BUCKET.exploop-storage
 STORAGE_DEFAULT_ACCESS_KEY_ID=xxx
 STORAGE_DEFAULT_SECRET_ACCESS_KEY=xxx
 STORAGE_DEFAULT_REGION=auto
 
 # CDN
-STORAGE_CDN_BASE_URL=https://cdn.rediver.io
+STORAGE_CDN_BASE_URL=https://cdn.exploop.io
 
 # Encryption
 STORAGE_ENCRYPTION_KEY=xxx  # For credential encryption
