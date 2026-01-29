@@ -6,15 +6,97 @@ nav_order: 8
 permalink: /guides/suppression-rules/
 ---
 
-# Suppression Rules
+# Suppression Rules & Finding Lifecycle
 
-Platform-controlled rules to suppress false positives without modifying source code.
+Platform-controlled rules to suppress false positives and auto-resolve fixed vulnerabilities.
 
 ---
 
 ## Overview
 
-Suppression rules allow security teams to mark findings as false positives, accepted risks, or "won't fix" without requiring developers to add inline comments or modify code. Rules are managed centrally through the platform and automatically applied during CI/CD scans.
+Rediver provides two key features for managing finding lifecycle:
+
+1. **Suppression Rules**: Mark findings as false positives, accepted risks, or "won't fix" centrally
+2. **Auto-Resolve**: Automatically close findings when they're fixed in code
+
+Both features are designed based on industry best practices from [SonarQube](https://docs.sonarsource.com/sonarqube-server/10.4/user-guide/issues), [Semgrep](https://semgrep.dev/docs/semgrep-code/findings), [GitHub Advanced Security](https://docs.github.com/en/code-security/code-scanning/managing-code-scanning-alerts/resolving-code-scanning-alerts), and [DefectDojo](https://docs.defectdojo.com/en/working_with_findings/finding_deduplication/about_deduplication/).
+
+### Why Platform-Controlled?
+
+Traditional approaches like `.semgrepignore` files or `// nosemgrep` comments have significant drawbacks:
+
+| Approach | Problem |
+|----------|---------|
+| `.semgrepignore` in repo | Developers can bypass security without oversight |
+| `// nosemgrep` comments | No audit trail, no expiration, scattered across codebase |
+| Tool-specific ignore files | Inconsistent across tools, hard to manage at scale |
+
+**Rediver's approach**: All suppressions are managed through the platform with:
+- **Centralized control**: Security team owns suppression rules
+- **Full audit trail**: Who, when, why for every change
+- **Expiration and review**: Rules can expire, forcing periodic review
+- **Approval workflow**: Permanent suppressions require security team approval
+
+---
+
+## Finding Lifecycle
+
+### Status Flow
+
+```
+┌──────────┐         ┌───────────┐         ┌──────────┐
+│   NEW    │────────►│   OPEN    │────────►│ CONFIRMED│
+└──────────┘         └───────────┘         └──────────┘
+     │                    │                      │
+     │                    │                      │
+     ▼                    ▼                      ▼
+┌─────────────────────────────────────────────────────┐
+│                    RESOLUTION                        │
+│                                                      │
+│   ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
+│   │   RESOLVED   │  │FALSE_POSITIVE│  │ACCEPTED   │ │
+│   │  (auto/manual)│  │   (manual)   │  │   RISK    │ │
+│   └──────────────┘  └──────────────┘  └───────────┘ │
+│          │                 │                 │       │
+│          ▼                 │                 │       │
+│   ┌──────────────┐        │                 │       │
+│   │ RE-OPENED    │◄───────┼─────────────────┘       │
+│   │(if reappears)│        │                         │
+│   └──────────────┘        │                         │
+│                           │                         │
+│                    NOT auto-reopened                │
+│                    (protected status)               │
+└─────────────────────────────────────────────────────┘
+```
+
+### Auto-Resolve Behavior
+
+When a finding is no longer detected in a subsequent full scan:
+
+| Previous Status | New Status | Behavior |
+|-----------------|------------|----------|
+| `open` | `resolved` | Auto-resolved with reason "auto_fixed" |
+| `confirmed` | `resolved` | Auto-resolved |
+| `in_progress` | `resolved` | Auto-resolved |
+| `false_positive` | `false_positive` | **No change** (protected) |
+| `accepted_risk` | `accepted_risk` | **No change** (protected) |
+
+### Auto-Reopen Behavior
+
+When a previously resolved finding reappears:
+
+| Previous Resolution | Behavior |
+|--------------------|----------|
+| `auto_fixed` | Auto-reopened to `open` |
+| `manual_fixed` | Auto-reopened to `open` |
+| `false_positive` | **No reopen** (protected) |
+| `accepted_risk` | **No reopen** (protected) |
+
+---
+
+## Suppression Rules
+
+Suppression rules allow security teams to mark findings as false positives, accepted risks, or "won't fix" without requiring developers to add inline comments or modify code.
 
 ### Key Features
 
@@ -372,3 +454,75 @@ SELECT * FROM suppression_rule_audit
 WHERE suppression_rule_id = 'your-rule-id'
 ORDER BY created_at DESC;
 ```
+
+---
+
+## Industry Comparison
+
+How Rediver compares to other platforms:
+
+| Feature | Rediver | SonarQube | Semgrep | GitHub GHAS | DefectDojo |
+|---------|---------|-----------|---------|-------------|------------|
+| Auto-resolve when fixed | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Auto-reopen when reappears | ✅ | ✅ | ✅ | Manual | Configurable |
+| Platform-controlled suppression | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Approval workflow | ✅ | ✅ | ✅ | - | - |
+| Expiration support | ✅ | - | - | - | - |
+| In-code suppression | ❌ Disabled | `//NOSONAR` | `nosemgrep` | - | - |
+| Cross-scanner dedup | Planned | - | - | - | ✅ |
+
+### Key Differences
+
+- **SonarQube**: Allows `//NOSONAR` but recommends against it
+- **Semgrep**: Uses platform triage, in-code suppression optional
+- **GitHub**: SARIF-based suppression sync available
+- **DefectDojo**: Most configurable, supports cross-scanner deduplication
+- **Rediver**: Disables in-code suppression by default for maximum governance
+
+---
+
+## Migrating from In-Code Suppressions
+
+If you have existing `.semgrepignore` or inline comments:
+
+### Step 1: Identify Existing Suppressions
+
+```bash
+# Find semgrep ignore files
+find . -name ".semgrepignore" -o -name ".gitleaksignore"
+
+# Find inline suppressions
+grep -r "nosemgrep" --include="*.py" --include="*.js"
+grep -r "gitleaks:allow" --include="*"
+```
+
+### Step 2: Create Platform Rules
+
+For each suppression, create an equivalent platform rule:
+
+```bash
+# Convert .semgrepignore entry to API call
+curl -X POST https://api.rediver.io/api/v1/suppressions \
+  -H "Authorization: Bearer $API_KEY" \
+  -d '{
+    "path_pattern": "tests/fixtures/**",
+    "suppression_type": "false_positive",
+    "description": "Migrated from .semgrepignore"
+  }'
+```
+
+### Step 3: Remove In-Code Suppressions
+
+After platform rules are active:
+
+1. Delete `.semgrepignore`, `.gitleaksignore` files
+2. Remove inline `// nosemgrep` comments
+3. Verify CI still passes with platform suppressions
+
+---
+
+## Related Documentation
+
+- [Agent Usage: CI/CD Integration](agent-usage.md#cicd-integration)
+- [Finding Lifecycle RFC](../_internal/rfcs/2026-01-28-finding-lifecycle-auto-resolve.md)
+- [Security Gate Configuration](agent-usage.md#security-gate-cicd-pipeline-control)

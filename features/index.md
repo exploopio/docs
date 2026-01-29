@@ -20,6 +20,8 @@ Documentation for major features in the Rediver CTEM Platform.
 | [Scan Profiles](scan-profiles.md) | Reusable scan configs with Quality Gates | ✅ Implemented |
 | [Scanner Templates](scanner-templates.md) | Custom detection rules for Nuclei, Semgrep, Gitleaks | ✅ Implemented |
 | [Quality Gates](quality-gates.md) | CI/CD pass/fail decisions based on finding thresholds | ✅ Implemented |
+| [Finding Lifecycle](finding-lifecycle.md) | Branch-aware auto-resolve and feature branch expiry | ✅ Implemented |
+| [Finding Types & Fingerprinting](finding-types.md) | Polymorphic findings with type-aware deduplication | ✅ Implemented |
 | [Workflow Automation](workflows.md) | Event-driven automation for notifications, tickets, assignments | ✅ Implemented |
 | [CTEM Finding Fields](ctem-fields.md) | Exposure, remediation, and business impact fields | ✅ Implemented |
 | [Capabilities Registry](capabilities-registry.md) | Normalized tool capability management | ✅ Implemented |
@@ -45,6 +47,9 @@ Documentation for major features in the Rediver CTEM Platform.
 | **Scanner Templates** | Custom templates for Nuclei, Semgrep, Gitleaks |
 | **Capabilities Registry** | Normalized tool capability management |
 | **Quality Gates** | CI/CD pass/fail decisions based on finding thresholds |
+| **Finding Lifecycle** | Branch-aware auto-resolve, auto-reopen, feature branch expiry |
+| **Finding Types** | Polymorphic findings with specialized columns and fingerprinting |
+| **Data Flow Tracking** | SARIF codeFlows for attack path analysis |
 
 ### CTEM Framework
 
