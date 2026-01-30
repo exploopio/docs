@@ -5,9 +5,17 @@ parent: Features
 nav_order: 4
 ---
 
-# Capabilities Registry
+# Capabilities Registry (Tool Capabilities)
 
-The Capabilities Registry provides a normalized system for managing tool capabilities across the Rediver platform. Capabilities define what security tools can do (e.g., SAST, SCA, DAST, secrets detection).
+The Capabilities Registry provides a normalized system for managing **tool capabilities** across the Exploop platform. Capabilities define what security tools can do (e.g., SAST, SCA, DAST, secrets detection).
+
+{: .important }
+> **Not to be confused with [Finding Sources](finding-sources.md)**
+>
+> - **Capabilities** = What a **tool** can do (M:N with tools)
+> - **Finding Sources** = Where a **finding** came from (1:1 with findings)
+>
+> See [ADR-001: Finding Sources vs Tool Capabilities](../decisions/001-finding-sources-vs-capabilities.md) for details.
 
 ---
 
@@ -88,6 +96,10 @@ interface Capability {
 | `container` | Container Security | security | box | cyan |
 | `web` | Web Scanning | security | globe | orange |
 | `xss` | XSS Detection | security | alert-triangle | amber |
+| `api` | API Security | security | plug | blue |
+| `cloud` | Cloud Security | security | cloud | sky |
+| `mobile` | Mobile Security | security | smartphone | purple |
+| `compliance` | Compliance | security | shield-check | emerald |
 | `recon` | Reconnaissance | recon | search | yellow |
 | `subdomain` | Subdomain Enumeration | recon | layers | lime |
 | `http` | HTTP Probing | recon | wifi | teal |
@@ -96,6 +108,8 @@ interface Capability {
 | `sbom` | SBOM Generation | analysis | file-text | slate |
 | `terraform` | Terraform Security | security | cloud | violet |
 | `docker` | Docker Security | security | container | sky |
+| `reporting` | Reporting | analysis | file-chart-line | slate |
+| `ai-triage` | AI Triage | analysis | brain | violet |
 
 ---
 
@@ -122,6 +136,45 @@ interface Capability {
 | POST | `/` | Create custom capability |
 | PUT | `/{id}` | Update custom capability |
 | DELETE | `/{id}` | Delete custom capability |
+
+### Usage Stats Endpoints
+
+**Base:** `/api/v1/capabilities`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/{id}/usage-stats` | Get usage stats for a single capability |
+| POST | `/usage-stats/batch` | Get usage stats for multiple capabilities |
+
+**Single Capability Usage Stats:**
+```json
+GET /api/v1/capabilities/{id}/usage-stats
+
+{
+  "tool_count": 5,
+  "tool_names": ["semgrep", "trivy", "gitleaks", "checkov", "zap"],
+  "agent_count": 3,
+  "agent_names": ["security-scanner", "vulnerability-checker", "code-analyzer"]
+}
+```
+
+**Batch Usage Stats (Counts Only):**
+```json
+POST /api/v1/capabilities/usage-stats/batch
+{
+  "capability_ids": ["uuid-1", "uuid-2", "uuid-3"]
+}
+
+{
+  "stats": {
+    "uuid-1": { "tool_count": 5, "agent_count": 3 },
+    "uuid-2": { "tool_count": 2, "agent_count": 1 },
+    "uuid-3": { "tool_count": 0, "agent_count": 0 }
+  }
+}
+```
+
+The batch endpoint returns **counts only** (no names) for performance. Use the single capability endpoint to fetch full details including tool/agent names.
 
 ### Example Responses
 
@@ -181,7 +234,75 @@ import {
   getCapabilityDisplayNameById,
   // Agent-based capabilities (what a tenant can actually use)
   useAvailableCapabilities,
+  // Usage stats hooks
+  useCapabilityUsageStats,
+  useCapabilityUsageStatsBatch,
 } from '@/lib/api'
+```
+
+### Usage Stats Hooks
+
+The usage stats hooks enable efficient display of capability usage information:
+
+```tsx
+import { useCapabilityUsageStats, useCapabilityUsageStatsBatch } from '@/lib/api'
+
+// Single capability - fetches full details (counts + names)
+function CapabilityDetail({ capabilityId }: { capabilityId: string }) {
+  const { data, isLoading } = useCapabilityUsageStats(capabilityId)
+
+  if (isLoading) return <Skeleton />
+
+  return (
+    <div>
+      <p>Used by {data?.tool_count} tools: {data?.tool_names?.join(', ')}</p>
+      <p>Assigned to {data?.agent_count} agents: {data?.agent_names?.join(', ')}</p>
+    </div>
+  )
+}
+
+// Multiple capabilities - fetches counts only (optimized for lists)
+function CapabilityList({ capabilityIds }: { capabilityIds: string[] }) {
+  const { data } = useCapabilityUsageStatsBatch(capabilityIds)
+
+  return capabilityIds.map(id => (
+    <div key={id}>
+      Tools: {data?.stats?.[id]?.tool_count ?? 0}
+      Agents: {data?.stats?.[id]?.agent_count ?? 0}
+    </div>
+  ))
+}
+```
+
+**Progressive Loading Pattern:**
+
+For optimal UX, use batch stats for instant counts display, then fetch full details on demand:
+
+```tsx
+function CapabilityDetailPanel({
+  capability,
+  initialStats, // From batch API
+}: {
+  capability: Capability
+  initialStats?: { tool_count: number; agent_count: number }
+}) {
+  // Fetch full details only when panel opens
+  const { data: fullStats, isLoading } = useCapabilityUsageStats(capability.id)
+
+  // Use fetched data, fall back to initial stats for instant display
+  const stats = fullStats || initialStats
+
+  return (
+    <div>
+      <p>Tools: {stats?.tool_count}</p>
+      {isLoading ? (
+        <Skeleton />
+      ) : (
+        <ul>{fullStats?.tool_names?.map(name => <li key={name}>{name}</li>)}</ul>
+      )}
+    </div>
+  )
+}
 ```
 
 ### Tenant Available Capabilities
@@ -443,9 +564,10 @@ SET capabilities = COALESCE(
 | File | Description |
 |------|-------------|
 | `ui/src/lib/api/capability-types.ts` | TypeScript interfaces |
-| `ui/src/lib/api/capability-hooks.ts` | SWR hooks |
+| `ui/src/lib/api/capability-hooks.ts` | SWR hooks (including usage stats) |
 | `ui/src/lib/api/endpoints.ts` | API endpoint definitions |
 | `ui/src/lib/api/index.ts` | Public exports |
+| `ui/src/features/capabilities/` | Capabilities management UI components |
 
 ---
 
