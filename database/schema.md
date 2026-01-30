@@ -96,17 +96,56 @@ Fingerprints are stored in `findings.fingerprint` (primary) and `findings.partia
 
 ## Security Considerations
 
-### Tenant Isolation
+### Tenant Isolation (Defense in Depth)
 
-All data flow queries enforce tenant isolation through JOIN with the `findings` table:
+Exploop uses a **3-layer defense** approach for tenant data isolation:
+
+| Layer | Mechanism | Description |
+|-------|-----------|-------------|
+| **Layer 1** | SQL `WHERE tenant_id = ?` | Code-level enforcement |
+| **Layer 2** | PostgreSQL RLS Policies | Database-level safety net |
+| **Layer 3** | Composite Indexes | Performance optimization |
+
+#### Row Level Security (RLS)
+
+RLS is enabled on all tenant-scoped tables with automatic filtering:
 
 ```sql
--- REQUIRED: All flow location queries must include tenant_id filter
+-- RLS policy on findings table (and similar for other tables)
+CREATE POLICY tenant_isolation_findings ON findings
+    FOR ALL
+    USING (tenant_id = current_tenant_id())
+    WITH CHECK (tenant_id = current_tenant_id());
+```
+
+**RLS-Protected Tables:**
+- `findings`, `assets`, `scans`, `agents`
+- `integrations`, `exposure_events`, `suppression_rules`
+- `finding_activities`
+
+#### SQL Query Pattern
+
+All tenant-scoped queries must include `tenant_id`:
+
+```sql
+-- REQUIRED: All queries must include tenant_id filter
 SELECT fl.* FROM finding_flow_locations fl
 JOIN finding_data_flows df ON df.id = fl.data_flow_id
 JOIN findings f ON f.id = df.finding_id
 WHERE fl.file_path = $1 AND f.tenant_id = $2;  -- tenant_id is mandatory
 ```
+
+#### Production Database Configuration
+
+{: .warning }
+> **CRITICAL:** Application must use non-superuser database connection for RLS to be enforced.
+
+```bash
+# Production: Use non-superuser (RLS enforced)
+DATABASE_URL=postgres://exploop_app:password@db:5432/exploop
+```
+
+See: [Tenant Isolation & RLS Architecture](../architecture/tenant-isolation-security.md) for complete documentation.
 
 ### Data Flow Location Types
 

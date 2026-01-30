@@ -17,6 +17,7 @@ Comprehensive security guidelines for deploying and operating Exploop in product
 - [Secret Management](#secret-management)
 - [Network Security](#network-security)
 - [Data Protection](#data-protection)
+- [Tenant Isolation (IDOR Prevention)](#tenant-isolation-idor-prevention)
 - [Access Control](#access-control)
 - [Audit & Logging](#audit--logging)
 - [Dependency Security](#dependency-security)
@@ -277,6 +278,104 @@ WHERE resolved_at < NOW() - INTERVAL '1 year';
 
 ---
 
+## Tenant Isolation (IDOR Prevention)
+
+### Defense in Depth Architecture
+
+Exploop implements **3-layer defense** against IDOR (Insecure Direct Object Reference) attacks, which is OWASP A01:2021 - Broken Access Control.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    TENANT ISOLATION - DEFENSE IN DEPTH                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Layer 1: Code-Level (SQL WHERE clause)                                     │
+│  ├─ Repository interfaces require tenantID parameter                        │
+│  ├─ Go compiler enforces parameter at compile time                          │
+│  └─ WHERE tenant_id = $1 in all queries                                     │
+│                                                                              │
+│  Layer 2: Database-Level (PostgreSQL RLS)                                   │
+│  ├─ Row Level Security policies on all tenant-scoped tables                 │
+│  ├─ current_tenant_id() function reads session variable                     │
+│  └─ Safety net if code-level check is bypassed                              │
+│                                                                              │
+│  Layer 3: Performance (Composite Indexes)                                   │
+│  ├─ (tenant_id, id) indexes for efficient lookups                           │
+│  └─ Query planner optimizes tenant-scoped queries                           │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### RLS Policy Configuration
+
+PostgreSQL Row Level Security provides database-level enforcement:
+
+```sql
+-- Enable RLS on tenant-scoped tables
+ALTER TABLE findings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE findings FORCE ROW LEVEL SECURITY;
+
+-- Tenant isolation policy
+CREATE POLICY tenant_isolation_findings ON findings
+    FOR ALL
+    USING (tenant_id = current_tenant_id())
+    WITH CHECK (tenant_id = current_tenant_id());
+
+-- Platform admin bypass (for support/migrations)
+CREATE POLICY platform_admin_bypass_findings ON findings
+    FOR ALL
+    USING (is_platform_admin())
+    WITH CHECK (is_platform_admin());
+```
+
+### Production Database User
+
+{: .warning }
+> **CRITICAL:** RLS is bypassed by PostgreSQL superusers! Application must connect as non-superuser.
+
+```bash
+# Development (superuser - RLS NOT enforced)
+DATABASE_URL=postgres://exploop:secret@localhost:5432/exploop
+
+# Production (non-superuser - RLS ENFORCED)
+DATABASE_URL=postgres://exploop_app:secure-password@db:5432/exploop
+```
+
+**Setup production user:**
+```sql
+CREATE ROLE exploop_app LOGIN PASSWORD 'secure-password';
+GRANT CONNECT ON DATABASE exploop TO exploop_app;
+GRANT USAGE ON SCHEMA public TO exploop_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO exploop_app;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO exploop_app;
+```
+
+### Protected Tables
+
+| Table | RLS Enabled | Policy |
+|-------|:-----------:|--------|
+| `findings` | ✅ | `tenant_isolation_findings` |
+| `assets` | ✅ | `tenant_isolation_assets` |
+| `scans` | ✅ | `tenant_isolation_scans` |
+| `agents` | ✅ | `tenant_isolation_agents` |
+| `integrations` | ✅ | `tenant_isolation_integrations` |
+| `exposure_events` | ✅ | `tenant_isolation_exposures` |
+| `suppression_rules` | ✅ | `tenant_isolation_suppression_rules` |
+| `finding_activities` | ✅ | `tenant_isolation_finding_activities` |
+
+### Security Verification
+
+**Run RLS integration tests:**
+```bash
+DATABASE_URL="postgres://exploop:secret@localhost:5432/exploop" \
+DATABASE_URL_RLS_TEST="postgres://rls_test_user:test@localhost:5432/exploop" \
+go test -v ./tests/integration -run TestRLS
+```
+
+See: [Tenant Isolation & RLS Architecture](../architecture/tenant-isolation-security.md) for complete technical documentation.
+
+---
+
 ## Access Control
 
 ### Principle of Least Privilege
@@ -475,6 +574,8 @@ USER appuser
 - [ ] Firewall rules configured (minimal open ports)
 - [ ] Dependency scan clean (no critical vulnerabilities)
 - [ ] Container images scanned (no HIGH/CRITICAL CVEs)
+- [ ] **RLS enabled and verified** (non-superuser DB connection)
+- [ ] **Tenant isolation tests passing**
 
 ### Post-Production
 
@@ -694,5 +795,5 @@ See: [Workflow Executor Architecture](../architecture/workflow-executor.md) for 
 
 ---
 
-**Last Updated:** 2026-01-26
-**Version:** 1.1
+**Last Updated:** 2026-01-30
+**Version:** 1.2

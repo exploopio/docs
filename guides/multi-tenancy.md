@@ -146,20 +146,54 @@ The access token contains the `tenant_id`:
 
 ## Data Isolation
 
-All tenant-scoped resources have a `tenant_id`:
+Exploop implements **Defense in Depth** with 3 layers of tenant isolation:
 
-```sql
--- Assets
-SELECT * FROM assets WHERE tenant_id = $1;
-
--- Findings
-SELECT * FROM findings WHERE tenant_id = $1;
-
--- Audit logs
-SELECT * FROM audit_logs WHERE tenant_id = $1;
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    DEFENSE IN DEPTH - TENANT ISOLATION                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Layer 1: SQL WHERE clause (Code-level)                                     │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  SELECT * FROM findings WHERE id = $1 AND tenant_id = $2            │   │
+│  │  Go compiler enforces tenantID parameter in repository interfaces   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  Layer 2: PostgreSQL RLS (Database-level safety net)                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  CREATE POLICY tenant_isolation ON findings                          │   │
+│  │    USING (tenant_id = current_tenant_id())                          │   │
+│  │  Even if code forgets WHERE clause, RLS blocks cross-tenant access  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│  Layer 3: Composite Indexes (Performance)                                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  CREATE INDEX idx_findings_tenant_id_pk ON findings(tenant_id, id)  │   │
+│  │  Optimized query performance for tenant-scoped queries               │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Protected Tables
+
+| Table | RLS Policy | Index |
+|-------|------------|-------|
+| `findings` | ✅ `tenant_isolation_findings` | `(tenant_id, id)` |
+| `assets` | ✅ `tenant_isolation_assets` | `(tenant_id, id)` |
+| `scans` | ✅ `tenant_isolation_scans` | `(tenant_id, id)` |
+| `agents` | ✅ `tenant_isolation_agents` | `(tenant_id, id)` |
+| `integrations` | ✅ `tenant_isolation_integrations` | `(tenant_id, id)` |
+| `exposure_events` | ✅ `tenant_isolation_exposures` | `(tenant_id, id)` |
+| `suppression_rules` | ✅ `tenant_isolation_suppression_rules` | `(tenant_id, id)` |
+| `finding_activities` | ✅ `tenant_isolation_finding_activities` | `(tenant_id, finding_id)` |
+
+### Middleware
+
 The `RequireTenant()` middleware validates that the token has a valid `tenant_id`.
+
+{: .note }
+> See [Tenant Isolation & RLS Architecture](../architecture/tenant-isolation-security.md) for complete technical details including RLS setup, platform admin bypass, and production configuration.
 
 ---
 
@@ -235,6 +269,7 @@ middleware.RequireMembership(tenantRepo)
 
 ## Related Documentation
 
+- [Tenant Isolation & RLS Architecture](../architecture/tenant-isolation-security.md) - Technical deep-dive
 - [Authentication Guide](./authentication.md)
 - [Permissions Matrix](./permissions.md)
 - [API Reference](../backend/api-reference.md)

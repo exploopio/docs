@@ -7,15 +7,15 @@ nav_order: 15
 
 # Trivy Ingest Data Flow
 
-Tài liệu này mô tả luồng dữ liệu khi ingest kết quả scan từ Trivy vào hệ thống Exploop, bao gồm cả vulnerabilities và SBOM (Software Bill of Materials).
+This document describes the data flow when ingesting scan results from Trivy into the Exploop system, including both vulnerabilities and SBOM (Software Bill of Materials).
 
 ---
 
-## Tổng quan
+## Overview
 
-Trivy scan tạo ra 2 loại dữ liệu chính:
-1. **Vulnerabilities** - Các lỗ hổng bảo mật (CVE) trong dependencies
-2. **SBOM (Dependencies)** - Danh sách tất cả packages/components trong project
+Trivy scan produces 2 main types of data:
+1. **Vulnerabilities** - Security vulnerabilities (CVE) in dependencies
+2. **SBOM (Dependencies)** - List of all packages/components in the project
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -56,13 +56,13 @@ Trivy scan tạo ra 2 loại dữ liệu chính:
 
 ---
 
-## Chi tiết từng bước
+## Step-by-Step Details
 
-### Bước 1: Agent Parse Trivy Output
+### Step 1: Agent Parse Trivy Output
 
 **File**: `sdk/pkg/scanners/trivy/parser.go`
 
-Agent nhận output JSON từ Trivy và parse thành 2 phần riêng biệt:
+The agent receives JSON output from Trivy and parses it into 2 separate parts:
 
 ```go
 // trivy/parser.go
@@ -90,9 +90,9 @@ func (p *Parser) Parse(data []byte, opts *core.ParseOptions) (*eis.Report, error
 }
 ```
 
-### Bước 2: Convert to EIS Report
+### Step 2: Convert to EIS Report
 
-**EIS (Exploop Interchange Schema)** là định dạng chuẩn để trao đổi dữ liệu giữa Agent và API.
+**EIS (Exploop Interchange Schema)** is the standard format for data exchange between Agent and API.
 
 ```go
 // eis/report.go
@@ -131,7 +131,7 @@ type DependencyLocation struct {
 }
 ```
 
-### Bước 3-5: API Ingest Service
+### Steps 3-5: API Ingest Service
 
 **File**: `api/internal/app/ingest/service.go`
 
@@ -154,7 +154,7 @@ func (s *Service) IngestReport(ctx context.Context, tenantID shared.ID, report *
 }
 ```
 
-### Bước 6: Component Processor
+### Step 6: Component Processor
 
 **File**: `api/internal/app/ingest/processor_components.go`
 
@@ -167,7 +167,7 @@ func (p *ComponentProcessor) ProcessBatch(
     output *Output,
 ) error {
     for _, dep := range report.Dependencies {
-        // a. Tạo/Update Component (global, unique by PURL)
+        // a. Create/Update Component (global, unique by PURL)
         comp := component.NewComponent(dep.PURL, dep.Name, dep.Version, ecosystem)
         compID, isNew := p.repo.Upsert(ctx, comp)
 
@@ -177,7 +177,7 @@ func (p *ComponentProcessor) ProcessBatch(
             output.ComponentsUpdated++
         }
 
-        // b. Link Component với Asset
+        // b. Link Component with Asset
         assetDep := component.NewAssetDependency(
             tenantID, assetID, compID,
             dep.Path,           // manifest file path
@@ -194,17 +194,17 @@ func (p *ComponentProcessor) ProcessBatch(
 
 ## Dependencies vs Components: Data Model Mapping
 
-Hệ thống sử dụng hai thuật ngữ khác nhau cho cùng một concept, mỗi thuật ngữ phù hợp với context của nó:
+The system uses two different terms for the same concept, each term appropriate for its context:
 
 ### Terminology Mapping
 
-| Context | Term | Ý nghĩa |
+| Context | Term | Meaning |
 |---------|------|---------|
-| **EIS Schema (Input)** | `dependencies[]` | Packages mà project **phụ thuộc vào** |
-| **Database (Storage)** | `components` | Packages **tồn tại trong hệ thống** (global catalog) |
-| **Junction Table** | `asset_components` | Links giữa assets và components |
+| **EIS Schema (Input)** | `dependencies[]` | Packages that the project **depends on** |
+| **Database (Storage)** | `components` | Packages that **exist in the system** (global catalog) |
+| **Junction Table** | `asset_components` | Links between assets and components |
 
-### Tại sao dùng 2 terms khác nhau?
+### Why use 2 different terms?
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -223,15 +223,15 @@ Hệ thống sử dụng hai thuật ngữ khác nhau cho cùng một concept, m
                     (relationship)          (entity)
 ```
 
-**1. `dependencies` (EIS/Input)** - Mô tả **quan hệ phụ thuộc**:
-- "Project A **phụ thuộc vào** package X"
-- Có context: direct/indirect relationship
+**1. `dependencies` (EIS/Input)** - Describes **dependency relationship**:
+- "Project A **depends on** package X"
+- Has context: direct/indirect relationship
 - Per-asset scope
 
-**2. `components` (Database/Storage)** - Mô tả **thực thể package**:
-- "Package X **tồn tại** trong hệ thống"
+**2. `components` (Database/Storage)** - Describes **package entity**:
+- "Package X **exists** in the system"
 - Global, unique by PURL
-- Theo chuẩn SBOM (CycloneDX, SPDX)
+- Follows SBOM standards (CycloneDX, SPDX)
 
 ### Industry Standards Comparison
 
@@ -246,16 +246,16 @@ Hệ thống sử dụng hai thuật ngữ khác nhau cho cùng một concept, m
 
 ### Design Benefits
 
-1. **Deduplication**: `guzzlehttp/guzzle@7.3.0` chỉ lưu 1 lần trong `components` dù 100 assets sử dụng
-2. **Global Vulnerability Tracking**: Update CVE một lần, apply cho tất cả assets
-3. **Relationship Preservation**: `direct/indirect` được lưu trong junction table `asset_components`
-4. **Standards Compliance**: Database schema theo chuẩn SBOM
+1. **Deduplication**: `guzzlehttp/guzzle@7.3.0` is stored only once in `components` even if 100 assets use it
+2. **Global Vulnerability Tracking**: Update CVE once, applies to all assets
+3. **Relationship Preservation**: `direct/indirect` is stored in the junction table `asset_components`
+4. **Standards Compliance**: Database schema follows SBOM standards
 
 ---
 
 ## Database Schema
 
-### Quan hệ giữa các bảng
+### Relationships Between Tables
 
 ```
 ┌─────────────────┐       ┌─────────────────────┐       ┌─────────────────┐
@@ -283,13 +283,13 @@ Hệ thống sử dụng hai thuật ngữ khác nhau cho cùng một concept, m
          (SBOM link) │ (Vulnerability link)
 ```
 
-**Hai loại relationships:**
-1. **SBOM Link** (`asset_components`): Asset sử dụng component nào
-2. **Vulnerability Link** (`findings.component_id`): CVE ảnh hưởng component nào
+**Two types of relationships:**
+1. **SBOM Link** (`asset_components`): Which components an asset uses
+2. **Vulnerability Link** (`findings.component_id`): Which components a CVE affects
 
-### Bảng `components`
+### Table `components`
 
-Lưu trữ thông tin global về mỗi package (unique by PURL).
+Stores global information about each package (unique by PURL).
 
 | Column | Type | Description |
 |--------|------|-------------|
@@ -303,7 +303,7 @@ Lưu trữ thông tin global về mỗi package (unique by PURL).
 | vulnerability_count | INT | Number of known vulnerabilities |
 | metadata | JSONB | Additional metadata |
 
-### Bảng `asset_components`
+### Table `asset_components`
 
 Junction table linking assets to components.
 
@@ -323,7 +323,7 @@ Junction table linking assets to components.
 
 ## Query Examples
 
-### Asset đang sử dụng components nào?
+### Which components is an asset using?
 
 ```sql
 SELECT
@@ -338,7 +338,7 @@ WHERE ac.asset_id = '<asset_id>'
 ORDER BY c.name;
 ```
 
-### Component có vulnerabilities gì?
+### What vulnerabilities does a component have?
 
 ```sql
 SELECT
@@ -358,7 +358,7 @@ ORDER BY
     END;
 ```
 
-### Asset có vulnerabilities nào qua components?
+### What vulnerabilities does an asset have through components?
 
 ```sql
 SELECT
@@ -382,7 +382,7 @@ ORDER BY
     END;
 ```
 
-### Tìm assets bị ảnh hưởng bởi CVE cụ thể
+### Find assets affected by a specific CVE
 
 ```sql
 SELECT DISTINCT
@@ -399,7 +399,7 @@ WHERE f.rule_id = 'CVE-2024-1234'
   AND f.tenant_id = '<tenant_id>';
 ```
 
-### Thống kê components theo ecosystem
+### Component statistics by ecosystem
 
 ```sql
 SELECT
@@ -417,7 +417,7 @@ ORDER BY total_components DESC;
 
 ## PURL Format
 
-**PURL (Package URL)** là định dạng chuẩn để identify packages:
+**PURL (Package URL)** is the standard format for identifying packages:
 
 ```
 pkg:<ecosystem>/<namespace>/<name>@<version>
@@ -484,7 +484,7 @@ pkg:<ecosystem>/<namespace>/<name>@<version>
 
 ## API Response
 
-Sau khi ingest thành công, API trả về:
+After successful ingestion, the API returns:
 
 ```json
 {
@@ -505,7 +505,7 @@ Sau khi ingest thành công, API trả về:
 
 ## Related Documentation
 
-- [Finding Ingestion Workflow](finding-ingestion-workflow.md) - Chi tiết về finding processing
+- [Finding Ingestion Workflow](finding-ingestion-workflow.md) - Details about finding processing
 - [EIS Report Schema](../schemas/eis-report.md) - Schema reference
-- [SDK Quick Start](sdk-quick-start.md) - Hướng dẫn sử dụng SDK
+- [SDK Quick Start](sdk-quick-start.md) - SDK usage guide
 - [Ingest API Reference](../api/ingest-api.md) - API endpoints

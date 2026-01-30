@@ -1,17 +1,17 @@
-# Dataflow Storage Analysis - Phương Án Tốt Nhất
+# Dataflow Storage Analysis - Best Solution
 
-## 1. Đánh Giá Hiện Trạng
+## 1. Current State Assessment
 
 ### 1.1 EIS Schema (Input Layer)
 **File**: `api/pkg/parsers/ris/types.go`
 
 ```go
 type DataFlow struct {
-    Sources       []DataFlowLocation  // Nguồn taint
-    Intermediates []DataFlowLocation  // Các bước trung gian
-    Sinks         []DataFlowLocation  // Điểm nguy hiểm
-    Sanitizers    []DataFlowLocation  // Các bộ lọc
-    Tainted       bool                // Còn taint hay không
+    Sources       []DataFlowLocation  // Taint source
+    Intermediates []DataFlowLocation  // Intermediate steps
+    Sinks         []DataFlowLocation  // Dangerous points
+    Sanitizers    []DataFlowLocation  // Sanitizers
+    Tainted       bool                // Whether still tainted
     TaintType     string              // user_input, file_read, env_var...
     VulnerabilityType string          // sql_injection, xss, ssrf...
     Confidence    int                 // 0-100
@@ -41,9 +41,9 @@ type DataFlowLocation struct {
 }
 ```
 
-**Điểm mạnh**:
-- ✅ Comprehensive: Hỗ trợ đầy đủ taint tracking
-- ✅ Tool-agnostic: Có thể nhận data từ Semgrep, CodeQL, Joern, SARIF
+**Strengths**:
+- ✅ Comprehensive: Full taint tracking support
+- ✅ Tool-agnostic: Can receive data from Semgrep, CodeQL, Joern, SARIF
 - ✅ Helper functions: NewDataFlow, AddIntermediate, BuildSummary...
 - ✅ Tested: 13 test cases pass
 
@@ -53,16 +53,16 @@ type DataFlowLocation struct {
 **File**: `api/migrations/000127_finding_data_flows.up.sql`
 
 ```sql
--- finding_data_flows: Container cho mỗi flow
+-- finding_data_flows: Container for each flow
 CREATE TABLE finding_data_flows (
     id UUID PRIMARY KEY,
     finding_id UUID REFERENCES findings(id),
-    flow_index INTEGER,     -- Thứ tự trong finding
-    message TEXT,           -- Mô tả flow
+    flow_index INTEGER,     -- Order within finding
+    message TEXT,           -- Flow description
     importance VARCHAR(20)  -- essential, important, unimportant
 );
 
--- finding_flow_locations: Từng bước trong flow
+-- finding_flow_locations: Each step in the flow
 CREATE TABLE finding_flow_locations (
     id UUID PRIMARY KEY,
     data_flow_id UUID REFERENCES finding_data_flows(id),
@@ -85,16 +85,16 @@ CREATE TABLE finding_flow_locations (
 );
 ```
 
-**Điểm mạnh**:
-- ✅ Normalized: Quan hệ 1-N giữa finding → flows → locations
-- ✅ Queryable: Có indexes cho file, function, class, type
-- ✅ SARIF compliant: Mapping với codeFlows/threadFlowLocation
+**Strengths**:
+- ✅ Normalized: 1-N relationship between finding → flows → locations
+- ✅ Queryable: Has indexes for file, function, class, type
+- ✅ SARIF compliant: Mapping with codeFlows/threadFlowLocation
 
-**Thiếu sót**:
-- ❌ Không có cột `tainted`, `taint_type`, `vulnerability_type`
-- ❌ Không có `confidence`, `interprocedural`, `cross_file`
-- ❌ Không có `call_path` array
-- ❌ Không có `operation`, `called_function`, `taint_state`, `transformation` trong locations
+**Missing**:
+- ❌ No `tainted`, `taint_type`, `vulnerability_type` columns
+- ❌ No `confidence`, `interprocedural`, `cross_file`
+- ❌ No `call_path` array
+- ❌ No `operation`, `called_function`, `taint_state`, `transformation` in locations
 
 ---
 
@@ -130,7 +130,7 @@ type FindingFlowLocation struct {
 }
 ```
 
-**Thiếu sót**: Giống database schema
+**Missing**: Same as database schema
 
 ---
 
@@ -144,14 +144,14 @@ type FindingFlowLocation struct {
 | `Intermediates[]` | `location_type='intermediate'` | ✅ Có thể lưu |
 | `Sinks[]` | `location_type='sink'` | ✅ Có thể lưu |
 | `Sanitizers[]` | `location_type='sanitizer'` | ✅ Có thể lưu |
-| `Tainted` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `TaintType` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `VulnerabilityType` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `Confidence` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `Interprocedural` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `CrossFile` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `CallPath` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `Summary` | `message` | ✅ Mapping hiện có |
+| `Tainted` | ❌ **MISSING** | ⚠️ Need to add |
+| `TaintType` | ❌ **MISSING** | ⚠️ Need to add |
+| `VulnerabilityType` | ❌ **MISSING** | ⚠️ Need to add |
+| `Confidence` | ❌ **MISSING** | ⚠️ Need to add |
+| `Interprocedural` | ❌ **MISSING** | ⚠️ Need to add |
+| `CrossFile` | ❌ **MISSING** | ⚠️ Need to add |
+| `CallPath` | ❌ **MISSING** | ⚠️ Need to add |
+| `Summary` | `message` | ✅ Current mapping |
 
 | EIS DataFlowLocation Field | Database Column | Status |
 |---------------------------|-----------------|--------|
@@ -165,21 +165,21 @@ type FindingFlowLocation struct {
 | `Function` | `function_name` | ✅ |
 | `Class` | `class_name` | ✅ |
 | `Module` | `module_name` | ✅ |
-| `Operation` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `CalledFunction` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `ParameterIndex` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `TaintState` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `Transformation` | ❌ **THIẾU** | ⚠️ Cần thêm |
-| `Notes` | `message` | ✅ (có thể dùng) |
+| `Operation` | ❌ **MISSING** | ⚠️ Need to add |
+| `CalledFunction` | ❌ **MISSING** | ⚠️ Need to add |
+| `ParameterIndex` | ❌ **MISSING** | ⚠️ Need to add |
+| `TaintState` | ❌ **MISSING** | ⚠️ Need to add |
+| `Transformation` | ❌ **MISSING** | ⚠️ Need to add |
+| `Notes` | `message` | ✅ (can use) |
 
 ---
 
-## 3. Phương Án Đề Xuất
+## 3. Proposed Solutions
 
-### Phương Án A: Extend Database Schema (Recommended)
+### Solution A: Extend Database Schema (Recommended)
 
-**Ưu điểm**: Full queryability, strong typing, native SQL queries
-**Nhược điểm**: Migration required
+**Pros**: Full queryability, strong typing, native SQL queries
+**Cons**: Migration required
 
 #### Migration 000129: Extend Data Flow Tables
 
@@ -224,7 +224,7 @@ ALTER TABLE finding_data_flows ADD COLUMN IF NOT EXISTS extended_metadata JSONB;
 ALTER TABLE finding_flow_locations ADD COLUMN IF NOT EXISTS extended_metadata JSONB;
 ```
 
-Lưu các field mới vào JSONB:
+Store new fields in JSONB:
 ```json
 {
   "tainted": true,
@@ -244,17 +244,17 @@ Lưu các field mới vào JSONB:
 **Ưu điểm**: No changes
 **Nhược điểm**: Information loss, limited analysis
 
-Chỉ lưu các trường hiện có, bỏ qua các trường mở rộng. Không khuyến khích.
+Only store existing fields, ignore extended fields. Not recommended.
 
 ---
 
-## 4. Khuyến Nghị: Phương Án A + Conversion Layer
+## 4. Recommendation: Solution A + Conversion Layer
 
 ### 4.1 Database Migration
 
 ```sql
--- api/migrations/000129_extend_data_flow_tables.up.sql
--- (Như trên)
+-- api/migrations/000129_extend_data_flow_tables.up.sq l
+-- (As above)
 ```
 
 ### 4.2 Domain Entity Updates
@@ -496,14 +496,14 @@ LIMIT 20;
 
 ## 8. Conclusion
 
-**Khuyến nghị**: Thực hiện **Phương Án A** với migration mở rộng database schema.
+**Recommendation**: Implement **Solution A** with extended database schema migration.
 
-**Lý do**:
-1. ✅ Full queryability cho tất cả trường mới
-2. ✅ Native SQL support cho analytics và reporting
-3. ✅ Strong typing với CHECK constraints
-4. ✅ Indexes cho performance
-5. ✅ Backward compatible (NULL allowed cho các cột mới)
-6. ✅ Tool-agnostic: Bất kỳ tool nào output dataflow đều lưu được
+**Reasons**:
+1. ✅ Full queryability for all new fields
+2. ✅ Native SQL support for analytics and reporting
+3. ✅ Strong typing with CHECK constraints
+4. ✅ Indexes for performance
+5. ✅ Backward compatible (NULL allowed for new columns)
+6. ✅ Tool-agnostic: Any tool outputting dataflow can be stored
 
-**Rủi ro**: Low - Chỉ ADD columns, không thay đổi existing data.
+**Risk**: Low - Only ADD columns, no changes to existing data.

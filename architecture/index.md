@@ -58,6 +58,7 @@ Security and authorization architecture:
 | Document | Description |
 |----------|-------------|
 | [Access Control Overview](access-control-flows-and-data.md) | 3-layer security model |
+| [Tenant Isolation & RLS](tenant-isolation-security.md) | Multi-tenant data isolation with PostgreSQL RLS |
 | [Module Access Control](module-access-control.md) | Subscription-based feature gating |
 | [Route-Level Protection](route-level-permission-protection.md) | RBAC middleware |
 | [Permission Realtime Sync](permission-realtime-sync.md) | Real-time permission updates |
@@ -119,11 +120,14 @@ The backend follows Clean Architecture with three layers:
 
 ### Multi-Tenancy
 
-All data is tenant-scoped with complete isolation:
+All data is tenant-scoped with **Defense in Depth** isolation:
 
-- Tenant ID embedded in JWT tokens
-- Row-level security via `tenant_id` column
-- Middleware validates tenant membership
+- **Layer 1**: SQL `WHERE tenant_id = ?` in all repository queries
+- **Layer 2**: PostgreSQL Row Level Security (RLS) as safety net
+- **Layer 3**: Composite indexes for performance optimization
+- Tenant ID embedded in JWT tokens and validated by middleware
+
+See [Tenant Isolation & RLS](tenant-isolation-security.md) for complete implementation details.
 
 ### SDK Integration
 

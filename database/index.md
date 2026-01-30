@@ -28,7 +28,24 @@ The database schema is organized into logical domains, supporting the clean arch
 
 ## Key Concepts
 
-- **Tenancy**: Multi-tenancy is supported via `tenant_id` column in most major entities.
+- **Tenancy**: Multi-tenancy with **Defense in Depth** isolation:
+  - SQL `WHERE tenant_id = ?` in all queries (application layer)
+  - PostgreSQL Row Level Security (RLS) policies (database layer)
+  - Composite indexes for performance optimization
+  - See [Tenant Isolation & RLS](../architecture/tenant-isolation-security.md) for details.
 - **Soft Deletes**: Used for `assets` and `findings` to preserve history.
 - **UUIDs**: Primary keys are random UUID v4.
 - **Audit**: Changes to critical entities are tracked in `audit_logs`.
+
+## Row Level Security (RLS)
+
+PostgreSQL RLS provides database-level tenant isolation as a safety net:
+
+| Function | Purpose |
+|----------|---------|
+| `current_tenant_id()` | Returns tenant UUID from session `app.current_tenant_id` |
+| `is_platform_admin()` | Returns `true` if session is platform admin |
+
+**Tables with RLS enabled:** `findings`, `assets`, `scans`, `agents`, `exposure_events`, `integrations`, `suppression_rules`, `finding_comments`, `finding_activities`, `asset_branches`
+
+See [Migrations](./migrations.md) for implementation details.

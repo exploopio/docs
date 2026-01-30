@@ -31,6 +31,8 @@ Below is a summary of key migrations applied to the system:
 | 085 | `security_hardening` | bcrypt support + account lockout fields |
 | 095 | `capabilities` | Capabilities registry table + tool_capabilities junction |
 | 096 | `sync_tools_capabilities` | Sync tools.capabilities from junction table |
+| 137 | `add_row_level_security` | PostgreSQL RLS for tenant isolation (Defense in Depth) |
+| 138 | `add_tenant_isolation_indexes` | Composite indexes for tenant-scoped query performance |
 
 ## PostgreSQL Functions Reference
 
@@ -59,6 +61,37 @@ The platform agent system uses PostgreSQL functions for atomic operations. See d
 | View | Description |
 |------|-------------|
 | `platform_agent_status` | Combined view of agents + lease status for monitoring |
+
+### Tenant Isolation Functions (Migration 000137)
+
+| Function | Description |
+|----------|-------------|
+| `current_tenant_id()` | Returns current tenant UUID from session variable `app.current_tenant_id` |
+| `is_platform_admin()` | Returns `true` if session variable `app.is_platform_admin` is set to `'true'` |
+
+**Usage in Go middleware:**
+
+```go
+// For tenant API requests
+tx.Exec("SET LOCAL app.current_tenant_id = $1", tenantID)
+
+// For platform admin requests (bypasses RLS)
+tx.Exec("SET LOCAL app.is_platform_admin = 'true'")
+```
+
+### RLS Policies (Migration 000137)
+
+| Policy Type | Tables | Condition |
+|-------------|--------|-----------|
+| `tenant_isolation_*` | All tenant-scoped tables | `tenant_id = current_tenant_id()` |
+| `platform_admin_bypass_*` | All tenant-scoped tables | `is_platform_admin() = true` |
+
+**Tenant-scoped tables with RLS:**
+- `findings`, `assets`, `scans`, `agents`
+- `exposure_events`, `integrations`, `suppression_rules`
+- `finding_comments`, `finding_activities`, `asset_branches`
+
+See [Tenant Isolation & RLS](../architecture/tenant-isolation-security.md) for complete documentation.
 
 ## Working with Migrations
 
