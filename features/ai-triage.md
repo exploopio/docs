@@ -60,7 +60,7 @@ AI Triage leverages Large Language Models (LLMs) to analyze security findings an
 │  ┌─────────────────┐                                                         │
 │  │  Token Limit    │     ┌─────────────────────────────────────────────────┐ │
 │  │  Check          │────▶│   LLM Provider Factory                          │ │
-│  └────────┬────────┘     │   ├── Platform AI (Claude/OpenAI)               │ │
+│  └────────┬────────┘     │   ├── Platform AI (Claude/OpenAI/Gemini)        │ │
 │           │              │   ├── Tenant BYOK (encrypted API keys)          │ │
 │           ▼              │   └── Self-Hosted Agent                         │ │
 │  ┌─────────────────┐     └──────────────────────────────────────────────────┘ │
@@ -367,10 +367,14 @@ All triage operations are logged:
 # Feature Flag
 AI_TRIAGE_ENABLED=true
 
-# Platform AI Provider
+# Platform AI Provider (claude, openai, or gemini)
 AI_PLATFORM_PROVIDER=claude
 AI_PLATFORM_MODEL=claude-3-5-sonnet-20241022
-ANTHROPIC_API_KEY=sk-ant-...
+
+# Provider API Keys (configure based on AI_PLATFORM_PROVIDER)
+ANTHROPIC_API_KEY=sk-ant-...     # For Claude
+OPENAI_API_KEY=sk-...            # For OpenAI
+GEMINI_API_KEY=AIza...           # For Google Gemini
 
 # Rate Limiting
 AI_MAX_CONCURRENT_JOBS=10
@@ -380,6 +384,29 @@ AI_MAX_TOKENS=2000
 
 # Encryption
 AI_KEY_ENCRYPTION_KEY=base64-encoded-32-byte-key
+```
+
+### Supported LLM Providers
+
+| Provider | Models | Use Case |
+|----------|--------|----------|
+| `claude` | claude-3-5-sonnet, claude-sonnet-4 | Best for security analysis (default) |
+| `openai` | gpt-4-turbo, gpt-4o | Alternative, good general performance |
+| `gemini` | gemini-1.5-pro, gemini-1.5-flash | Cost-effective, good for bulk triage |
+
+### BYOK Provider Configuration
+
+For tenants using Bring Your Own Key (BYOK) mode:
+
+```json
+{
+    "ai": {
+        "mode": "byok",
+        "provider": "gemini",           // claude, openai, gemini
+        "api_key": "enc:v1:...",        // Encrypted via PUT /api/v1/settings/ai-triage/key
+        "model_override": "gemini-1.5-pro"
+    }
+}
 ```
 
 ---
@@ -665,6 +692,110 @@ WHERE tenant_id = 'xxx'
 SELECT * FROM ai_triage_results
 WHERE status = 'processing'
   AND started_at < NOW() - INTERVAL '10 minutes';
+```
+
+---
+
+## Workflow Integration
+
+AI Triage integrates seamlessly with the [Workflow Automation](workflows.md) system.
+
+### AI Triage Triggers
+
+Workflows can be triggered when AI triage completes or fails:
+
+| Trigger Type | Description | Available Filters |
+|--------------|-------------|-------------------|
+| `ai_triage_completed` | AI analysis finished successfully | `severity_filter`, `risk_score_min` |
+| `ai_triage_failed` | AI analysis failed | None |
+
+**Example: High Risk Alert Workflow**
+
+```json
+{
+  "name": "High Risk AI Triage Alert",
+  "nodes": [
+    {
+      "node_key": "trigger",
+      "node_type": "trigger",
+      "config": {
+        "trigger_type": "ai_triage_completed",
+        "trigger_config": {
+          "severity_filter": ["critical", "high"],
+          "risk_score_min": 70
+        }
+      }
+    },
+    {
+      "node_key": "notify",
+      "node_type": "notification",
+      "config": {
+        "notification_type": "slack",
+        "notification_config": {
+          "channel": "#security-critical",
+          "template": {
+            "text": "🚨 High Risk: {{trigger.summary}}\nRisk Score: {{trigger.risk_score}}"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+### AI Triage Actions
+
+Trigger AI analysis from workflows:
+
+```json
+{
+  "node_key": "run_ai",
+  "node_type": "action",
+  "config": {
+    "action_type": "trigger_ai_triage",
+    "action_config": {
+      "mode": "quick"
+    }
+  }
+}
+```
+
+### Context Variables
+
+When triggered by AI triage events, these variables are available in conditions:
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `trigger.severity_assessment` | string | AI-assessed severity |
+| `trigger.risk_score` | number | Risk score 0-100 |
+| `trigger.priority_rank` | number | Priority rank 1-100 |
+| `trigger.false_positive_likelihood` | number | FP probability 0-1 |
+| `trigger.summary` | string | Analysis summary |
+| `trigger.finding_id` | string | Associated finding ID |
+
+### Common Patterns
+
+**Auto-Escalate High Risk:**
+```
+Trigger(ai_triage_completed)
+  → Condition(risk_score > 80)
+  → Action(create_ticket)
+  → Notify(pagerduty)
+```
+
+**Mark Likely False Positives:**
+```
+Trigger(ai_triage_completed)
+  → Condition(false_positive_likelihood > 0.7)
+  → Action(update_status: needs_review)
+  → Action(add_tags: likely-fp)
+```
+
+**Handle Failures:**
+```
+Trigger(ai_triage_failed)
+  → Action(add_tags: manual-review)
+  → Notify(email: security-team)
 ```
 
 ---

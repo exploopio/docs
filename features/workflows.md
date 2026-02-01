@@ -58,12 +58,14 @@ Trigger nodes define when a workflow starts.
 |--------------|-------------|---------------|
 | `manual` | User-initiated execution | None |
 | `schedule` | Cron-based schedule | `cron_expression`, `timezone` |
-| `finding_created` | New finding detected | `severity_filter`, `tool_filter` |
-| `finding_updated` | Finding status changed | `status_filter`, `field_filter` |
-| `finding_age` | Finding exceeds age threshold | `age_days`, `severity_filter` |
+| `finding_created` | New finding detected | `severity_filter`, `tool_filter`, `source_filter` |
+| `finding_updated` | Finding status changed | `status_filter`, `field_filter`, `source_filter` |
+| `finding_age` | Finding exceeds age threshold | `age_days`, `severity_filter`, `source_filter` |
 | `asset_discovered` | New asset found | `asset_type_filter` |
 | `scan_completed` | Scan finishes | `scan_type_filter`, `status_filter` |
 | `webhook` | External webhook call | `secret`, `path` |
+| `ai_triage_completed` | AI triage analysis finished | `severity_filter`, `risk_score_min` |
+| `ai_triage_failed` | AI triage analysis failed | None |
 
 **Example: Schedule Trigger**
 ```json
@@ -96,6 +98,65 @@ Trigger nodes define when a workflow starts.
   }
 }
 ```
+
+**Example: Filter by Finding Source**
+
+Filter workflows by how findings were discovered (SAST, DAST, Pentest, Bug Bounty, etc.):
+
+```json
+{
+  "node_key": "pentest_findings",
+  "node_type": "trigger",
+  "name": "Pentest Finding Alert",
+  "config": {
+    "trigger_type": "finding_created",
+    "trigger_config": {
+      "severity_filter": ["critical"],
+      "source_filter": ["pentest", "bug_bounty", "red_team"]
+    }
+  }
+}
+```
+
+Available sources: `sast`, `dast`, `sca`, `secret`, `iac`, `container`, `cspm`, `easm`, `rasp`, `waf`, `siem`, `manual`, `pentest`, `bug_bounty`, `red_team`, `external`, `threat_intel`, `vendor`.
+
+See [Finding Sources](finding-sources.md) for the complete list.
+
+**Example: AI Triage Completed Trigger**
+
+Trigger workflows when AI triage analysis finishes for high-risk findings:
+
+```json
+{
+  "node_key": "high_risk_triage",
+  "node_type": "trigger",
+  "name": "High Risk AI Triage",
+  "config": {
+    "trigger_type": "ai_triage_completed",
+    "trigger_config": {
+      "severity_filter": ["critical", "high"],
+      "risk_score_min": 70
+    }
+  }
+}
+```
+
+**Example: AI Triage Failed Trigger**
+
+Handle AI triage failures for manual review:
+
+```json
+{
+  "node_key": "triage_failed",
+  "node_type": "trigger",
+  "name": "AI Triage Failed",
+  "config": {
+    "trigger_type": "ai_triage_failed"
+  }
+}
+```
+
+See [AI Triage](ai-triage.md) for more details on AI-powered vulnerability analysis.
 
 ### 2. Condition Nodes
 
@@ -141,6 +202,11 @@ Condition nodes evaluate expressions to determine flow.
 | `ctx.asset` | Asset object (if triggered by asset) |
 | `ctx.scan` | Scan object (if triggered by scan) |
 | `ctx.trigger` | Trigger metadata |
+| `ctx.triage_id` | AI triage result ID (if triggered by AI triage) |
+| `ctx.severity_assessment` | AI-assessed severity (if triggered by AI triage) |
+| `ctx.risk_score` | AI risk score 0-100 (if triggered by AI triage) |
+| `ctx.priority_rank` | AI priority rank 1-100 (if triggered by AI triage) |
+| `ctx.false_positive_likelihood` | FP probability 0-1 (if triggered by AI triage) |
 
 ### 3. Action Nodes
 
@@ -160,6 +226,7 @@ Action nodes execute automated responses.
 | `trigger_scan` | Start a quick scan | `scan_profile_id`, `target` |
 | `http_request` | Call external API | `url`, `method`, `headers`, `body` |
 | `run_script` | Execute custom script | `script`, `timeout` |
+| `trigger_ai_triage` | Trigger AI triage analysis | `finding_id` (optional), `mode` |
 
 **Example: Create Jira Ticket**
 ```json
@@ -198,6 +265,38 @@ Action nodes execute automated responses.
         "finding_id": "{{ctx.finding.id}}"
       }
     }
+  }
+}
+```
+
+**Example: Trigger AI Triage**
+
+Automatically run AI analysis on new findings:
+
+```json
+{
+  "node_key": "ai_analyze",
+  "node_type": "action",
+  "name": "Run AI Triage",
+  "config": {
+    "action_type": "trigger_ai_triage",
+    "action_config": {
+      "mode": "quick"
+    }
+  }
+}
+```
+
+The `mode` can be:
+- `quick` - Fast analysis with basic recommendations (default)
+- `detailed` - Comprehensive analysis with remediation steps
+
+The finding ID is automatically extracted from the trigger context. You can also explicitly specify:
+```json
+{
+  "action_config": {
+    "finding_id": "{{ctx.finding.id}}",
+    "mode": "detailed"
   }
 }
 ```
@@ -501,6 +600,34 @@ Trigger(scan_completed) → Condition(has_critical) → [Notify(slack), Notify(e
 
 ```
 Trigger(finding_updated) → Condition(status_resolved) → Action(update_ticket) → Action(remove_assignment)
+```
+
+### AI-Powered Triage
+
+Auto-triage new findings and escalate high-risk ones:
+
+```
+Trigger(finding_created) → Action(trigger_ai_triage) → ... (async)
+
+Trigger(ai_triage_completed) → Condition(risk_score > 70) → [Action(assign_user), Notify(slack)]
+```
+
+### Smart Prioritization
+
+Use AI triage results to automatically prioritize and route:
+
+```
+Trigger(ai_triage_completed) → Condition(severity == critical) → Action(create_ticket) → Notify(pagerduty)
+                            → Condition(false_positive > 0.7) → Action(update_status:needs_review)
+                            → Otherwise → Action(add_tags:ai-triaged)
+```
+
+### AI Triage Failure Handling
+
+Handle AI analysis failures gracefully:
+
+```
+Trigger(ai_triage_failed) → Action(add_tags:manual-review) → Notify(email:security-team)
 ```
 
 {% endraw %}
