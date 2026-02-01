@@ -7,9 +7,11 @@ nav_order: 7
 
 # ADR-007: AI Integration - Triage & Analysis System
 
-**Status:** Proposed
+**Status:** Implemented
 **Date:** 2025-02-01
 **Authors:** Engineering Team
+
+> **Implementation Complete**: All phases implemented with comprehensive security features including rate limiting, token race condition prevention, request deduplication, unicode normalization for prompt injection protection, and encrypted API key storage.
 
 ---
 
@@ -560,30 +562,61 @@ ui/src/features/settings/components/ai-settings-panel.tsx
 
 ## Security Considerations
 
-1. **API Key Protection**
-   - Store tenant keys encrypted with AES-256-GCM
+### Implemented Security Features
+
+1. **API Key Protection** ✅
+   - Store tenant keys encrypted with AES-256-GCM (`enc:v1:` prefix)
+   - `requireEncryptedAPIKeys: true` by default - rejects plaintext keys
    - Keys decrypted only at runtime, never logged
    - Use separate encryption key per environment
 
-2. **Data Privacy**
-   - Tenant with BYOK: Finding data sent to their provider
-   - Platform AI: Consider opt-in for sensitive tenants
-   - Sanitize PII before sending to LLM (configurable)
+2. **Rate Limiting** ✅
+   - Per-tenant rate limits: 10 requests/minute
+   - Rate limit headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+   - Returns 429 with `Retry-After` header when exceeded
 
-3. **Rate Limiting**
-   - Per-tenant rate limits
-   - Global platform limits
-   - Monthly token quotas for cost control
+3. **Token Race Condition Prevention** ✅
+   - Uses `SELECT FOR UPDATE` to lock rows during processing
+   - Atomic slot acquisition prevents concurrent workers from exceeding limits
+   - `AcquireTriageSlot` method combines lock + check + update in one transaction
 
-4. **Audit Trail**
-   - Log all AI triage requests
-   - Track token usage per tenant
+4. **Request Deduplication** ✅
+   - `HasPendingOrProcessing` check prevents duplicate requests
+   - Returns 409 Conflict with actionable error message
+   - Avoids wasted LLM API calls
+
+5. **Prompt Injection Protection** ✅
+   - **Unicode Normalization**: NFKC normalization to prevent fullwidth character bypass
+   - **Cyrillic Homoglyph Replacement**: Converts lookalike characters to ASCII
+   - **Pattern Detection**: 50+ regex patterns for injection attempts
+   - **Control Character Removal**: Strips zero-width and direction override characters
+
+6. **Input Validation** ✅
+   - Mode field validation (`quick` or `detailed` only)
+   - Bulk request limits: max 100 findings, max 64KB payload
+   - UUID format validation for finding IDs
+
+7. **Output Validation** ✅
+   - JSON schema validation for LLM responses
+   - Field sanitization (XSS prevention)
+   - Severity/score range validation
+
+8. **Audit Trail** ✅
+   - Log all AI triage requests with tenant/user context
+   - Track token usage per tenant per month
+   - Log token limit exceeded events
    - Store raw AI responses for debugging
 
-5. **Multi-Tenancy**
+9. **Multi-Tenancy** ✅
    - Row-level security on `ai_triage_results`
    - Tenant isolation in job queue (tenant_id in job payload)
+   - `ORDER BY tenant_id` for batch processing isolation
    - Never mix findings across tenants in prompts
+
+10. **Error Message Sanitization** ✅
+    - Generic error messages returned to clients
+    - Detailed errors logged internally
+    - Actionable `details` field with resolution guidance
 
 ---
 

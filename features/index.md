@@ -23,11 +23,15 @@ Documentation for major features in the Exploop CTEM Platform.
 | [Finding Lifecycle](finding-lifecycle.md) | Branch-aware auto-resolve and feature branch expiry | ✅ Implemented |
 | [Finding Types & Fingerprinting](finding-types.md) | Polymorphic findings with type-aware deduplication | ✅ Implemented |
 | [Finding Deduplication](finding-deduplication.md) | Fingerprint-based deduplication with security controls | ✅ Implemented |
+| [Finding Sources](finding-sources.md) | Dynamic finding source configuration with caching | ✅ Implemented |
 | [Data Flow Tracking](data-flow-tracking.md) | SARIF codeFlows for attack path analysis | ✅ Implemented |
 | [Workflow Automation](workflows.md) | Event-driven automation for notifications, tickets, assignments | ✅ Implemented |
+| [Scan Pipelines](pipelines.md) | Multi-step scan orchestration with visual builder | ✅ Implemented |
+| [Scan Configurations](scan-configs.md) | Scheduled and on-demand scan management | ✅ Implemented |
 | [CTEM Finding Fields](ctem-fields.md) | Exposure, remediation, and business impact fields | ✅ Implemented |
 | [Capabilities Registry](capabilities-registry.md) | Normalized tool capability management | ✅ Implemented |
 | [Asset Sub-Modules](asset-sub-modules.md) | Hierarchical module system for asset types | ✅ Implemented |
+| [AI Triage](ai-triage.md) | AI-powered vulnerability analysis and prioritization | ✅ Implemented |
 
 ---
 
@@ -44,8 +48,9 @@ Documentation for major features in the Exploop CTEM Platform.
 
 | Feature | Description |
 |---------|-------------|
+| **[Scan Configurations](scan-configs.md)** | Bind assets with scanners/pipelines, scheduling |
+| **[Scan Pipelines](pipelines.md)** | Multi-step automated scanning workflows |
 | **Scan Profiles** | Reusable configurations with Quality Gates and Template Modes |
-| **Scan Pipelines** | Multi-step automated scanning workflows |
 | **Scanner Templates** | Custom templates for Nuclei, Semgrep, Gitleaks |
 | **Capabilities Registry** | Normalized tool capability management |
 | **Quality Gates** | CI/CD pass/fail decisions based on finding thresholds |
@@ -56,6 +61,7 @@ Documentation for major features in the Exploop CTEM Platform.
 |---------|-------------|
 | **Finding Lifecycle** | Branch-aware auto-resolve, auto-reopen, feature branch expiry |
 | **Finding Types** | Polymorphic findings with specialized columns and fingerprinting |
+| **Finding Sources** | Dynamic source configuration (SAST, DAST, Pentest, etc.) |
 | **Finding Deduplication** | Type-aware fingerprinting with security controls |
 | **Data Flow Tracking** | SARIF codeFlows for attack path visualization |
 
@@ -88,6 +94,15 @@ Documentation for major features in the Exploop CTEM Platform.
 |---------|-------------|
 | **Module Access Control** | Subscription-based feature gating |
 | **Group-Based Access** | Fine-grained resource permissions |
+
+### AI & Intelligence
+
+| Feature | Description |
+|---------|-------------|
+| **[AI Triage](ai-triage.md)** | LLM-powered vulnerability analysis and prioritization |
+| **Auto-Triage** | Automatic AI analysis on new findings |
+| **False Positive Detection** | AI-powered false positive identification |
+| **Remediation Guidance** | AI-generated fix recommendations |
 
 ---
 
