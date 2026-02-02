@@ -135,10 +135,78 @@ Scans execute security checks against targets.
 2. Click **+ Create Scan**
 3. Configure:
    - **Name**: Descriptive name
-   - **Target**: Asset group or specific assets
+   - **Target**: Select from multiple target sources (see below)
    - **Profile**: Select scan profile
    - **Schedule**: One-time or recurring
    - **Worker**: Which worker executes the scan
+
+### Target Selection
+
+You can select targets from multiple sources. All target types support the same features (profiles, scheduling, etc.).
+
+| Target Type | Description | Example |
+|-------------|-------------|---------|
+| **Asset Groups** | Pre-defined groups of assets | Production servers, API endpoints |
+| **Individual Assets** | Single assets from inventory | Search and select specific assets |
+| **Custom Targets** | Manual entry of targets | Domains, IPs, CIDR ranges |
+
+#### Custom Target Formats
+
+When entering custom targets, the following formats are supported:
+
+| Format | Example | Description |
+|--------|---------|-------------|
+| Domain | `example.com` | Standard domain |
+| Wildcard | `*.example.com` | Wildcard subdomain |
+| IPv4 | `192.168.1.1` | Single IP address |
+| IPv6 | `2001:db8::1` | IPv6 address |
+| CIDR | `10.0.0.0/24` | IP range |
+| URL | `https://api.example.com` | Full URL |
+| Host:Port | `mail.example.com:587` | Domain with port |
+
+#### Security Restrictions
+
+For security reasons, certain targets are blocked:
+- **Internal IPs**: 10.x.x.x, 172.16-31.x.x, 192.168.x.x
+- **Loopback**: 127.x.x.x, localhost, ::1
+- **Link-local**: 169.254.x.x
+- **Dangerous characters**: `;`, `&`, `|`, etc.
+
+#### Pre-Creation Validation
+
+Scans are validated before creation:
+
+| Validation | Behavior | Description |
+|------------|----------|-------------|
+| **Tool Exists** | Blocks | Selected scanner must exist in tool registry |
+| **Tool Active** | Blocks | Scanner must not be disabled |
+| **Pipeline Steps Valid** | Blocks | All workflow steps must use valid tools |
+| **Agent Available** | Warning | Warning logged if no agent available |
+
+**Note:** Scans can be created without available agents. They will remain pending until an agent comes online.
+
+#### Trigger Validation
+
+When triggering a scan (manual or scheduled), additional validation is performed:
+
+| Validation | Behavior | Description |
+|------------|----------|-------------|
+| **Scan Active** | Blocks | Scan must be in "active" status |
+| **Concurrent Limit** | Blocks | Max 3 concurrent runs per scan config |
+| **Daemon Agent Online** | Blocks | At least one daemon agent must be online |
+
+**Agent Requirements for Trigger:**
+
+Only **daemon mode** agents can receive server-triggered scan jobs:
+
+| Condition | Required Value |
+|-----------|----------------|
+| `status` | `active` |
+| `health` | `online` or `unknown` |
+| `execution_mode` | `daemon` OR type = `worker`/`collector` |
+| `current_jobs` | Less than `max_concurrent_jobs` |
+
+**Note:** Standalone/runner agents (CI/CD mode) cannot receive server-triggered jobs because they don't poll for commands. They are designed for external triggers (webhooks, CI pipelines).
 
 ### Scan Types
 
@@ -301,5 +369,6 @@ Check scan session details for error messages:
 
 - [Running Workers](running-workers.md) - Setup scanning agents
 - [Tools Management](tools-management.md) - Manage security tools
-- [Agent Usage](agent-usage.md) - Use the Rediver Agent
+- [Agent Usage](agent-usage.md) - Use the Exploop Agent
 - [SDK Development](sdk-development.md) - Build custom tools
+- [ADR-006: Flexible Scan Target Selection](/docs/decisions/006-scan-targets-flexibility.md) - Technical decision on target selection

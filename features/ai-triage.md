@@ -146,7 +146,7 @@ Authorization: Bearer <token>
     "related_cwes": ["CWE-89", "CWE-20"],
     "analysis_summary": "High-risk SQL injection vulnerability...",
     "llm_provider": "claude",
-    "llm_model": "claude-3-5-sonnet-20241022",
+    "llm_model": "claude-sonnet-4-20250514",
     "prompt_tokens": 1250,
     "completion_tokens": 450,
     "completed_at": "2025-02-01T10:30:45Z"
@@ -369,7 +369,7 @@ AI_TRIAGE_ENABLED=true
 
 # Platform AI Provider (claude, openai, or gemini)
 AI_PLATFORM_PROVIDER=claude
-AI_PLATFORM_MODEL=claude-3-5-sonnet-20241022
+AI_PLATFORM_MODEL=claude-sonnet-4-20250514
 
 # Provider API Keys (configure based on AI_PLATFORM_PROVIDER)
 ANTHROPIC_API_KEY=sk-ant-...     # For Claude
@@ -390,9 +390,9 @@ AI_KEY_ENCRYPTION_KEY=base64-encoded-32-byte-key
 
 | Provider | Models | Use Case |
 |----------|--------|----------|
-| `claude` | claude-3-5-sonnet, claude-sonnet-4 | Best for security analysis (default) |
-| `openai` | gpt-4-turbo, gpt-4o | Alternative, good general performance |
-| `gemini` | gemini-1.5-pro, gemini-1.5-flash | Cost-effective, good for bulk triage |
+| `claude` | claude-sonnet-4-20250514, claude-opus-4-20250514 | Best for security analysis (default) |
+| `openai` | gpt-4o, gpt-4-turbo | Alternative, good general performance |
+| `gemini` | gemini-2.0-flash, gemini-1.5-pro | Cost-effective, good for bulk triage |
 
 ### BYOK Provider Configuration
 
@@ -408,6 +408,85 @@ For tenants using Bring Your Own Key (BYOK) mode:
     }
 }
 ```
+
+### Self-Hosted Agent Configuration
+
+For enterprise tenants using self-hosted AI Agent mode. See [Self-Hosted AI Agent](ai-agent.md) for full deployment guide.
+
+```json
+{
+    "ai": {
+        "mode": "agent",
+        "agent_endpoint": "https://ai-agent.internal.corp.com",
+        "agent_api_key": "enc:v1:...",
+        "agent_model": "llama2:70b",
+        "agent_timeout": 60,
+        "agent_health_check": true,
+        "fallback_enabled": false
+    }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `mode` | string | Yes | Must be `"agent"` for self-hosted mode |
+| `agent_endpoint` | string | Yes | HTTPS URL to self-hosted agent |
+| `agent_api_key` | string | Yes | Encrypted API key for agent authentication |
+| `agent_model` | string | No | Model name (informational only) |
+| `agent_timeout` | int | No | Request timeout in seconds (default: 60) |
+| `agent_health_check` | bool | No | Enable periodic health monitoring |
+| `fallback_enabled` | bool | No | Fall back to platform if agent unavailable |
+
+#### Agent Connection Testing
+
+Test agent connectivity before enabling:
+
+```http
+POST /api/v1/settings/ai-triage/test-agent
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+    "endpoint": "https://ai-agent.internal.corp.com",
+    "api_key": "your-agent-api-key",
+    "model": "llama2:70b"
+}
+```
+
+**Response:**
+```json
+{
+    "success": true,
+    "agent_version": "1.0.0",
+    "model": "llama2:70b",
+    "capabilities": ["json_mode"],
+    "latency_ms": 150,
+    "backend": "ollama"
+}
+```
+
+#### Agent Health Monitoring
+
+When `agent_health_check` is enabled, the platform periodically calls:
+
+```
+GET https://ai-agent.internal.corp.com/v1/health
+```
+
+Health status is displayed in the tenant settings UI:
+- 🟢 **Healthy**: Agent and LLM backend operational
+- 🟡 **Degraded**: Agent running but LLM backend issues
+- 🔴 **Unhealthy**: Agent not responding
+
+#### Fallback Behavior
+
+When `fallback_enabled: true`:
+1. Platform attempts to use self-hosted agent
+2. If agent returns error or times out, automatically falls back to platform AI
+3. Fallback events are logged in audit log
+4. UI shows warning when fallback is active
+
+**Note:** Fallback sends finding data to external LLM providers. Disable for strict data sovereignty requirements.
 
 ---
 
@@ -800,8 +879,448 @@ Trigger(ai_triage_failed)
 
 ---
 
+## Plan & Pricing
+
+AI Triage features are gated by subscription plan. Each plan includes different capabilities and token limits.
+
+### Feature Availability by Plan
+
+| Feature | Free | Starter | Pro | Business | Enterprise |
+|---------|:----:|:-------:|:---:|:--------:|:----------:|
+| Manual AI Triage | - | ✓ | ✓ | ✓ | ✓ |
+| Bulk AI Triage | - | - | ✓ | ✓ | ✓ |
+| Auto-Triage | - | - | ✓ | ✓ | ✓ |
+| Workflow Integration | - | - | ✓ | ✓ | ✓ |
+| BYOK (own API key) | - | - | ✓ | ✓ | ✓ |
+| Self-hosted Agent | - | - | - | - | ✓ |
+| Priority Queue | - | - | - | ✓ | ✓ |
+| Custom Prompts | - | - | - | - | ✓ |
+
+### Token Limits by Plan
+
+| Plan | Monthly Token Limit | Overage |
+|------|---------------------|---------|
+| **Free** | 0 (AI disabled) | N/A |
+| **Starter** | 10,000 tokens | Not available |
+| **Pro** | 100,000 tokens | $0.01 per 1K tokens |
+| **Business** | 500,000 tokens | $0.008 per 1K tokens |
+| **Enterprise** | Unlimited | Included |
+
+**Note:** Token limits apply to Platform mode only. BYOK and Agent modes use your own infrastructure/API keys.
+
+### AI Modes by Plan
+
+| Plan | Platform | BYOK | Agent |
+|------|:--------:|:----:|:-----:|
+| **Free** | - | - | - |
+| **Starter** | ✓ | - | - |
+| **Pro** | ✓ | ✓ | - |
+| **Business** | ✓ | ✓ | - |
+| **Enterprise** | ✓ | ✓ | ✓ |
+
+### Module IDs (for licensing)
+
+AI Triage uses hierarchical module IDs for granular feature gating:
+
+| Module ID | Description | Plans |
+|-----------|-------------|-------|
+| `ai_triage` | Base AI Triage access | Starter+ |
+| `ai_triage.bulk` | Bulk triage operations | Pro+ |
+| `ai_triage.auto` | Auto-triage on finding creation | Pro+ |
+| `ai_triage.workflow` | Workflow triggers and actions | Pro+ |
+| `ai_triage.byok` | Bring Your Own Key mode | Pro+ |
+| `ai_triage.agent` | Self-hosted Agent mode | Enterprise |
+| `ai_triage.custom_prompts` | Custom prompt templates | Enterprise |
+
+### Checking Feature Access
+
+```go
+// Check if tenant has AI Triage access
+if !plan.HasModule("ai_triage") {
+    return ErrAITriageNotAvailable
+}
+
+// Check specific feature
+if !plan.HasModule("ai_triage.bulk") {
+    return ErrBulkTriageNotAvailable
+}
+
+// Get token limit
+tokenLimit := plan.GetModuleLimit("ai_triage", "monthly_token_limit")
+```
+
+### Upgrade Prompts
+
+When a user tries to access a feature not in their plan:
+
+| Feature Attempted | Error Message |
+|-------------------|---------------|
+| AI Triage (Free) | "Upgrade to Starter to use AI-powered vulnerability analysis" |
+| Bulk Triage (Starter) | "Upgrade to Pro to analyze multiple findings at once" |
+| BYOK (Starter) | "Upgrade to Pro to use your own API keys" |
+| Agent Mode (Pro/Business) | "Contact sales for Enterprise features including self-hosted AI" |
+
+---
+
+## Stuck Job Recovery
+
+AI Triage includes an automatic recovery system for stuck jobs. Jobs can become stuck due to:
+
+- Worker crash during processing
+- LLM API timeout
+- Network issues
+- Database connection errors
+
+### How It Works
+
+A background job runs periodically to find and recover stuck triage jobs:
+
+```
+┌───────────────────────────────────────────────────────────────┐
+│                  STUCK JOB RECOVERY FLOW                       │
+├───────────────────────────────────────────────────────────────┤
+│                                                               │
+│  ┌─────────────────┐     ┌──────────────────────────────┐    │
+│  │ Recovery Job    │────▶│ Find stuck jobs:             │    │
+│  │ (every 5 min)   │     │ - pending > 15 min           │    │
+│  └─────────────────┘     │ - processing > 15 min        │    │
+│                          └───────────┬──────────────────┘    │
+│                                      │                        │
+│                                      ▼                        │
+│                          ┌──────────────────────────────┐    │
+│                          │ Mark as failed with message: │    │
+│                          │ "Job stuck in queue..."      │    │
+│                          └───────────┬──────────────────┘    │
+│                                      │                        │
+│                                      ▼                        │
+│                          ┌──────────────────────────────┐    │
+│                          │ Broadcast WebSocket event    │    │
+│                          │ (triage_failed)              │    │
+│                          └───────────┬──────────────────┘    │
+│                                      │                        │
+│                                      ▼                        │
+│                          ┌──────────────────────────────┐    │
+│                          │ Log audit event              │    │
+│                          └──────────────────────────────┘    │
+│                                                               │
+└───────────────────────────────────────────────────────────────┘
+```
+
+### Configuration
+
+Configure via environment variables:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AI_TRIAGE_RECOVERY_ENABLED` | `true` | Enable/disable recovery job |
+| `AI_TRIAGE_RECOVERY_INTERVAL` | `5m` | How often to check for stuck jobs |
+| `AI_TRIAGE_RECOVERY_STUCK_DURATION` | `15m` | Time before job is considered stuck |
+| `AI_TRIAGE_RECOVERY_BATCH_SIZE` | `50` | Max jobs to recover per run |
+
+**Example Configuration:**
+
+```bash
+# .env
+AI_TRIAGE_RECOVERY_ENABLED=true
+AI_TRIAGE_RECOVERY_INTERVAL=5m
+AI_TRIAGE_RECOVERY_STUCK_DURATION=15m
+AI_TRIAGE_RECOVERY_BATCH_SIZE=50
+```
+
+### Monitoring
+
+Check recovery job logs:
+
+```bash
+# In server logs
+level=info msg="starting ai triage recovery job" interval=5m0s stuck_duration=15m0s batch_size=50
+level=info msg="recovered stuck triage jobs" total=3 recovered=3 skipped=0 errors=0
+```
+
+Query stuck jobs manually:
+
+```sql
+-- Find jobs that will be recovered in next run
+SELECT id, tenant_id, finding_id, status, requested_at, started_at
+FROM ai_triage_results
+WHERE status IN ('pending', 'processing')
+  AND (
+    (status = 'pending' AND requested_at < NOW() - INTERVAL '15 minutes')
+    OR (status = 'processing' AND started_at < NOW() - INTERVAL '15 minutes')
+  )
+ORDER BY requested_at ASC
+LIMIT 50;
+```
+
+---
+
+## Real-time Updates (WebSocket)
+
+AI Triage uses WebSocket for real-time status updates. When a triage job completes or fails, the UI is notified immediately without polling.
+
+### WebSocket Channels
+
+| Channel Pattern | Description | Events |
+|-----------------|-------------|--------|
+| `triage:{finding_id}` | AI triage updates for a finding | `triage_completed`, `triage_failed` |
+
+### Event Format
+
+**Triage Completed:**
+
+```json
+{
+  "type": "triage_completed",
+  "triage": {
+    "id": "result-uuid",
+    "finding_id": "finding-uuid",
+    "tenant_id": "tenant-uuid",
+    "status": "completed"
+  }
+}
+```
+
+**Triage Failed:**
+
+```json
+{
+  "type": "triage_failed",
+  "triage": {
+    "id": "result-uuid",
+    "finding_id": "finding-uuid",
+    "tenant_id": "tenant-uuid",
+    "status": "failed",
+    "error_message": "AI analysis failed. Please try again later."
+  }
+}
+```
+
+### Frontend Usage
+
+```typescript
+// Subscribe to triage updates for a finding
+const { isSubscribed } = useTriageChannel<TriageEvent>(findingId, {
+  enabled: true,
+  onData: (event) => {
+    if (event.type === 'triage_completed') {
+      // Refresh triage result
+      refetchTriage()
+    } else if (event.type === 'triage_failed') {
+      // Show error notification
+      toast.error(event.triage.error_message)
+    }
+  },
+})
+```
+
+### Fallback Polling
+
+When WebSocket is not connected (network issues, browser compatibility), the UI falls back to polling:
+
+```typescript
+// Poll only when WebSocket not connected
+useEffect(() => {
+  if (!wsConnected && triageStatus === 'processing') {
+    const interval = setInterval(() => {
+      refetchTriage()
+    }, 5000) // Poll every 5 seconds
+    return () => clearInterval(interval)
+  }
+}, [wsConnected, triageStatus])
+```
+
+---
+
+## Deployment & Setup
+
+### Backend Setup
+
+1. **Configure AI Provider (Required)**
+
+   For Platform mode (Exploop-managed AI):
+   ```bash
+   # .env
+   AI_TRIAGE_ENABLED=true
+   AI_PLATFORM_PROVIDER=claude  # or openai, gemini
+   AI_PLATFORM_MODEL=claude-sonnet-4-20250514
+   ANTHROPIC_API_KEY=sk-ant-...
+   ```
+
+   For BYOK mode (tenant provides API keys):
+   ```bash
+   # .env
+   AI_TRIAGE_ENABLED=true
+   # No platform API keys needed - tenants configure in Settings > AI
+   ```
+
+2. **Configure Rate Limits**
+
+   ```bash
+   AI_MAX_CONCURRENT_JOBS=10
+   AI_RATE_LIMIT_RPM=60
+   AI_TIMEOUT_SECONDS=30
+   AI_MAX_TOKENS=2000
+   AI_TEMPERATURE=0.1  # Low for consistent results
+   ```
+
+3. **Configure Auto-Triage Defaults**
+
+   ```bash
+   AI_AUTO_TRIAGE_DEFAULT_ENABLED=false
+   AI_AUTO_TRIAGE_DEFAULT_SEVERITIES=critical,high
+   AI_AUTO_TRIAGE_DELAY=60s
+   ```
+
+4. **Configure Recovery Job**
+
+   ```bash
+   AI_TRIAGE_RECOVERY_ENABLED=true
+   AI_TRIAGE_RECOVERY_INTERVAL=5m
+   AI_TRIAGE_RECOVERY_STUCK_DURATION=15m
+   AI_TRIAGE_RECOVERY_BATCH_SIZE=50
+   ```
+
+### Nginx WebSocket Configuration
+
+For WebSocket to work through nginx, add this configuration:
+
+```nginx
+# /etc/nginx/sites-available/exploop
+
+upstream api_backend {
+    server localhost:8080;
+}
+
+server {
+    listen 80;
+    server_name exploop.local;
+
+    # Regular API requests
+    location /api/ {
+        proxy_pass http://api_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # WebSocket endpoint - requires special handling
+    location /api/v1/ws {
+        proxy_pass http://api_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket timeout (24 hours)
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+
+        # Disable buffering for real-time
+        proxy_buffering off;
+    }
+}
+```
+
+**Important:** The WebSocket location block MUST include:
+- `proxy_http_version 1.1;` - Required for WebSocket
+- `proxy_set_header Upgrade $http_upgrade;` - WebSocket upgrade header
+- `proxy_set_header Connection "upgrade";` - Keep connection alive
+- `proxy_read_timeout 86400;` - Long timeout for persistent connections
+
+### Docker Compose Setup
+
+```yaml
+# docker-compose.yml
+services:
+  api:
+    image: exploop/api:latest
+    environment:
+      # AI Triage Configuration
+      - AI_TRIAGE_ENABLED=true
+      - AI_PLATFORM_PROVIDER=claude
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # Recovery Job
+      - AI_TRIAGE_RECOVERY_ENABLED=true
+      - AI_TRIAGE_RECOVERY_INTERVAL=5m
+    ports:
+      - "8080:8080"
+
+  ui:
+    image: exploop/ui:latest
+    environment:
+      - BACKEND_API_URL=http://api:8080
+      - NEXT_PUBLIC_SSE_BASE_URL=  # Empty for same-origin WebSocket
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+      - ui
+```
+
+### Frontend Environment
+
+```bash
+# ui/.env.local
+BACKEND_API_URL=http://localhost:8080
+
+# For WebSocket connection (leave empty for same-origin)
+NEXT_PUBLIC_SSE_BASE_URL=
+
+# Or specify explicitly for cross-origin
+# NEXT_PUBLIC_SSE_BASE_URL=http://localhost:8080
+```
+
+### Health Check
+
+Verify AI Triage is working:
+
+```bash
+# Check AI config endpoint
+curl -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/api/v1/settings/ai-triage
+
+# Expected response:
+{
+  "mode": "platform",
+  "provider": "claude",
+  "model": "claude-sonnet-4-20250514",
+  "is_enabled": true,
+  "auto_triage_enabled": false,
+  "monthly_token_limit": 100000,
+  "tokens_used_this_month": 5432
+}
+```
+
+Check WebSocket connection:
+
+```bash
+# Using websocat
+websocat "ws://localhost:8080/api/v1/ws?token=$TOKEN"
+
+# Send subscribe message
+{"type":"subscribe","channel":"triage:finding-uuid","request_id":"1"}
+
+# Expected response
+{"type":"subscribed","channel":"triage:finding-uuid","request_id":"1","timestamp":1234567890}
+```
+
+---
+
 ## Related Documentation
 
 - [ADR-007: AI Integration](../decisions/007-ai-integration.md) - Architecture Decision Record
 - [Finding Lifecycle](finding-lifecycle.md) - How findings are managed
 - [Workflow Automation](workflows.md) - Automate actions based on AI results
+- [WebSocket Architecture](../architecture/overview.md#websocket) - Real-time communication
+- [Self-Hosted AI Agent](ai-agent.md) - Enterprise self-hosted AI deployment

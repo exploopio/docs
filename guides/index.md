@@ -78,6 +78,7 @@ Container and production deployment.
 | Guide | Description |
 |-------|-------------|
 | [Docker Deployment](docker-deployment.md) | Container deployment |
+| [WebSocket Setup](websocket-setup.md) | Real-time communication configuration (nginx, CSP) |
 
 ---
 

@@ -335,15 +335,156 @@ WHERE is_system_template = true
   AND 'preset' = ANY(tags);
 ```
 
-### Clone Template for Tenant
+### Clone Template for Tenant (Manual)
 
-Users can clone system templates to customize:
+Users can manually clone system templates to customize:
 
 ```go
 // Clone creates a copy with new ID for the user's tenant
 clonedTemplate := systemTemplate.Clone()
 clonedTemplate.TenantID = userTenantID
 clonedTemplate.IsSystemTemplate = false
+```
+
+### Auto-Clone on Trigger (Copy-on-Use Pattern)
+
+When a user triggers a system template directly, the system automatically clones it:
+
+```
+User clicks "Run" on System Template
+    │
+    ▼
+TriggerPipeline()
+    │
+    ├── Check: is_system_template == true?
+    │       │
+    │       └── YES: Find or create tenant clone
+    │           │
+    │           ├── Check for existing clone (by tenant_id + name)
+    │           │   │
+    │           │   ├── Found: Use existing clone
+    │           │   │
+    │           │   └── Not Found: Clone system template
+    │           │       │
+    │           │       ├── Validate tools are available
+    │           │       ├── Copy template with new ID
+    │           │       ├── Copy all steps
+    │           │       └── Set is_system_template = false
+    │           │
+    │           └── Trigger the tenant clone (not the system template)
+    │
+    └── NO: Trigger directly
+```
+
+**Key Points:**
+1. **System templates are never triggered directly** - they serve as blueprints
+2. **Auto-clone checks for existing clone first** - prevents duplicate clones
+3. **Tools are validated EVERY trigger** - ensures all referenced tools are active (both for new clones AND existing clones)
+4. **Clones become tenant-owned pipelines** - fully editable by the user
+
+### Security Considerations
+
+| Risk | Mitigation |
+|------|-----------|
+| **Outdated clone with disabled tools** | Tools re-validated on every trigger, not just on clone creation |
+| **Unauthorized tenant access** | Clones are bound to tenant_id, tenant isolation enforced |
+| **System template modification** | System templates are read-only (`is_system_template=true`), only clones are editable |
+| **SQL Injection** | All queries use parameterized statements |
+| **Tool disabled/deleted while pipeline active** | Cascade deactivation: pipelines using the tool are auto-deactivated |
+
+### Tool Lifecycle - Pipeline Cascade Deactivation
+
+When a tool is **deactivated** or **deleted**, all active pipelines that use that tool are automatically deactivated:
+
+```
+Admin deactivates/deletes Tool "nuclei"
+    │
+    ▼
+ToolService.DeactivateTool() / DeleteTool()
+    │
+    ├── Find active pipelines using "nuclei"
+    │   (via FindPipelineIDsByToolName)
+    │
+    ├── For each pipeline:
+    │   └── Set is_active = false
+    │
+    └── Log: "cascade deactivated N pipelines"
+```
+
+**Validation Points (Defense in Depth):**
+
+| Action | Validation | When |
+|--------|-----------|------|
+| **Activate Pipeline** | `ValidateToolReferences` | Before activation |
+| **Trigger Pipeline** | `ValidateToolReferences` | Before trigger (on existing clone too) |
+| **Deactivate Tool** | Cascade deactivate pipelines | During tool deactivation |
+| **Delete Tool** | Cascade deactivate pipelines | Before tool deletion |
+| **UI Visual Builder** | Show red border on steps without tool | Real-time in editor |
+
+This ensures pipelines cannot execute with missing/inactive tools, even if:
+1. Tool was deactivated after pipeline was created
+2. Tool was deleted from registry
+3. Tool's tenant config was disabled
+
+### Database Query Optimization
+
+**Before (N+1 Problem):**
+```
+GetScanManagementStats():
+├── getPipelineRunStats(): 5 queries (1 per status)
+├── getStepRunStats(): 1 + N queries (N = number of runs, up to 100)
+└── getCommandStats(): 6 queries (1 per status)
+Total: ~112 queries per request!
+```
+
+**After (Single Query Aggregation):**
+```
+GetScanManagementStats():
+├── getPipelineRunStats(): 1 query (using FILTER aggregation)
+├── getStepRunStats(): 1 query (using JOIN + FILTER aggregation)
+└── getCommandStats(): 1 query (using FILTER aggregation)
+Total: 3 queries per request
+```
+
+**SQL Example (Optimized):**
+```sql
+-- Single query aggregation with PostgreSQL FILTER clause
+SELECT
+    COUNT(*) as total,
+    COUNT(*) FILTER (WHERE status = 'pending') as pending,
+    COUNT(*) FILTER (WHERE status = 'running') as running,
+    COUNT(*) FILTER (WHERE status = 'completed') as completed,
+    COUNT(*) FILTER (WHERE status IN ('failed', 'timeout')) as failed,
+    COUNT(*) FILTER (WHERE status = 'canceled') as canceled
+FROM pipeline_runs
+WHERE tenant_id = $1
+```
+
+### UI Stats Display
+
+The UI separates pipeline counts into two categories:
+
+| Stat | Description |
+|------|-------------|
+| **My Pipelines** | Tenant-owned pipelines only (excludes system templates) |
+| **Active** | Active tenant-owned pipelines |
+| **Total Runs** | Pipeline run count (includes runs from both tenant and auto-cloned system templates) |
+| **Success Rate** | Completed / Total runs percentage |
+
+**Example Flow:**
+```
+Initial state:
+- System Templates: 5
+- My Pipelines: 0
+
+User triggers "Web Vulnerability Scan" (system template):
+- Auto-clones to tenant with name "Web Vulnerability Scan"
+- Runs the cloned pipeline
+
+After trigger:
+- System Templates: 5 (unchanged)
+- My Pipelines: 1 (new clone created)
+- Total Runs: 1
 ```
 
 ### View Template Execution Graph

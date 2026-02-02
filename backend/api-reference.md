@@ -857,8 +857,47 @@ os_command, raw_command, custom_command
 
 ### Tool Validation
 
-- Tool names must exist in the tool registry
+- Tool names must exist in the tool registry and be active
 - Capabilities must be in the allowed whitelist
+
+### Scan Creation Validation
+
+When creating a scan configuration, the following validations are performed:
+
+| Validation | Type | Error Message |
+|------------|------|---------------|
+| Tool exists | Single scan | `scanner 'xyz' not found in tool registry` |
+| Tool is active | Single scan | `scanner 'xyz' is disabled` |
+| Pipeline step tool exists | Workflow scan | `pipeline step 'step_key' uses tool 'xyz' which is not found` |
+| Pipeline step tool active | Workflow scan | `pipeline step 'step_key' uses tool 'xyz' which is disabled` |
+| Agent availability | All scans | `No agents available. Deploy a tenant agent or upgrade your plan for platform agents.` |
+
+**Agent Availability Check (Trigger Only):**
+
+Agent availability is checked when **triggering** a scan (not during creation):
+
+| Action | Behavior |
+|--------|----------|
+| Create Scan Config | Warning logged only (allows pre-scheduling) |
+| Trigger Scan | Blocks if no daemon agent available |
+
+**Daemon Agent Requirements:**
+- `status = 'active'` and `health IN ('online', 'unknown')`
+- `execution_mode = 'daemon'` OR `type IN ('worker', 'collector')`
+- `current_jobs < max_concurrent_jobs`
+
+Standalone/runner agents (CI/CD) cannot receive server-triggered jobs.
+
+### Target Validation (SSRF Protection)
+
+Custom targets are validated to prevent SSRF attacks:
+
+| Category | Blocked | Example |
+|----------|---------|---------|
+| Internal IPs | 10.x.x.x, 172.16-31.x.x, 192.168.x.x | `10.0.0.1` |
+| Localhost | 127.x.x.x, localhost, ::1 | `http://localhost:8080` |
+| Link-local | 169.254.x.x | `169.254.1.1` |
+| Dangerous characters | `; & \| $ \`` etc. | `example.com; rm -rf /` |
 
 ### Validation Error Response
 
@@ -866,6 +905,14 @@ os_command, raw_command, custom_command
 {
   "code": "SECURITY_VALIDATION_FAILED",
   "message": "Config value contains potentially dangerous pattern: command substitution",
+  "status": 400
+}
+```
+
+```json
+{
+  "code": "VALIDATION",
+  "message": "scanner 'nuclei-invalid' not found in tool registry",
   "status": 400
 }
 ```

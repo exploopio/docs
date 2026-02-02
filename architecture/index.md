@@ -21,6 +21,7 @@ Start with these documents to understand the system:
 | [System Overview](overview.md) | High-level system architecture |
 | [Component Interactions](component-interactions.md) | How all components interact |
 | [Deployment Modes](deployment-modes.md) | Standalone vs distributed deployment |
+| [Pipeline vs Workflow](pipeline-vs-workflow.md) | Key differences explained |
 
 ---
 
@@ -33,6 +34,7 @@ Core scanning and pipeline architecture:
 | [Scan Flow Architecture](scan-flow.md) | Complete scan lifecycle |
 | [Scan Pipeline Design](scan-pipeline-design.md) | Pipeline execution engine |
 | [Scan Orchestration](scan-orchestration.md) | Automated scheduling and progression |
+| [Scan Trigger Edge Cases](scan-trigger-edge-cases.md) | Race conditions, validation, recovery |
 | [Workflow Executor](workflow-executor.md) | Automation with 14-layer security |
 
 ---

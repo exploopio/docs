@@ -389,6 +389,76 @@ Hydration failed because the initial UI does not match what was rendered on the 
 
 ---
 
+## Scan Issues
+
+### Scan Creation Failed
+
+**Symptom:** Cannot create new scan, error message displayed
+
+**Common Error Messages and Solutions:**
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `scanner 'xyz' not found in tool registry` | Tool doesn't exist | Check tool name spelling, ensure tool is registered |
+| `scanner 'xyz' is disabled` | Tool is inactive | Enable the tool in Tool Management |
+| `pipeline step 'step_key' uses tool 'xyz' which is not found` | Workflow uses missing tool | Update pipeline to use existing tools |
+| `No agents available. Deploy a tenant agent or upgrade your plan` | No agents can execute scan | Deploy a tenant agent or upgrade for platform agents |
+| `No tenant agent available. Deploy an agent or enable platform agents` | Tenant-only mode with no agents | Deploy a tenant agent |
+
+**Troubleshooting Steps:**
+
+1. **Check available tools:**
+   ```bash
+   curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:8080/api/v1/tools | jq '.data[].name'
+   ```
+
+2. **Check agent status:**
+   ```bash
+   curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:8080/api/v1/agents
+   ```
+
+3. **For workflow scans, verify pipeline steps:**
+   ```bash
+   curl -H "Authorization: Bearer $TOKEN" \
+     http://localhost:8080/api/v1/pipelines/{id}/steps
+   ```
+
+### Scan Created but Not Running
+
+**Symptom:** Scan is created but stays in "pending" status
+
+**Solutions:**
+
+1. **Check agent is online:**
+   - View Agents page in UI
+   - Ensure at least one agent shows "Online" status
+
+2. **Check scan configuration:**
+   - Verify schedule is set correctly
+   - Check if scan is in "active" status (not paused/disabled)
+
+3. **Check agent capabilities:**
+   - Agent must support the scanner tool
+   - Check agent's registered capabilities
+
+### Target Validation Errors
+
+**Symptom:** Custom targets rejected during scan creation
+
+**Common Errors:**
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `internal IP addresses are not allowed (SSRF protection)` | Private IP blocked | Use public IPs or enable internal IPs for tenant |
+| `localhost addresses are not allowed` | Localhost blocked | Use actual domain/IP |
+| `contains invalid characters` | Shell metacharacters | Remove `;`, `&`, `\|`, etc. |
+| `invalid domain format` | Malformed domain | Check domain syntax |
+| `CIDR range too large` | Range > 65536 hosts | Use smaller CIDR (e.g., /16 max) |
+
+---
+
 ## Performance Issues
 
 ### Slow API Responses

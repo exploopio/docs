@@ -160,28 +160,46 @@ internal/
 │   ├── sla/             # SLA management
 │   └── audit/           # Audit logging
 │
-├── app/                  # Application Layer (use cases) - 29 services
+├── app/                  # Application Layer (use cases) - 30+ services
+│   │
+│   │ # Sub-packages (Clean Architecture)
+│   ├── pipeline/            # Pipeline orchestration service
+│   │   ├── service.go       # Service + interfaces
+│   │   ├── template.go      # Template CRUD operations
+│   │   ├── step.go          # Step management
+│   │   ├── run.go           # Pipeline execution
+│   │   └── adapters.go      # Adapter patterns
+│   │
+│   ├── scan/                # Scan configuration service
+│   │   ├── service.go       # Service + interfaces
+│   │   ├── crud.go          # CRUD operations
+│   │   ├── trigger.go       # Scan triggering
+│   │   └── run.go           # Quick scan execution
+│   │
+│   ├── ingest/              # Data ingestion
+│   │   └── service.go
+│   │
+│   │ # Flat services
+│   ├── adapters.go          # Interface adapters for sub-packages
 │   ├── asset_service.go
 │   ├── asset_group_service.go
 │   ├── asset_type_service.go
 │   ├── auth_service.go
 │   ├── attack_surface_service.go
 │   ├── audit_service.go
+│   ├── agent_selector.go    # Agent selection logic
 │   ├── branch_service.go
 │   ├── command_service.go
 │   ├── component_service.go
 │   ├── dashboard_service.go
 │   ├── email_service.go
 │   ├── finding_comment_service.go
-│   ├── ingest_service.go
 │   ├── oauth_service.go
-│   ├── pipeline_service.go
 │   ├── rule_service.go
-│   ├── scan_service.go
 │   ├── scanprofile_service.go
 │   ├── scansession_service.go
-│   ├── scm_connection_service.go
 │   ├── scope_service.go
+│   ├── security_validator.go # Security validation
 │   ├── session_service.go
 │   ├── sla_service.go
 │   ├── tenant_service.go
@@ -190,7 +208,7 @@ internal/
 │   ├── capability_service.go
 │   ├── user_service.go
 │   ├── vulnerability_service.go
-│   └── worker_service.go
+│   └── workflow_service.go
 │
 └── infra/               # Infrastructure Layer (outermost layer)
     ├── http/            # HTTP adapter
@@ -243,6 +261,105 @@ HTTP Request
 2. **Dependencies point inward** (outer layers depend on inner)
 3. **Interfaces defined in domain**, implemented in infra
 4. **Use cases orchestrate** domain logic
+
+### Sub-Package Dependency Graph
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        Application Layer (app/)                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌──────────────────┐     ┌──────────────────┐                         │
+│  │ pipeline/        │     │ scan/            │                         │
+│  │ ├─ Service       │     │ ├─ Service       │                         │
+│  │ ├─ interfaces    │     │ ├─ interfaces    │                         │
+│  │ └─ adapters      │     │ └─ adapters      │                         │
+│  └────────┬─────────┘     └────────┬─────────┘                         │
+│           │                        │                                    │
+│           │    ┌───────────────────┘                                    │
+│           │    │                                                        │
+│           ▼    ▼                                                        │
+│  ┌──────────────────────────────────────────────────────────┐          │
+│  │                    adapters.go                            │          │
+│  │  ┌────────────────────────────────────────────────────┐  │          │
+│  │  │ Adapts app services to sub-package interfaces:     │  │          │
+│  │  │ • NewScanAuditServiceAdapter(AuditService)         │  │          │
+│  │  │ • NewPipelineAuditServiceAdapter(AuditService)     │  │          │
+│  │  │ • NewScanAgentSelectorAdapter(AgentSelector)       │  │          │
+│  │  │ • NewPipelineAgentSelectorAdapter(AgentSelector)   │  │          │
+│  │  │ • NewScanSecurityValidatorAdapter(SecurityValidator)│  │          │
+│  │  │ • NewPipelineSecurityValidatorAdapter(...)         │  │          │
+│  │  │ • NewScanTemplateSyncerAdapter(TemplateSyncer)     │  │          │
+│  │  └────────────────────────────────────────────────────┘  │          │
+│  └──────────────────────────────────────────────────────────┘          │
+│           │                                                             │
+│           ▼                                                             │
+│  ┌──────────────────────────────────────────────────────────┐          │
+│  │              Concrete App Services                        │          │
+│  │  ┌─────────────────┐  ┌─────────────────┐                │          │
+│  │  │ AuditService    │  │ AgentSelector   │                │          │
+│  │  └─────────────────┘  └─────────────────┘                │          │
+│  │  ┌─────────────────┐  ┌─────────────────┐                │          │
+│  │  │ SecurityValidator│  │ TemplateSyncer  │                │          │
+│  │  └─────────────────┘  └─────────────────┘                │          │
+│  └──────────────────────────────────────────────────────────┘          │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Sub-package Interface Pattern:
+┌─────────────────────────────────────────────────────────────┐
+│  pipeline/service.go defines:                                │
+│  • AuditService interface                                   │
+│  • AgentSelector interface                                  │
+│  • SecurityValidator interface                              │
+│  • ValidationResult, AuditContext, etc.                     │
+│                                                              │
+│  scan/service.go defines:                                    │
+│  • AuditService interface (similar, different context)      │
+│  • AgentSelector interface                                  │
+│  • SecurityValidator interface                              │
+│  • TemplateSyncer interface                                 │
+│  • ValidationResult, AgentAvailability, etc.                │
+└─────────────────────────────────────────────────────────────┘
+
+Benefits:
+1. Each sub-package defines ONLY the interfaces it needs
+2. No shared package = no import cycles
+3. Adapters bridge concrete implementations to sub-package interfaces
+4. Sub-packages are independently testable with mocks
+```
+
+### Scan ↔ Pipeline Relationship
+
+```
+                    ┌──────────────────┐
+                    │   Webhook/API    │
+                    │   Manual Trigger │
+                    │   Schedule       │
+                    │   Asset Trigger  │
+                    └────────┬─────────┘
+                             │ triggers directly
+                             ▼
+┌─────────────┐       ┌──────────────────┐
+│   Scan      │──────▶│    Pipeline      │
+│ (workflow   │ uses  │   (Orchestrator) │
+│   type)     │       └──────────────────┘
+└─────────────┘              ▲
+      │                      │
+      │ OR                   │
+      ▼                      │
+┌─────────────┐              │
+│   Scan      │──────────────┘
+│ (single     │  triggers pipeline
+│   type)     │  run directly
+└─────────────┘
+
+Key Points:
+• Pipeline can run WITHOUT Scan (webhook, manual, schedule triggers)
+• Scan can run WITHOUT Pipeline (single scanner type)
+• Scan optionally USES Pipeline for workflow execution
+• One-way dependency: Scan → Pipeline (never reverse)
+```
 
 ## Authentication Flow
 
