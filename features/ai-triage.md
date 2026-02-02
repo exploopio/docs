@@ -235,6 +235,152 @@ Content-Type: application/json
 
 ---
 
+## LLM Error Messages
+
+When AI triage fails, error messages are categorized and sanitized to provide actionable guidance without exposing sensitive details (API keys, internal errors, etc.).
+
+### Error Categories
+
+| Category | Raw Error Pattern | User-Friendly Message |
+|----------|-------------------|----------------------|
+| **Rate Limited** | `rate limit`, `429`, `too many requests` | "AI service is temporarily busy. Please try again in a few minutes." |
+| **Authentication** | `unauthorized`, `401`, `invalid api key` | "AI service authentication failed. Please contact your administrator." |
+| **Quota Exceeded** | `quota`, `insufficient_quota`, `billing` | "AI service quota exceeded. Please check your API key billing status." |
+| **Timeout** | `timeout`, `deadline exceeded`, `context deadline` | "AI analysis timed out. The finding may be too complex. Please try again." |
+| **Content Blocked** | `content filter`, `blocked`, `safety`, `refused` | "AI analysis was blocked by content filters. The finding may contain sensitive content." |
+| **Token Limit** | `token limit`, `context length`, `too long`, `maximum context` | "Finding is too large for AI analysis. Try a simpler finding or contact support." |
+| **Server Error** | `500`, `502`, `503`, `504`, `internal server error` | "AI service is temporarily unavailable. Please try again later." |
+| **Configuration** | `not configured`, `missing`, `invalid config` | "AI service is not properly configured. Please contact your administrator." |
+| **Default** | (any other error) | "AI analysis failed. Please try again later." |
+
+### Implementation Details
+
+The error categorization is implemented in `ai_triage_service.go`:
+
+```go
+func categorizeError(err error) string {
+    errLower := strings.ToLower(err.Error())
+
+    // Rate limiting
+    if errors.Is(err, llm.ErrRateLimited) ||
+       strings.Contains(errLower, "rate limit") ||
+       strings.Contains(errLower, "429") {
+        return "AI service is temporarily busy. Please try again in a few minutes."
+    }
+
+    // Authentication errors
+    if strings.Contains(errLower, "unauthorized") ||
+       strings.Contains(errLower, "401") ||
+       strings.Contains(errLower, "invalid api key") {
+        return "AI service authentication failed. Please contact your administrator."
+    }
+
+    // ... additional categories
+}
+```
+
+### Security Considerations
+
+1. **No Raw Errors**: Internal error details are never exposed to users
+2. **No API Keys**: Error messages never include API keys or tokens
+3. **No Stack Traces**: Server-side stack traces are logged but not returned
+4. **Actionable Guidance**: Each message includes what the user should do
+
+### Logging
+
+Full error details are logged server-side for debugging:
+
+```go
+s.logger.Error("AI triage processing failed",
+    "triage_id", triageID,
+    "finding_id", findingID,
+    "error", err.Error(),  // Full error for debugging
+)
+```
+
+Error message stored in database is the user-friendly version:
+
+```sql
+UPDATE ai_triage_results
+SET status = 'failed',
+    error_message = 'AI service is temporarily busy. Please try again in a few minutes.'
+WHERE id = $1;
+```
+
+### UI Display
+
+The AI Triage button shows categorized error messages:
+
+| Status | Button State | Toast Notification |
+|--------|--------------|-------------------|
+| `pending` | "Queued..." with spinner | - |
+| `processing` | "Analyzing..." with spinner | "AI Triage Processing" |
+| `completed` | "Re-analyze" with check icon | "AI Triage Completed" |
+| `failed` | "Retry" with alert icon | Error message from category |
+
+**Example Toast:**
+
+```tsx
+toast.error('AI Triage Failed', {
+    description: result.errorMessage // User-friendly categorized message
+})
+```
+
+### Retry Behavior
+
+| Error Category | Should Retry | Wait Time |
+|----------------|--------------|-----------|
+| Rate Limited | Yes | 1-5 minutes |
+| Timeout | Yes | Immediately |
+| Server Error | Yes | 1-5 minutes |
+| Authentication | No | Fix config |
+| Quota Exceeded | No | Check billing |
+| Content Blocked | No | Manual review |
+| Token Limit | No | Simplify finding |
+
+### WebSocket Error Events
+
+When triage fails, a WebSocket event is broadcast:
+
+```json
+{
+  "type": "triage_failed",
+  "triage": {
+    "id": "result-uuid",
+    "finding_id": "finding-uuid",
+    "tenant_id": "tenant-uuid",
+    "status": "failed",
+    "error_message": "AI service is temporarily busy. Please try again in a few minutes."
+  }
+}
+```
+
+### Monitoring Errors
+
+Query failed triages by error category:
+
+```sql
+-- Find rate limit errors
+SELECT COUNT(*), DATE_TRUNC('hour', completed_at) as hour
+FROM ai_triage_results
+WHERE status = 'failed'
+  AND error_message LIKE '%temporarily busy%'
+  AND completed_at > NOW() - INTERVAL '24 hours'
+GROUP BY hour
+ORDER BY hour;
+
+-- Find authentication errors (needs config fix)
+SELECT tenant_id, COUNT(*) as failures
+FROM ai_triage_results
+WHERE status = 'failed'
+  AND error_message LIKE '%authentication failed%'
+  AND completed_at > NOW() - INTERVAL '7 days'
+GROUP BY tenant_id
+ORDER BY failures DESC;
+```
+
+---
+
 ## Security Features
 
 ### 1. Rate Limiting

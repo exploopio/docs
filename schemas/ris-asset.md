@@ -89,7 +89,8 @@ The Asset schema represents discovered assets such as domains, IP addresses, rep
 | `nft_collection` | NFT collection |
 | `defi_protocol` | DeFi protocol |
 | `blockchain` | Blockchain |
-| `other` | Other |
+| `unclassified` | Unclassified asset (not yet categorized) |
+| `other` | Other (**deprecated** - use `unclassified`) |
 
 ### Criticality
 
