@@ -217,7 +217,7 @@ package chunk
 
 import (
     "time"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // Report represents a chunked report in the database.
@@ -306,7 +306,7 @@ type Progress struct {
 package chunk
 
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // Splitter handles report chunking logic.
@@ -464,7 +464,7 @@ import (
     "sync"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
     _ "modernc.org/sqlite" // Pure Go SQLite driver
 )
 

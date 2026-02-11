@@ -69,7 +69,7 @@ select sink, sourceNode, sinkNode,
 **SDK Integration (Implemented):**
 
 ```go
-import "github.com/openctemio/sdk/pkg/scanners"
+import "github.com/openctemio/sdk-go/pkg/scanners"
 
 // Use language-specific preset
 scanner := scanners.CodeQLGo()

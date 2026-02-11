@@ -358,9 +358,9 @@ Build a custom scanner with the SDK:
 package main
 
 import (
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -380,7 +380,7 @@ func main() {
 }
 ```
 
-See [SDK Documentation](https://github.com/openctemio/sdk#readme) for details.
+See [SDK Documentation](https://github.com/openctemio/sdk-go#readme) for details.
 
 ---
 
@@ -436,7 +436,7 @@ docker run --network=host ...
 - **[Production Deployment](../operations/PRODUCTION_DEPLOYMENT.md)** - Deploy to Kubernetes/Cloud
 - **[Agent Configuration](https://github.com/openctemio/agent#configuration)** - Advanced agent.yaml options
 - **[API Reference](../backend/api-reference.md)** - Full API documentation
-- **[SDK Guide](https://github.com/openctemio/sdk#readme)** - Build custom tools
+- **[SDK Guide](https://github.com/openctemio/sdk-go#readme)** - Build custom tools
 
 ---
 

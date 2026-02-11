@@ -35,7 +35,7 @@ package main
 
 import (
     "time"
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -76,7 +76,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -167,8 +167,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // MyToolOutput represents your tool's JSON output format
@@ -280,8 +280,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 type MyAPICollector struct {
@@ -419,7 +419,7 @@ finding := ctis.Finding{
 Use the shared fingerprint package for consistent deduplication:
 
 ```go
-import "github.com/openctemio/sdk/pkg/shared/fingerprint"
+import "github.com/openctemio/sdk-go/pkg/shared/fingerprint"
 
 // SAST findings
 fp := fingerprint.GenerateSAST("src/main.go", "CWE-89", 42, 44)

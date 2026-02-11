@@ -40,7 +40,7 @@ New to OpenCTEM? Start here:
 | [SDK Quick Start](./guides/sdk-quick-start.md) | Build custom security tools |
 | [API Reference](./backend/api-reference.md) | REST API documentation |
 | [Custom Tools Development](./guides/custom-tools-development.md) | Create custom scanners |
-| [SDK Security Guide](../sdk/docs/SECURITY.md) | Security best practices |
+| [SDK Security Guide](../sdk-go/docs/SECURITY.md) | Security best practices |
 
 ### For Operators
 
@@ -121,7 +121,7 @@ Platform administration console:
 | Component | Documentation |
 |-----------|---------------|
 | **Agent** | [Agent Quick Start](../agent/docs/QUICK_START.md) \| [Full README](../agent/README.md) |
-| **SDK** | [SDK README](../sdk/README.md) \| [Security Guide](../sdk/docs/SECURITY.md) |
+| **SDK** | [SDK README](../sdk-go/README.md) \| [Security Guide](../sdk-go/docs/SECURITY.md) |
 | **Schemas** | [CTIS Format](../schemas/README.md) |
 
 ---

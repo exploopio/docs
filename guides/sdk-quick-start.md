@@ -15,7 +15,7 @@ Get started with the OpenCTEM SDK to run security scans and push results to the 
 ## Installation
 
 ```bash
-go get github.com/openctemio/sdk@latest
+go get github.com/openctemio/sdk-go@latest
 ```
 
 For private repositories:
@@ -42,8 +42,8 @@ import (
     "fmt"
     "os"
 
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -147,7 +147,7 @@ result, err := scanner.Scan(ctx, target, &core.ScanOptions{
 ### Create API Client
 
 ```go
-import "github.com/openctemio/sdk/pkg/client"
+import "github.com/openctemio/sdk-go/pkg/client"
 
 apiClient := client.New(&client.Config{
     BaseURL:  "https://api.openctem.io",

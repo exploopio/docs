@@ -148,7 +148,7 @@ This scans the current directory for:
 |----------|---------|
 | **GitHub Actions** | [Agent README](../agent/README.md#github-actions) |
 | **GitLab CI** | [Agent README](../agent/README.md#gitlab-ci) |
-| **Custom** | [SDK Documentation](../sdk/README.md) |
+| **Custom** | [SDK Documentation](../sdk-go/README.md) |
 
 ---
 

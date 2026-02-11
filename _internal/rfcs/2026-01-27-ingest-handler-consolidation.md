@@ -113,7 +113,7 @@
 package app
 
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // LegacyToCTISConverter converts legacy IngestInput to CTIS Report
@@ -242,7 +242,7 @@ func (c *LegacyToCTISConverter) mapAssetType(legacyType string) string {
 package app
 
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // SARIFToCTISConverter converts SARIF to CTIS format

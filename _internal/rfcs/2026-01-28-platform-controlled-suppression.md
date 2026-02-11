@@ -1044,8 +1044,8 @@ WHERE tenant_id = $2 AND fingerprint = ANY($3)
 
 ## Related Documents
 
-- [Fingerprint Package](../../../sdk/pkg/shared/fingerprint/fingerprint.go) - Fingerprint algorithm (all types)
+- [Fingerprint Package](../../../sdk-go/pkg/shared/fingerprint/fingerprint.go) - Fingerprint algorithm (all types)
 - [Finding Repository](../../../api/internal/infra/postgres/finding_repository.go) - Upsert logic (status preserved)
 - [Ingest Processor](../../../api/internal/app/ingest/processor_findings.go) - Scan ingestion flow
-- [CTIS Types](../../../sdk/pkg/ctis/types.go) - Suppression data model
+- [CTIS Types](../../../sdk-go/pkg/ctis/types.go) - Suppression data model
 - [Security Gate](../../../agent/internal/gate/security.go) - Gate implementation

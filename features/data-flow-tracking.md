@@ -363,7 +363,7 @@ codeql database analyze db \
 **SDK Usage:**
 
 ```go
-import "github.com/openctemio/sdk/pkg/scanners"
+import "github.com/openctemio/sdk-go/pkg/scanners"
 
 // Create CodeQL scanner for Go
 scanner := scanners.CodeQLGo()

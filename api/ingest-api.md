@@ -2371,7 +2371,7 @@ Content-Length: 0
 #### Installation
 
 ```bash
-go get github.com/openctemio/sdk
+go get github.com/openctemio/sdk-go
 ```
 
 #### Example 1: Basic CTIS Ingestion
@@ -2385,8 +2385,8 @@ import (
     "log"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2451,8 +2451,8 @@ import (
     "context"
     "log"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2560,8 +2560,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2653,8 +2653,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2729,8 +2729,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2810,8 +2810,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -2887,8 +2887,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -3019,9 +3019,9 @@ import (
     "log"
     "time"
 
-    "github.com/openctemio/sdk/pkg/chunk"
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/chunk"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -3102,8 +3102,8 @@ import (
     "fmt"
     "log"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // generateFingerprint creates a fingerprint for a finding
@@ -3191,8 +3191,8 @@ import (
     "os"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -3271,8 +3271,8 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -3354,8 +3354,8 @@ import (
     "net/http"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -3424,9 +3424,9 @@ import (
     "path/filepath"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
-    "github.com/openctemio/sdk/pkg/ctis"
-    "github.com/openctemio/sdk/pkg/scanners/codeql"
+    "github.com/openctemio/sdk-go/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/scanners/codeql"
 )
 
 func main() {
@@ -3483,7 +3483,7 @@ import (
     "runtime"
     "time"
 
-    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk-go/pkg/ingest"
     "github.com/shirou/gopsutil/v3/cpu"
     "github.com/shirou/gopsutil/v3/mem"
 )

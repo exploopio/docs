@@ -28,7 +28,7 @@ The `sdk` provides a complete toolkit for building security scanning and data co
 ## Installation
 
 ```bash
-go get github.com/openctemio/sdk
+go get github.com/openctemio/sdk-go
 ```
 
 ---
@@ -44,7 +44,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -111,7 +111,7 @@ import (
     "context"
     "time"
 
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -157,7 +157,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -272,8 +272,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // MyToolParser parses output from my-tool
@@ -458,8 +458,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -581,7 +581,7 @@ targets:
 ### Creating Reports Programmatically
 
 ```go
-import "github.com/openctemio/sdk/pkg/ctis"
+import "github.com/openctemio/sdk-go/pkg/ctis"
 
 // Create new report
 report := ctis.NewReport()
@@ -635,7 +635,7 @@ report.Findings = append(report.Findings, ctis.Finding{
 ### Converting SARIF to CTIS
 
 ```go
-import "github.com/openctemio/sdk/pkg/ctis"
+import "github.com/openctemio/sdk-go/pkg/ctis"
 
 sarifData := []byte(`{"version": "2.1.0", ...}`)
 
@@ -693,8 +693,8 @@ import (
     "context"
     "fmt"
 
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -731,7 +731,7 @@ func main() {
 ## Pushing Results to OpenCTEM
 
 ```go
-import "github.com/openctemio/sdk/pkg/client"
+import "github.com/openctemio/sdk-go/pkg/client"
 
 // Create API client
 c := client.New(&client.Config{
@@ -844,8 +844,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 func main() {
@@ -926,8 +926,8 @@ The Processor provides a complete scan-parse-push workflow.
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 // Create API client
@@ -987,7 +987,7 @@ type Logger interface {
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
     "github.com/sirupsen/logrus"
 )
 
@@ -1046,7 +1046,7 @@ Validate configurations before use.
 ### Using the Validator
 
 ```go
-import "github.com/openctemio/sdk/pkg/core"
+import "github.com/openctemio/sdk-go/pkg/core"
 
 // Validate scanner config
 err := core.ValidateBaseScannerConfig(&core.BaseScannerConfig{
@@ -1155,7 +1155,7 @@ The SDK can auto-detect CI environments (GitHub Actions, GitLab CI) and provide 
 ### Auto-Detection
 
 ```go
-import "github.com/openctemio/sdk/pkg/gitenv"
+import "github.com/openctemio/sdk-go/pkg/gitenv"
 
 // Auto-detect CI environment
 ci := gitenv.Detect()
@@ -1226,8 +1226,8 @@ Automatically determine whether to scan all files or only changed files based on
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/gitenv"
-    "github.com/openctemio/sdk/pkg/strategy"
+    "github.com/openctemio/sdk-go/pkg/gitenv"
+    "github.com/openctemio/sdk-go/pkg/strategy"
 )
 
 // Detect CI environment
@@ -1306,7 +1306,7 @@ type ScanHandler interface {
 ### Console Handler (Local Development)
 
 ```go
-import "github.com/openctemio/sdk/pkg/handler"
+import "github.com/openctemio/sdk-go/pkg/handler"
 
 // Simple handler that prints to console
 h := handler.NewConsoleHandler(true) // verbose=true
@@ -1326,8 +1326,8 @@ h.OnCompleted()
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/handler"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/handler"
 )
 
 // Create API client
@@ -1416,8 +1416,8 @@ The SDK includes native scanner implementations with full parsing support.
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/scanners"
-    "github.com/openctemio/sdk/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk-go/pkg/scanners"
+    "github.com/openctemio/sdk-go/pkg/scanners/semgrep"
 )
 
 // Create scanner with defaults
@@ -1461,8 +1461,8 @@ for _, f := range report.Findings {
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/scanners"
-    "github.com/openctemio/sdk/pkg/scanners/gitleaks"
+    "github.com/openctemio/sdk-go/pkg/scanners"
+    "github.com/openctemio/sdk-go/pkg/scanners/gitleaks"
 )
 
 // Create scanner with defaults
@@ -1497,8 +1497,8 @@ report, _ := parser.Parse(ctx, genericResult.RawOutput, nil)
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/scanners"
-    "github.com/openctemio/sdk/pkg/scanners/trivy"
+    "github.com/openctemio/sdk-go/pkg/scanners"
+    "github.com/openctemio/sdk-go/pkg/scanners/trivy"
 )
 
 // Create scanner with defaults (filesystem mode, vulnerability scanning)
@@ -1615,7 +1615,7 @@ for _, vuln := range result.Vulnerabilities {
 ### Scanner Registry
 
 ```go
-import "github.com/openctemio/sdk/pkg/scanners"
+import "github.com/openctemio/sdk-go/pkg/scanners"
 
 // Create registry with all built-in scanners
 registry := scanners.NewRegistry()
@@ -1659,9 +1659,9 @@ import (
     "context"
     "fmt"
 
-    "github.com/openctemio/sdk/pkg/core"
-    "github.com/openctemio/sdk/pkg/scanners/recon/subfinder"
-    "github.com/openctemio/sdk/pkg/scanners/recon/httpx"
+    "github.com/openctemio/sdk-go/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/scanners/recon/subfinder"
+    "github.com/openctemio/sdk-go/pkg/scanners/recon/httpx"
 )
 
 func main() {
@@ -1738,8 +1738,8 @@ Enrichers add threat intelligence data to findings.
 ```go
 import (
     "context"
-    "github.com/openctemio/sdk/pkg/enrichers/epss"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/enrichers/epss"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -1772,7 +1772,7 @@ func main() {
 ```go
 import (
     "context"
-    "github.com/openctemio/sdk/pkg/enrichers/kev"
+    "github.com/openctemio/sdk-go/pkg/enrichers/kev"
 )
 
 func main() {
@@ -1839,12 +1839,12 @@ import (
     "fmt"
     "os"
 
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/gitenv"
-    "github.com/openctemio/sdk/pkg/handler"
-    "github.com/openctemio/sdk/pkg/scanners"
-    "github.com/openctemio/sdk/pkg/scanners/semgrep"
-    "github.com/openctemio/sdk/pkg/strategy"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/gitenv"
+    "github.com/openctemio/sdk-go/pkg/handler"
+    "github.com/openctemio/sdk-go/pkg/scanners"
+    "github.com/openctemio/sdk-go/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk-go/pkg/strategy"
 )
 
 func main() {
@@ -1923,8 +1923,8 @@ The SDK includes a built-in retry queue for handling failed uploads. This ensure
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/retry"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/retry"
 )
 
 // Create client with retry enabled
@@ -1949,7 +1949,7 @@ defer c.Close()
 ### Manual Queue Management
 
 ```go
-import "github.com/openctemio/sdk/pkg/retry"
+import "github.com/openctemio/sdk-go/pkg/retry"
 
 // Create queue directly
 queue, _ := retry.NewFileQueue(&retry.FileQueueConfig{
@@ -2012,7 +2012,7 @@ The SDK uses fingerprints to deduplicate findings. Both SDK and backend use the 
 ### Shared Fingerprint Package
 
 ```go
-import "github.com/openctemio/sdk/pkg/shared/fingerprint"
+import "github.com/openctemio/sdk-go/pkg/shared/fingerprint"
 
 // Generate fingerprint based on finding type
 fp := fingerprint.Generate(fingerprint.Input{
@@ -2088,7 +2088,7 @@ The SDK includes a metrics package for collecting and exposing application metri
 ### Basic Usage
 
 ```go
-import "github.com/openctemio/sdk/pkg/metrics"
+import "github.com/openctemio/sdk-go/pkg/metrics"
 
 // Create Prometheus collector with default metrics
 collector := metrics.NewPrometheusCollector(&metrics.PrometheusConfig{
@@ -2156,7 +2156,7 @@ The SDK provides a credential management system for secure storage and retrieval
 ### Store Interface
 
 ```go
-import "github.com/openctemio/sdk/pkg/credentials"
+import "github.com/openctemio/sdk-go/pkg/credentials"
 
 // Get credential from default store (environment variables)
 cred, err := credentials.Get(ctx, "github.token")
@@ -2242,7 +2242,7 @@ The SDK includes Kubernetes-compatible health check endpoints for liveness and r
 ### Basic Setup
 
 ```go
-import "github.com/openctemio/sdk/pkg/health"
+import "github.com/openctemio/sdk-go/pkg/health"
 
 // Create health handler with version info
 h := health.NewHandler(
@@ -2355,7 +2355,7 @@ The SDK provides unified severity mapping across different scanner formats.
 ### Shared Severity Package
 
 ```go
-import "github.com/openctemio/sdk/pkg/shared/severity"
+import "github.com/openctemio/sdk-go/pkg/shared/severity"
 
 // Parse severity from various formats
 level := severity.FromString("HIGH")      // From Trivy
@@ -2440,7 +2440,7 @@ The SDK includes components for managing agent resources efficiently when runnin
 Prevent disk bloat by automatically cleaning up uploaded chunk data:
 
 ```go
-import "github.com/openctemio/sdk/pkg/chunk"
+import "github.com/openctemio/sdk-go/pkg/chunk"
 
 cfg := &chunk.Config{
     AutoCleanupOnUpload:     true,   // Delete data after upload
@@ -2459,7 +2459,7 @@ defer manager.Close()
 Separate scan and upload processes for non-blocking operations:
 
 ```go
-import "github.com/openctemio/sdk/pkg/pipeline"
+import "github.com/openctemio/sdk-go/pkg/pipeline"
 
 p := pipeline.NewPipeline(&pipeline.PipelineConfig{
     QueueSize:     1000,            // Max pending uploads
@@ -2487,7 +2487,7 @@ stats := p.GetStats()
 Monitor CPU/memory and throttle jobs when resources are constrained:
 
 ```go
-import "github.com/openctemio/sdk/pkg/resource"
+import "github.com/openctemio/sdk-go/pkg/resource"
 
 controller := resource.NewController(&resource.ControllerConfig{
     CPUThreshold:      85.0,              // Pause above 85% CPU
@@ -2515,7 +2515,7 @@ if controller.AcquireSlot(ctx) {
 Comprehensive structured logging for debugging and compliance:
 
 ```go
-import "github.com/openctemio/sdk/pkg/audit"
+import "github.com/openctemio/sdk-go/pkg/audit"
 
 logger, _ := audit.NewLogger(&audit.LoggerConfig{
     AgentID:  "agent-001",
@@ -2555,7 +2555,7 @@ See [Agent Resource Management Architecture](../architecture/agent-resource-mana
 
 Full working examples are available in the SDK repository:
 
-- [`examples/custom-scanner`](https://github.com/openctemio/sdk/tree/main/examples/custom-scanner) - Custom scanner implementation
-- [`examples/semgrep-test`](https://github.com/openctemio/sdk/tree/main/examples/semgrep-test) - Semgrep scanner integration
-- [`examples/integration-test`](https://github.com/openctemio/sdk/tree/main/examples/integration-test) - API client integration
-- [`cmd/agent`](https://github.com/openctemio/sdk/tree/main/cmd/agent) - CLI agent
+- [`examples/custom-scanner`](https://github.com/openctemio/sdk-go/tree/main/examples/custom-scanner) - Custom scanner implementation
+- [`examples/semgrep-test`](https://github.com/openctemio/sdk-go/tree/main/examples/semgrep-test) - Semgrep scanner integration
+- [`examples/integration-test`](https://github.com/openctemio/sdk-go/tree/main/examples/integration-test) - API client integration
+- [`cmd/agent`](https://github.com/openctemio/sdk-go/tree/main/cmd/agent) - CLI agent

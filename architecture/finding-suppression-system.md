@@ -664,6 +664,6 @@ All suppression actions are logged:
 
 ## References
 
-- [CTIS Types](../sdk/pkg/ctis/types.go) - Existing suppression schema
+- [CTIS Types](../sdk-go/pkg/ctis/types.go) - Existing suppression schema
 - [Security Gate](../agent/internal/gate/security.go) - Gate implementation
 - [Agent Main](../agent/main.go) - Agent entry point

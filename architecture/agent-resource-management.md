@@ -94,7 +94,7 @@ Storage > MaxMB → Aggressive cleanup (oldest first)
 ### Configuration
 
 ```go
-import "github.com/openctemio/sdk/pkg/chunk"
+import "github.com/openctemio/sdk-go/pkg/chunk"
 
 cfg := &chunk.Config{
     // Auto-cleanup (all enabled by default)
@@ -155,7 +155,7 @@ Scanner → Pipeline.Submit() → Queue → Workers → Uploader → API
 ### Configuration
 
 ```go
-import "github.com/openctemio/sdk/pkg/pipeline"
+import "github.com/openctemio/sdk-go/pkg/pipeline"
 
 cfg := &pipeline.PipelineConfig{
     QueueSize:     1000,             // Max pending uploads
@@ -228,7 +228,7 @@ Agents consuming too much CPU/memory can destabilize the host system or degrade 
 Resource monitoring with job admission control.
 
 ```go
-import "github.com/openctemio/sdk/pkg/resource"
+import "github.com/openctemio/sdk-go/pkg/resource"
 
 cfg := &resource.ControllerConfig{
     CPUThreshold:      85.0,              // Pause above 85% CPU
@@ -315,7 +315,7 @@ Agent errors and state changes need to be logged for debugging and compliance.
 Structured audit logging with buffered writes and optional remote collection.
 
 ```go
-import "github.com/openctemio/sdk/pkg/audit"
+import "github.com/openctemio/sdk-go/pkg/audit"
 
 cfg := &audit.LoggerConfig{
     AgentID:       "agent-001",
@@ -443,10 +443,10 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/openctemio/sdk/pkg/audit"
-    "github.com/openctemio/sdk/pkg/chunk"
-    "github.com/openctemio/sdk/pkg/pipeline"
-    "github.com/openctemio/sdk/pkg/resource"
+    "github.com/openctemio/sdk-go/pkg/audit"
+    "github.com/openctemio/sdk-go/pkg/chunk"
+    "github.com/openctemio/sdk-go/pkg/pipeline"
+    "github.com/openctemio/sdk-go/pkg/resource"
 )
 
 func main() {

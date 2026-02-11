@@ -27,7 +27,7 @@
 | `openctemio/ui` | Frontend application | Apache 2.0 | - |
 | `openctemio/agent` | Agent service | Apache 2.0 | `github.com/openctemio/agent` |
 | `openctemio/docs` | Documentation site | Apache 2.0 | - |
-| `openctemio/sdk` | SDK for integrations | Apache 2.0 | `github.com/openctemio/sdk` |
+| `openctemio/sdk` | SDK for integrations | Apache 2.0 | `github.com/openctemio/sdk-go` |
 | `openctemio/.github` | Shared workflows | Apache 2.0 | - |
 
 #### Enterprise Repositories (org: `exploop`)
@@ -87,7 +87,7 @@ replace (
 │   ├── ui/                 # github.com/openctemio/ui
 │   ├── agent/              # github.com/openctemio/agent
 │   ├── docs/               # github.com/openctemio/docs
-│   └── sdk/                # github.com/openctemio/sdk
+│   └── sdk/                # github.com/openctemio/sdk-go
 └── exploop/                # Enterprise workspace
     ├── api/                # github.com/exploop/api (imports openctemio/*)
     ├── ui/                 # github.com/exploop/ui
@@ -3013,7 +3013,7 @@ remediation, attack-surface, identities
 
 | Task | Description | Status |
 |------|-------------|--------|
-| 7.1 | Initialize `github.com/openctemio/sdk` repository | ✅ Done |
+| 7.1 | Initialize `github.com/openctemio/sdk-go` repository | ✅ Done |
 | 7.2 | Copy `pkg/eis/` (2416 LOC) - Report format | ✅ Done |
 | 7.3 | Copy `pkg/core/` (851 LOC) - Interfaces | ✅ Done |
 | 7.4 | Copy `pkg/shared/fingerprint/` - Deduplication | ✅ Done |

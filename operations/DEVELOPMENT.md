@@ -56,7 +56,7 @@ If you need to add a feature to `sdk` and use it in `api`:
 3.  Because `go.work` exists in root, the `api` build will automatically use your local `sdk` code.
     ```go
     // In api/main.go
-    import "github.com/openctemio/sdk/pkg/newfeature" // Works immediately!
+    import "github.com/openctemio/sdk-go/pkg/newfeature" // Works immediately!
     ```
 4.  **Commit Sequence:**
     *   Commit & Push `sdk` first.
@@ -65,7 +65,7 @@ If you need to add a feature to `sdk` and use it in `api`:
 
         ```bash
         cd api
-        go get github.com/openctemio/sdk@latest
+        go get github.com/openctemio/sdk-go@latest
         ```
     *   Commit & Push `api`.
 

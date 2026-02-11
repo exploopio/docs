@@ -417,7 +417,7 @@ CMD ["-daemon", "-config", "/config/your-config.yaml"]
 
 ```bash
 # Clone repository
-git clone https://github.com/openctemio/sdk.git
+git clone https://github.com/openctemio/sdk-go.git
 cd sdk
 
 # Build images

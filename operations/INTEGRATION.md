@@ -77,9 +77,9 @@ Integrate the SDK into your Go application.
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/client"
-    "github.com/openctemio/sdk/pkg/scanners"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/client"
+    "github.com/openctemio/sdk-go/pkg/scanners"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -232,5 +232,5 @@ security-scan:
 
 - **Documentation**: https://docs.openctem.io
 - **API Reference**: https://api.openctem.io/docs
-- **SDK Source**: https://github.com/openctemio/sdk
+- **SDK Source**: https://github.com/openctemio/sdk-go
 {% endraw %}

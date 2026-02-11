@@ -89,7 +89,7 @@ package retry
 
 import (
     "time"
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 // QueueItem represents an item in the retry queue.
@@ -239,7 +239,7 @@ import (
     "sync"
     "time"
 
-    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk-go/pkg/core"
 )
 
 // RetryWorker processes the retry queue in the background.

@@ -355,7 +355,7 @@ platform:
 - **Lease expiry handling**: Jobs auto-cancel when lease expires
 - **Template security**: Path traversal prevention, size limits, hash verification
 
-See [SDK Security Guide](https://github.com/openctemio/sdk#security) for detailed information.
+See [SDK Security Guide](https://github.com/openctemio/sdk-go#security) for detailed information.
 
 ---
 
@@ -365,6 +365,6 @@ See [SDK Security Guide](https://github.com/openctemio/sdk#security) for detaile
 - [Data Flow Analysis Guide](data-flow-analysis.md) - Using attack path information
 - [Docker Deployment Guide](./docker-deployment.md)
 - [SDK Development Guide](./sdk-development.md)
-- [SDK Security Guide](https://github.com/openctemio/sdk#security)
+- [SDK Security Guide](https://github.com/openctemio/sdk-go#security)
 - [Agent Key Management](../architecture/agent-key-management.md)
-- [CI/CD Examples](https://github.com/openctemio/sdk/tree/main/examples/ci-cd)
+- [CI/CD Examples](https://github.com/openctemio/sdk-go/tree/main/examples/ci-cd)

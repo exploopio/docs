@@ -576,8 +576,8 @@ If you prefer programmatic conversion:
 
 ```go
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
-    "github.com/openctemio/sdk/pkg/ctis/sarif"
+    "github.com/openctemio/sdk-go/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis/sarif"
 )
 
 // Parse SARIF
@@ -605,7 +605,7 @@ ctisReport := ctis.FromSARIF(sarifLog, &ctis.SARIFConvertOptions{
 package main
 
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {
@@ -645,7 +645,7 @@ func main() {
 package main
 
 import (
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func buildWeb3Finding() ctis.Finding {
@@ -1036,7 +1036,7 @@ import (
     "os"
     "os/exec"
 
-    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk-go/pkg/ctis"
 )
 
 func main() {

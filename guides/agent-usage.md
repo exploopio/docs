@@ -1360,9 +1360,9 @@ For custom integrations, you can use the SDK scanners directly instead of the ag
 ```go
 import (
     "context"
-    "github.com/openctemio/sdk/pkg/scanners/recon/subfinder"
-    "github.com/openctemio/sdk/pkg/scanners/semgrep"
-    "github.com/openctemio/sdk/pkg/enrichers/epss"
+    "github.com/openctemio/sdk-go/pkg/scanners/recon/subfinder"
+    "github.com/openctemio/sdk-go/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk-go/pkg/enrichers/epss"
 )
 
 func main() {
