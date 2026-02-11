@@ -26,7 +26,7 @@ Required permission: `findings:write` for POST requests, `findings:read` for GET
 ## Base URL
 
 ```
-https://api.exploop.io/api/v1
+https://api.openctem.io/api/v1
 ```
 
 ---
@@ -83,7 +83,7 @@ POST /findings/{finding_id}/ai-triage
 #### Example
 
 ```bash
-curl -X POST "https://api.exploop.io/api/v1/findings/01HQ5K7N.../ai-triage" \
+curl -X POST "https://api.openctem.io/api/v1/findings/01HQ5K7N.../ai-triage" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"mode": "quick"}'
@@ -484,12 +484,12 @@ AI triage events can trigger webhook notifications via the [Workflow Automation]
 ### Go
 
 ```go
-import "github.com/exploop/sdk-go"
+import "github.com/openctem/sdk-go"
 
-client := exploop.NewClient("your-api-key")
+client := openctem.NewClient("your-api-key")
 
 // Request triage
-job, err := client.Findings.RequestTriage(ctx, findingID, &exploop.TriageRequest{
+job, err := client.Findings.RequestTriage(ctx, findingID, &openctem.TriageRequest{
     Mode: "quick",
 })
 
@@ -500,7 +500,7 @@ result, err := client.Findings.GetTriageResult(ctx, findingID)
 ### Python
 
 ```python
-from exploop import Client
+from openctem import Client
 
 client = Client(api_key="your-api-key")
 
@@ -514,9 +514,9 @@ result = client.findings.get_triage_result(finding_id)
 ### TypeScript
 
 ```typescript
-import { ExpLoopClient } from '@exploop/sdk';
+import { OpenCTEMClient } from '@openctem/sdk';
 
-const client = new ExpLoopClient({ apiKey: 'your-api-key' });
+const client = new OpenCTEMClient({ apiKey: 'your-api-key' });
 
 // Request triage
 const job = await client.findings.requestTriage(findingId, { mode: 'quick' });

@@ -1,28 +1,28 @@
 ---
 layout: default
-title: Exploop CTEM Platform
+title: OpenCTEM CTEM Platform
 nav_exclude: true
 search_exclude: true
 ---
 
-# Exploop CTEM Platform
+# OpenCTEM CTEM Platform
 
 **Continuous Threat Exposure Management Platform**
 
 Unified Attack Surface Management & Vulnerability Management
 
-[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://github.com/exploopio/api)
-[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)](https://github.com/exploopio/ui)
-[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/u.exploopio)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://github.com/openctemio/api)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=next.js)](https://github.com/openctemio/ui)
+[![Docker](https://img.shields.io/badge/Docker-Hub-2496ED?logo=docker)](https://hub.docker.com/u.openctemio)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[Website](https://exploop.io) | [Platform](https://app.exploop.io) | [API Docs](https://api.exploop.io/docs) | [Getting Started](./getting-started/)
+[Website](https://openctem.io) | [Platform](https://app.openctem.io) | [API Docs](https://api.openctem.io/docs) | [Getting Started](./getting-started/)
 
 ---
 
-## What is Rediver?
+## What is OpenCTEM?
 
-Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** platform that helps security teams continuously monitor, assess, and remediate security risks across their digital infrastructure.
+OpenCTEM is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** platform that helps security teams continuously monitor, assess, and remediate security risks across their digital infrastructure.
 
 ### The CTEM 5-Stage Process
 
@@ -55,7 +55,7 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              Exploop Platform                                │
+│                              OpenCTEM Platform                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐ │
@@ -118,7 +118,7 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 | Document | Description |
 |----------|-------------|
 | [API Reference](./backend/api-reference) | Complete API endpoints |
-| [RIS Schema](https://github.com/exploopio/schemas) | Rediver Ingest Schema |
+| [CTIS Schema](https://github.com/openctemio/schemas) | CTEM Ingest Schema |
 
 ### Operations
 | Document | Description |
@@ -132,8 +132,8 @@ Rediver is an enterprise-grade **Continuous Threat Exposure Management (CTEM)** 
 
 ```bash
 # Clone repository
-git clone https://github.com/exploopio.exploop.git
-cd.exploop
+git clone https://github.com/openctemio.openctem.git
+cd.openctem
 
 # Configure
 cd api && cp .env.example .env && cd ..
@@ -145,9 +145,9 @@ docker compose up -d
 
 | Service | Local | Production |
 |---------|-------|------------|
-| Frontend | http://localhost:3000 | https://app.exploop.io |
-| Backend API | http://localhost:8080 | https://api.exploop.io |
-| API Docs | http://localhost:8080/docs | https://api.exploop.io/docs |
+| Frontend | http://localhost:3000 | https://app.openctem.io |
+| Backend API | http://localhost:8080 | https://api.openctem.io |
+| API Docs | http://localhost:8080/docs | https://api.openctem.io/docs |
 
 ---
 
@@ -166,14 +166,14 @@ docker compose up -d
 
 | Repository | Description |
 |------------|-------------|
-| [api](https://github.com/exploopio/api) | Backend REST API (Go) |
-| [ui](https://github.com/exploopio/ui) | Frontend Application (Next.js) |
-| [sdk](https://github.com/exploopio/sdk) | Go SDK for building tools |
-| [agent](https://github.com/exploopio/agent) | Security scanning agent |
-| [setup](https://github.com/exploopio/setup) | Deployment & Docker Compose |
-| [schemas](https://github.com/exploopio/schemas) | RIS JSON Schemas |
-| [keycloak](https://github.com/exploopio/keycloak) | Keycloak Configuration |
-| [docs](https://github.com/exploopio/docs) | Documentation (this repo) |
+| [api](https://github.com/openctemio/api) | Backend REST API (Go) |
+| [ui](https://github.com/openctemio/ui) | Frontend Application (Next.js) |
+| [sdk](https://github.com/openctemio/sdk) | Go SDK for building tools |
+| [agent](https://github.com/openctemio/agent) | Security scanning agent |
+| [setup](https://github.com/openctemio/setup) | Deployment & Docker Compose |
+| [schemas](https://github.com/openctemio/schemas) | CTIS JSON Schemas |
+| [keycloak](https://github.com/openctemio/keycloak) | Keycloak Configuration |
+| [docs](https://github.com/openctemio/docs) | Documentation (this repo) |
 
 ---
 
@@ -181,15 +181,15 @@ docker compose up -d
 
 We welcome contributions! Please see:
 
-- [Contributing Guide](https://github.com/exploopio/api/blob/main/CONTRIBUTING.md)
-- [Code of Conduct](https://github.com/exploopio/api/blob/main/CODE_OF_CONDUCT.md)
-- [Security Policy](https://github.com/exploopio/api/blob/main/SECURITY.md)
+- [Contributing Guide](https://github.com/openctemio/api/blob/main/CONTRIBUTING.md)
+- [Code of Conduct](https://github.com/openctemio/api/blob/main/CODE_OF_CONDUCT.md)
+- [Security Policy](https://github.com/openctemio/api/blob/main/SECURITY.md)
 
 ---
 
 ## 💖 Support
 
-If you find Rediver useful, consider supporting the project:
+If you find OpenCTEM useful, consider supporting the project:
 
 **BSC Network (BEP-20):**
 
@@ -201,12 +201,12 @@ If you find Rediver useful, consider supporting the project:
 
 ## 📧 Contact
 
-- **Website:** https://exploop.io
-- **Email:** exploopio@gmail.com
-- **GitHub:** https://github.com/exploopio
+- **Website:** https://openctem.io
+- **Email:** openctemio@gmail.com
+- **GitHub:** https://github.com/openctemio
 
 ---
 
 ## 📄 License
 
-MIT License - see [LICENSE](https://github.com/exploopio/api/blob/main/LICENSE)
+MIT License - see [LICENSE](https://github.com/openctemio/api/blob/main/LICENSE)

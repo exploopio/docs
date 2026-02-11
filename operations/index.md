@@ -30,5 +30,3 @@ Guides for developers and operators.
 ## Configuration
 
 - **[Redis Setup](./redis-setup.md)** - Redis configuration
-- **[Plans & Licensing](./plans-licensing.md)** - Subscription plans
-- **[Dynamic Plan Limits](./dynamic-plan-limits.md)** - Plan limit management

@@ -14,7 +14,7 @@ Learn how to manage custom security rules and templates for your scanning tools.
 
 ## Overview
 
-Rediver supports custom rules and templates for security scanning tools like Semgrep, Nuclei, and others. This allows you to:
+OpenCTEM supports custom rules and templates for security scanning tools like Semgrep, Nuclei, and others. This allows you to:
 
 - Add organization-specific security rules
 - Customize existing rules for your codebase
@@ -76,7 +76,7 @@ Rule sources define where to fetch security rules from.
 ### Creating a Git Source
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/rules/sources \
+curl -X POST https://api.openctem.io/api/v1/rules/sources \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -152,7 +152,7 @@ When `sync_enabled: true`, sources sync automatically based on `sync_interval_mi
 Trigger immediate sync:
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/rules/sources/{sourceId}/sync \
+curl -X POST https://api.openctem.io/api/v1/rules/sources/{sourceId}/sync \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -161,7 +161,7 @@ curl -X POST https://api.exploop.io/api/v1/rules/sources/{sourceId}/sync \
 View sync history for troubleshooting:
 
 ```bash
-curl https://api.exploop.io/api/v1/rules/sources/{sourceId}/sync-history?limit=10 \
+curl https://api.openctem.io/api/v1/rules/sources/{sourceId}/sync-history?limit=10 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -308,7 +308,7 @@ bundle.tar.gz
 Workers fetch the latest bundle before scanning:
 
 ```bash
-curl https://api.exploop.io/api/v1/rules/bundles/latest?tool_id={toolId} \
+curl https://api.openctem.io/api/v1/rules/bundles/latest?tool_id={toolId} \
   -H "Authorization: Bearer $WORKER_TOKEN"
 ```
 
@@ -412,7 +412,7 @@ nuclei -t ./templates/api-check.yaml -u https://target.com
 2. Test against sample codebase
 3. Review for false positives
 4. Merge to main
-5. Automatic sync to Rediver
+5. Automatic sync to OpenCTEM
 
 ---
 
@@ -423,7 +423,7 @@ nuclei -t ./templates/api-check.yaml -u https://target.com
 Check sync history for error details:
 
 ```bash
-curl https://api.exploop.io/api/v1/rules/sources/{sourceId}/sync-history \
+curl https://api.openctem.io/api/v1/rules/sources/{sourceId}/sync-history \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -445,7 +445,7 @@ Common issues:
 View bundle details for build errors:
 
 ```bash
-curl https://api.exploop.io/api/v1/rules/bundles/{bundleId} \
+curl https://api.openctem.io/api/v1/rules/bundles/{bundleId} \
   -H "Authorization: Bearer $TOKEN"
 ```
 

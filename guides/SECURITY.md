@@ -7,7 +7,7 @@ nav_order: 20
 
 # Security Best Practices
 
-Comprehensive security guidelines for deploying and operating Exploop in production.
+Comprehensive security guidelines for deploying and operating OpenCTEM in production.
 
 ---
 
@@ -83,7 +83,7 @@ Expire Passwords: 90 days
 export JWT_SECRET="mysecret123"
 
 # ✅ CORRECT - Use secret management
-export JWT_SECRET=$(kubectl get secret.exploop-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
+export JWT_SECRET=$(kubectl get secret.openctem-secrets -o jsonpath='{.data.jwt-secret}' | base64 -d)
 ```
 
 ### Kubernetes Secrets
@@ -92,18 +92,18 @@ export JWT_SECRET=$(kubectl get secret.exploop-secrets -o jsonpath='{.data.jwt-s
 
 ```bash
 # Create secret
-kubectl create secret generic.exploop-secrets \
+kubectl create secret generic.openctem-secrets \
   --from-literal=jwt-secret=$(openssl rand -base64 64) \
   --from-literal=csrf-secret=$(openssl rand -base64 32) \
   --from-literal=db-password=$(openssl rand -base64 32) \
-  --namespace.exploop
+  --namespace.openctem
 
 # Reference in deployment
 env:
   - name: JWT_SECRET
     valueFrom:
       secretKeyRef:
-        name:.exploop-secrets
+        name:.openctem-secrets
         key: jwt-secret
 ```
 
@@ -153,8 +153,8 @@ server {
 // Backend CORS
 cors.New(cors.Options{
     AllowedOrigins: []string{
-        "https://app.exploop.io",
-        "https://staging.exploop.io",
+        "https://app.openctem.io",
+        "https://staging.openctem.io",
     },
     AllowedMethods: []string{"GET", "POST", "PUT", "DELETE"},
     AllowedHeaders: []string{"Authorization", "Content-Type"},
@@ -190,7 +190,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: exploop-api
+      app: openctem-api
   policyTypes:
   - Ingress
   - Egress
@@ -198,7 +198,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          app:.exploop-ui
+          app:.openctem-ui
     ports:
     - protocol: TCP
       port: 8080
@@ -215,12 +215,12 @@ spec:
 ```sql
 -- Create read-only user for replicas
 CREATE ROLE readonly WITH LOGIN PASSWORD 'strong_password';
-GRANT CONNECT ON DATABASE.exploop TO readonly;
+GRANT CONNECT ON DATABASE.openctem TO readonly;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
 
 -- Revoke public schema permissions
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO.exploop_admin;
+GRANT ALL ON SCHEMA public TO.openctem_admin;
 
 -- Enable SSL connections only
 ALTER SYSTEM SET ssl = on;
@@ -282,7 +282,7 @@ WHERE resolved_at < NOW() - INTERVAL '1 year';
 
 ### Defense in Depth Architecture
 
-Exploop implements **3-layer defense** against IDOR (Insecure Direct Object Reference) attacks, which is OWASP A01:2021 - Broken Access Control.
+OpenCTEM implements **3-layer defense** against IDOR (Insecure Direct Object Reference) attacks, which is OWASP A01:2021 - Broken Access Control.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -335,19 +335,19 @@ CREATE POLICY platform_admin_bypass_findings ON findings
 
 ```bash
 # Development (superuser - RLS NOT enforced)
-DATABASE_URL=postgres://exploop:secret@localhost:5432/exploop
+DATABASE_URL=postgres://openctem:secret@localhost:5432/openctem
 
 # Production (non-superuser - RLS ENFORCED)
-DATABASE_URL=postgres://exploop_app:secure-password@db:5432/exploop
+DATABASE_URL=postgres://openctem_app:secure-password@db:5432/openctem
 ```
 
 **Setup production user:**
 ```sql
-CREATE ROLE exploop_app LOGIN PASSWORD 'secure-password';
-GRANT CONNECT ON DATABASE exploop TO exploop_app;
-GRANT USAGE ON SCHEMA public TO exploop_app;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO exploop_app;
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO exploop_app;
+CREATE ROLE openctem_app LOGIN PASSWORD 'secure-password';
+GRANT CONNECT ON DATABASE openctem TO openctem_app;
+GRANT USAGE ON SCHEMA public TO openctem_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO openctem_app;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO openctem_app;
 ```
 
 ### Protected Tables
@@ -367,8 +367,8 @@ GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO exploop_app;
 
 **Run RLS integration tests:**
 ```bash
-DATABASE_URL="postgres://exploop:secret@localhost:5432/exploop" \
-DATABASE_URL_RLS_TEST="postgres://rls_test_user:test@localhost:5432/exploop" \
+DATABASE_URL="postgres://openctem:secret@localhost:5432/openctem" \
+DATABASE_URL_RLS_TEST="postgres://rls_test_user:test@localhost:5432/openctem" \
 go test -v ./tests/integration -run TestRLS
 ```
 
@@ -514,7 +514,7 @@ npm audit
 npm audit fix
 
 # Docker images
-trivy image exploopio/api:latest
+trivy image openctemio/api:latest
 ```
 
 ### Automated Dependency Updates
@@ -654,90 +654,6 @@ USER appuser
 - Right to deletion (GDPR requests)
 - Data breach notification (72 hours)
 - Privacy by design
-
----
-
-## Platform Agent Tier Security
-
-### Overview
-
-The Tiered Platform Agent system provides resource isolation and priority-based job processing for different subscription plans. This feature introduces several security considerations.
-
-### Tier Access Control
-
-| Tier | Priority | Target Plans | Max Queue Time |
-|------|----------|--------------|----------------|
-| Shared | 0 | Free, Team | 60 minutes |
-| Dedicated | 50 | Business | 30 minutes |
-| Premium | 100 | Enterprise | 10 minutes |
-
-### Security Controls
-
-#### IDOR Protection
-- Tier access is validated against tenant's subscription plan
-- The `validate_tenant_tier_access()` database function verifies caller permissions
-- Direct tier manipulation is prevented via database triggers
-
-#### Rate Limiting
-- Tier-specific rate limits prevent resource exhaustion:
-  - Shared: 50 requests/minute
-  - Dedicated: 200 requests/minute
-  - Premium: 500 requests/minute
-- Rate limits tracked in `tier_rate_limits` table
-- Automatic cleanup of old records via `cleanup_old_rate_limits()`
-
-#### Tier Downgrade Audit
-All tier downgrades are logged to `tier_downgrade_audit` table:
-```sql
--- Audit record includes:
-- tenant_id, requested_tier, actual_tier
-- command_id (linked after job creation)
-- reason (e.g., 'plan_restriction')
-- subscription info (plan_slug, max_tier)
-- created_at timestamp
-```
-
-#### Application-Level Validation
-- Input sanitization via `SanitizeTier()` function
-- Tier values validated against whitelist: `shared`, `dedicated`, `premium`
-- Invalid tier requests default to `shared` tier
-- No information disclosure in error messages
-
-### Security Monitoring
-
-**Monitor for anomalies:**
-```yaml
-alerts:
-  - name: TierEscalationAttempt
-    condition: tier_requested != tier_actual AND tier_requested = 'premium'
-    severity: warning
-
-  - name: UnusualTierDistribution
-    condition: shared_jobs / total_jobs > 0.95
-    severity: warning
-
-  - name: HighDowngradeRate
-    condition: tier_downgrades > 10/hour for tenant
-    severity: warning
-```
-
-**Security events view:**
-```sql
-SELECT * FROM tier_security_events
-WHERE recent_downgrade_count > 10;
-```
-
-### Threat Model
-
-| Threat | Mitigation |
-|--------|------------|
-| Tier escalation | Plan-based tier validation in database trigger |
-| Resource exhaustion | Per-tier rate limiting |
-| IDOR attacks | Tenant ID verification in all tier functions |
-| Privilege escalation via SQL injection | Application-level tier validation before database |
-| Information disclosure | Generic error messages, detailed logging internal only |
-
-See: [Tiered Platform Agents PRD](../prd/tiered-platform-agents.md) | [Operational Runbook](../runbook/tiered-platform-agents.md)
 
 ---
 

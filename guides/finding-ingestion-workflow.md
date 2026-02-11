@@ -13,7 +13,7 @@ nav_order: 8
 > - [Finding Deduplication](../features/finding-deduplication.md)
 > - [Data Flow Tracking](../features/data-flow-tracking.md)
 
-This guide explains how security findings flow through the Rediver platform, from scanner output to actionable insights.
+This guide explains how security findings flow through the OpenCTEM platform, from scanner output to actionable insights.
 
 ---
 
@@ -22,12 +22,12 @@ This guide explains how security findings flow through the Rediver platform, fro
 The finding ingestion workflow consists of 5 main phases:
 
 ```
-Scanner Output → RIS Parsing → Type Inference → Fingerprinting → Persistence
+Scanner Output → CTIS Parsing → Type Inference → Fingerprinting → Persistence
 ```
 
 ```mermaid
 flowchart LR
-    A[Scanner Output] --> B[RIS Parser]
+    A[Scanner Output] --> B[CTIS Parser]
     B --> C[Type Inference]
     C --> D[Fingerprint Generation]
     D --> E[Deduplication]
@@ -48,7 +48,7 @@ Security scanners produce results in various formats. The platform supports:
 | Format | Scanners | Description |
 |--------|----------|-------------|
 | SARIF 2.1.0 | Semgrep, CodeQL, Checkov | Static analysis results |
-| RIS (native) | Agent | Rediver Intermediate Schema |
+| CTIS (native) | Agent | OpenCTEM Intermediate Schema |
 | JSON | Trivy, Grype | Container/dependency scans |
 | Custom | Plugin scanners | Via ingestion tools |
 
@@ -95,7 +95,7 @@ Each finding is classified into one of 5 types:
 ```go
 // Type is inferred from source and metadata
 func inferFindingType(source, metadata) FindingType {
-    // 1. Explicit type in RIS takes precedence
+    // 1. Explicit type in CTIS takes precedence
     if metadata.Type != "" {
         return metadata.Type
     }
@@ -286,7 +286,7 @@ curl /api/v1/findings/{finding_id}/data-flows
 1. **Use SARIF 2.1.0** when possible - richest metadata support
 2. **Include codeFlows** for SAST findings - enables attack path visualization
 3. **Provide masked_value** for secrets - ensures secure fingerprinting
-4. **Set explicit finding_type** in RIS - avoids inference ambiguity
+4. **Set explicit finding_type** in CTIS - avoids inference ambiguity
 
 ### For Custom Ingestion Tools
 
@@ -327,7 +327,7 @@ curl /api/v1/findings/{finding_id}/data-flows
 
 **Cause**: Type inference fallback to `vulnerability`.
 
-**Solution**: Set explicit `finding_type` in RIS input or ensure specialized fields are populated.
+**Solution**: Set explicit `finding_type` in CTIS input or ensure specialized fields are populated.
 
 ---
 

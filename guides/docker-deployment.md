@@ -7,13 +7,13 @@ nav_order: 13
 {% raw %}
 # Docker Deployment Guide
 
-Deploy and run Rediver Agent using Docker for consistent, reproducible security scanning.
+Deploy and run OpenCTEM Agent using Docker for consistent, reproducible security scanning.
 
 ---
 
 ## Docker Images
 
-The Rediver Agent is available on both **GitHub Container Registry (GHCR)** and **Docker Hub**:
+The OpenCTEM Agent is available on both **GitHub Container Registry (GHCR)** and **Docker Hub**:
 
 ### Available Tags
 
@@ -27,14 +27,14 @@ The Rediver Agent is available on both **GitHub Container Registry (GHCR)** and 
 
 ```bash
 # From Docker Hub (recommended)
-docker pull exploopio/agent:latest
-docker pull exploopio/agent:slim
-docker pull exploopio/agent:ci
+docker pull openctemio/agent:latest
+docker pull openctemio/agent:slim
+docker pull openctemio/agent:ci
 
 # From GitHub Container Registry
-docker pull ghcr.io/exploopio/agent:latest
-docker pull ghcr.io/exploopio/agent:slim
-docker pull exploopio/agent:ci
+docker pull ghcr.io/openctemio/agent:latest
+docker pull ghcr.io/openctemio/agent:slim
+docker pull openctemio/agent:ci
 ```
 
 ---
@@ -45,22 +45,22 @@ docker pull exploopio/agent:ci
 
 ```bash
 # Scan current directory with all tools
-docker run --rm -v $(pwd):/scan exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -verbose
 
 # Scan specific directory
-docker run --rm -v /path/to/project:/scan exploopio/agent:latest \
+docker run --rm -v /path/to/project:/scan openctemio/agent:latest \
     -tool semgrep -target /scan
 
-# Push results to Rediver platform
+# Push results to OpenCTEM platform
 docker run --rm -v $(pwd):/scan \
-    -e API_URL=https://api.exploop.io \
+    -e API_URL=https://api.openctem.io \
     -e API_KEY=your-api-key \
-    exploopio/agent:latest \
+    openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 
 # Generate JSON and SARIF output
-docker run --rm -v $(pwd):/scan exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan \
     -json -output /scan/results.json \
     -sarif -sarif-output /scan/results.sarif
@@ -69,7 +69,7 @@ docker run --rm -v $(pwd):/scan exploopio/agent:latest \
 ### Check Tool Installation
 
 ```bash
-docker run --rm ghcr.io/exploopio/agent:latest -check-tools
+docker run --rm ghcr.io/openctemio/agent:latest -check-tools
 ```
 
 Output:
@@ -99,12 +99,12 @@ The full image includes:
 ```dockerfile
 # Base: python:3.12-slim
 # Size: ~500MB
-# User: non-root (exploop)
+# User: non-root (openctem)
 ```
 
 **Usage:**
 ```bash
-docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan
 ```
 
@@ -126,7 +126,7 @@ docker run --rm \
     -v /usr/local/bin/semgrep:/usr/local/bin/semgrep:ro \
     -v /usr/local/bin/gitleaks:/usr/local/bin/gitleaks:ro \
     -v /usr/local/bin/trivy:/usr/local/bin/trivy:ro \
-    ghcr.io/exploopio/agent:slim \
+    ghcr.io/openctemio/agent:slim \
     -tools semgrep,gitleaks,trivy -target /scan
 ```
 
@@ -149,7 +149,7 @@ docker run --rm \
     -v $(pwd):/github/workspace \
     -e GITHUB_ACTIONS=true \
     -e GITHUB_TOKEN=$GITHUB_TOKEN \
-    exploopio/agent:ci \
+    openctemio/agent:ci \
     -tools semgrep,gitleaks,trivy -target . -auto-ci
 ```
 
@@ -164,7 +164,7 @@ Use docker-compose for local development and testing.
 ```yaml
 services:
   scan:
-    image: ghcr.io/exploopio/agent:latest
+    image: ghcr.io/openctemio/agent:latest
     volumes:
       - ./:/scan:ro
       - scan-cache:/cache
@@ -175,7 +175,7 @@ services:
     command: ["-tools", "semgrep,gitleaks,trivy", "-target", "/scan", "-verbose"]
 
   agent:
-    image: ghcr.io/exploopio/agent:latest
+    image: ghcr.io/openctemio/agent:latest
     volumes:
       - ./:/scan:ro
       - ./config.yaml:/config/config.yaml:ro
@@ -235,8 +235,8 @@ jobs:
         with:
           fetch-depth: 0  # Full history for diff-based scanning
 
-      - name: Run Rediver Security Scan
-        uses: docker://exploopio/agent:ci
+      - name: Run OpenCTEM Security Scan
+        uses: docker://openctemio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -278,7 +278,7 @@ stages:
 
 security-scan:
   stage: security
-  image: exploopio/agent:ci
+  image: openctemio/agent:ci
   variables:
     GIT_DEPTH: 0
     GITLAB_TOKEN: $CI_JOB_TOKEN
@@ -315,7 +315,7 @@ security-scan:
 pipeline {
     agent {
         docker {
-            image 'exploopio/agent:ci'
+            image 'openctemio/agent:ci'
         }
     }
 
@@ -355,7 +355,7 @@ pipeline {
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `API_URL` | Rediver platform API URL | - |
+| `API_URL` | OpenCTEM platform API URL | - |
 | `API_KEY` | API key for authentication | - |
 | `WORKER_ID` | Worker identifier | auto-generated |
 | `GITHUB_TOKEN` | GitHub token for PR comments | - |
@@ -381,10 +381,10 @@ docker run --rm \
     -v $(pwd)/config.yaml:/config/config.yaml:ro \
     -v app-cache:/cache \
     -v $(pwd)/output:/output \
-    -e API_URL=https://api.exploop.io \
+    -e API_URL=https://api.openctem.io \
     -e API_KEY=your-api-key \
     -e WORKER_ID=scanner-001 \
-    ghcr.io/exploopio/agent:latest \
+    ghcr.io/openctemio/agent:latest \
     -config /config/config.yaml \
     -target /scan \
     -push \
@@ -399,7 +399,7 @@ docker run --rm \
 ### Extend the Base Image
 
 ```dockerfile
-FROM ghcr.io/exploopio/agent:latest
+FROM ghcr.io/openctemio/agent:latest
 
 # Add custom tools
 RUN apt-get update && apt-get install -y \
@@ -417,7 +417,7 @@ CMD ["-daemon", "-config", "/config/your-config.yaml"]
 
 ```bash
 # Clone repository
-git clone https://github.com/exploopio/sdk.git
+git clone https://github.com/openctemio/sdk.git
 cd sdk
 
 # Build images
@@ -445,7 +445,7 @@ docker run --rm --user root -v $(pwd):/scan ...
 
 ```bash
 # Add safe directory inside container
-docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/openctemio/agent:latest \
     sh -c "git config --global --add safe.directory /scan && agent -tool semgrep -target /scan"
 ```
 
@@ -453,7 +453,7 @@ docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
 
 ```bash
 # Force update trivy database
-docker run --rm -v trivy-cache:/cache ghcr.io/exploopio/agent:latest \
+docker run --rm -v trivy-cache:/cache ghcr.io/openctemio/agent:latest \
     sh -c "trivy image --download-db-only"
 ```
 

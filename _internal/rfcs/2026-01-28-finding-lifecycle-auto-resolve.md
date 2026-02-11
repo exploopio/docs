@@ -74,7 +74,7 @@ This RFC defines the finding lifecycle management system, including auto-resolve
 
 ### Branch-Aware Finding Strategy
 
-Based on GitHub and GitLab best practices, Rediver implements a **normalized approach** leveraging the existing `asset_branches` infrastructure:
+Based on GitHub and GitLab best practices, OpenCTEM implements a **normalized approach** leveraging the existing `asset_branches` infrastructure:
 
 #### Core Principles
 
@@ -119,7 +119,7 @@ If performance becomes an issue, we can add a materialized view or denormalize l
 ```go
 // Input includes branch context from CI
 type Input struct {
-    Report       *ris.Report
+    Report       *ctis.Report
     CoverageType CoverageType // full, incremental, partial
     BranchInfo   *BranchInfo  // Branch context from CI
 }
@@ -164,7 +164,7 @@ type BranchInfo struct {
      │                                                      │
      │   ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
      │   │   RESOLVED   │  │FALSE_POSITIVE│  │ACCEPTED   │ │
-     │   │  (auto/manual)│  │   (manual)   │  │   RISK    │ │
+     │   │  (auto/manual)│  │   (manual)   │  │   CTISK    │ │
      │   └──────────────┘  └──────────────┘  └───────────┘ │
      │          │                 │                 │       │
      │          │                 │                 │       │
@@ -443,7 +443,7 @@ Returns: Active, approved rules matching criteria
 
 ```go
 // Agent fetches suppression rules before security gate
-func (a *Agent) runSecurityGate(reports []*ris.Report, failOn string) int {
+func (a *Agent) runSecurityGate(reports []*ctis.Report, failOn string) int {
     // Fetch suppressions from platform
     suppressions, err := a.client.GetSuppressionRules(ctx, GetSuppressionRulesInput{
         AssetID:  a.assetID,
@@ -466,20 +466,20 @@ func (a *Agent) runSecurityGate(reports []*ris.Report, failOn string) int {
 
 ### Phase 1: Auto-Resolve (Complete ✅)
 
-1. ✅ Add `coverage_type` field to scan metadata (RIS schema)
+1. ✅ Add `coverage_type` field to scan metadata (CTIS schema)
 2. ✅ Implement auto-resolve logic in ingest service
 3. ✅ Implement auto-reopen logic for recurring findings
 4. ✅ Add activity logging for auto_resolved/auto_reopened
 
 ### Phase 2: Branch-Aware Lifecycle (Complete ✅)
 
-1. ✅ Add `BranchInfo` to ingest Input struct (sdk/pkg/ris/types.go)
+1. ✅ Add `BranchInfo` to ingest Input struct (sdk/pkg/ctis/types.go)
 2. ~~Add `is_default_branch` field to findings table~~ **REMOVED** - use `branch_id` FK instead
 3. ✅ Update auto-resolve to use JOIN with `asset_branches.is_default`
-4. ✅ Add branch info to RIS Report metadata
+4. ✅ Add branch info to CTIS Report metadata
 5. ✅ Update agent to pass branch context from CI
    - `sdk/pkg/core/interfaces.go`: Added `BranchInfo` to `ParseOptions`
-   - `sdk/pkg/ris/sarif.go`: Added `BranchInfo` to `ConvertOptions`, set `report.Metadata.Branch`
+   - `sdk/pkg/ctis/sarif.go`: Added `BranchInfo` to `ConvertOptions`, set `report.Metadata.Branch`
    - `agent/main.go`: Added `buildBranchInfo()` to create `BranchInfo` from CI env (GitHub Actions, GitLab CI)
 6. ✅ Look up/create `asset_branches` record during ingestion
 7. ✅ Set `findings.branch_id` FK during ingestion

@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Report Schema
-parent: RIS Schema Reference
+title: CTIS Report Schema
+parent: CTIS Schema Reference
 nav_order: 1
 ---
 
-# RIS Report Schema
+# CTIS Report Schema
 
-The Report schema is the root document for RIS. It contains metadata, tool information, assets, findings, and dependencies.
+The Report schema is the root document for CTIS. It contains metadata, tool information, assets, findings, and dependencies.
 
-**Schema Location**: `schemas/ris/v1/report.json`
+**Schema Location**: `schemas/ctis/v1/report.json`
 
 ---
 
@@ -32,9 +32,9 @@ The Report schema is the root document for RIS. It contains metadata, tool infor
 | `$schema` | string | No | JSON Schema URL for validation |
 | `metadata` | [ReportMetadata](#reportmetadata) | **Yes** | Report metadata |
 | `tool` | [Tool](#tool) | No | Tool that generated this report |
-| `assets` | array[[Asset](ris-asset.md)] | No | Discovered assets |
-| `findings` | array[[Finding](ris-finding.md)] | No | Security findings |
-| `dependencies` | array[[Dependency](ris-dependency.md)] | No | Software dependencies (SBOM) |
+| `assets` | array[[Asset](ctis-asset.md)] | No | Discovered assets |
+| `findings` | array[[Finding](ctis-finding.md)] | No | Security findings |
+| `dependencies` | array[[Dependency](ctis-dependency.md)] | No | Software dependencies (SBOM) |
 | `properties` | object | No | Custom properties (any key-value) |
 
 ---
@@ -165,7 +165,7 @@ Tool that generated this report.
 ```json
 {
   "version": "1.0",
-  "$schema": "https://schemas.exploop.io/ris/v1/report.json",
+  "$schema": "https://schemas.openctem.io/ctis/v1/report.json",
   "metadata": {
     "id": "scan-2026-01-29-001",
     "timestamp": "2026-01-29T10:30:00Z",
@@ -202,6 +202,6 @@ Tool that generated this report.
 
 ## Related Schemas
 
-- [Asset Schema](ris-asset.md) - Asset definitions
-- [Finding Schema](ris-finding.md) - Finding definitions
-- [Dependency Schema](ris-dependency.md) - SBOM dependencies
+- [Asset Schema](ctis-asset.md) - Asset definitions
+- [Finding Schema](ctis-finding.md) - Finding definitions
+- [Dependency Schema](ctis-dependency.md) - SBOM dependencies

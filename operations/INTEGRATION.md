@@ -8,11 +8,11 @@ nav_order: 11
 
 # Integration Guide
 
-This guide provides a comprehensive overview of integrating with the Rediver security platform.
+This guide provides a comprehensive overview of integrating with the OpenCTEM security platform.
 
 ## Platform Overview
 
-Rediver is a unified security platform that aggregates, analyzes, and manages security findings from multiple sources. It implements the CTEM (Continuous Threat Exposure Management) framework.
+OpenCTEM is a unified security platform that aggregates, analyzes, and manages security findings from multiple sources. It implements the CTEM (Continuous Threat Exposure Management) framework.
 
 ## Integration Architecture
 
@@ -29,7 +29,7 @@ Rediver is a unified security platform that aggregates, analyzes, and manages se
 │         └──────────────────┼──────────────────┘                     │
 │                            │                                        │
 │                     ┌──────▼───────┐                                │
-│                     │  REDIVER SDK │                                │
+│                     │  OPENCTEM SDK │                                │
 │                     │  (Go Module) │                                │
 │                     └──────┬───────┘                                │
 │                            │                                        │
@@ -39,7 +39,7 @@ Rediver is a unified security platform that aggregates, analyzes, and manages se
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                       REDIVER PLATFORM                              │
+│                       OPENCTEM PLATFORM                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                 │
 │  │   Workers   │  │  Findings   │  │   Assets    │                 │
@@ -57,17 +57,17 @@ Rediver is a unified security platform that aggregates, analyzes, and manages se
 
 ### Option 1: Pre-built Agent (Recommended)
 
-Use the Rediver Agent binary for quick integration.
+Use the OpenCTEM Agent binary for quick integration.
 
 ```bash
 # Install
-go install github.com/exploopio/agent@latest
+go install github.com/openctemio/agent@latest
 
 # Run scan
 agent -tools semgrep,trivy,gitleaks \
       -target . \
       -push \
-      -api-url https://api.exploop.io \
+      -api-url https://api.openctem.io \
       -api-key $API_KEY
 ```
 
@@ -77,16 +77,16 @@ Integrate the SDK into your Go application.
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/scanners"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/scanners"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
     // Initialize client
     c := client.New(&client.Config{
-        BaseURL:  "https://api.exploop.io",
-        APIKey:   os.Getenv("EXPLOOP_API_KEY"),
+        BaseURL:  "https://api.openctem.io",
+        APIKey:   os.Getenv("OPENCTEM_API_KEY"),
         WorkerID: "my-integration-001",
     })
 
@@ -108,7 +108,7 @@ func main() {
 Call the REST API directly.
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/agent/ingest \
+curl -X POST https://api.openctem.io/api/v1/agent/ingest \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -171,8 +171,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Run Rediver Scan
-        uses: docker://exploopio/agent:ci
+      - name: Run OpenCTEM Scan
+        uses: docker://openctemio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -180,28 +180,28 @@ jobs:
             -auto-ci
             -push
         env:
-          API_URL: ${{ secrets.EXPLOOP_API_URL }}
-          API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
+          API_URL: ${{ secrets.OPENCTEM_API_URL }}
+          API_KEY: ${{ secrets.OPENCTEM_API_KEY }}
 ```
 
 ### GitLab CI
 
 ```yaml
 security-scan:
-  image: exploopio/agent:ci
+  image: openctemio/agent:ci
   script:
     - agent -tools semgrep,gitleaks,trivy -target . -auto-ci -push
   variables:
-    API_URL: $EXPLOOP_API_URL
-    API_KEY: $EXPLOOP_API_KEY
+    API_URL: $OPENCTEM_API_URL
+    API_KEY: $OPENCTEM_API_KEY
 ```
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `API_URL` / `EXPLOOP_API_URL` | Yes | Platform API URL |
-| `API_KEY` / `EXPLOOP_API_KEY` | Yes | API authentication key |
+| `API_URL` / `OPENCTEM_API_URL` | Yes | Platform API URL |
+| `API_KEY` / `OPENCTEM_API_KEY` | Yes | API authentication key |
 | `WORKER_ID` | No | Custom worker identifier |
 | `GRPC_ADDR` | No | gRPC server address |
 
@@ -230,7 +230,7 @@ security-scan:
 
 ## Support
 
-- **Documentation**: https://docs.exploop.io
-- **API Reference**: https://api.exploop.io/docs
-- **SDK Source**: https://github.com/exploopio/sdk
+- **Documentation**: https://docs.openctem.io
+- **API Reference**: https://api.openctem.io/docs
+- **SDK Source**: https://github.com/openctemio/sdk
 {% endraw %}

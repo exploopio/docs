@@ -14,7 +14,7 @@ This document lists all planned features that are not yet implemented. These fea
 
 ## Overview
 
-The Exploop CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure Management) framework:
+The OpenCTEM CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure Management) framework:
 
 | Phase | Status | Description |
 |-------|--------|-------------|
@@ -23,36 +23,6 @@ The Exploop CTEM Platform follows the 5-stage CTEM (Continuous Threat Exposure M
 | Prioritization | Partial | Rank risks based on impact |
 | Validation | Partial | Verify threats and test controls |
 | Mobilization | Partial | Execute remediation |
-
----
-
-## Plan Tiers & Feature Availability
-
-Features are gated by subscription plan. See [Plans & Licensing](./operations/plans-licensing.md) for full details.
-
-| Feature Category | Free | Team | Business | Enterprise |
-|------------------|:----:|:----:|:--------:|:----------:|
-| **Core CTEM** | ✓ | ✓ | ✓ | ✓ |
-| Dashboard, Assets, Scans, Findings | ✓ | ✓ | ✓ | ✓ |
-| **Extended Discovery** | | | | |
-| Components (SBOM) | | ✓ | ✓ | ✓ |
-| Credential Leaks | | ✓ | ✓ | ✓ |
-| **Prioritization** | | | | |
-| Threat Intel, Risk Analysis | | | ✓ | ✓ |
-| **Validation** | | | | |
-| Penetration Testing | | | ✓ | ✓ |
-| Attack Simulation | | | ✓ | ✓ |
-| **Mobilization** | | | | |
-| Remediation Tasks | | | ✓ | ✓ |
-| Workflows | | | ✓ | ✓ |
-| **Platform** | | | | |
-| Reports | | ✓ | ✓ | ✓ |
-| Integrations | | ✓ | ✓ | ✓ |
-| API Access | | | ✓ | ✓ |
-| **Enterprise** | | | | |
-| Groups & Roles | | | | ✓ |
-| Audit Logs | | | | ✓ |
-| SSO/SAML | | | | ✓ |
 
 ---
 
@@ -810,7 +780,7 @@ See `docs/_internal/rfcs/2026-01-27-group-access-control-phase-7-10.md` for full
   - Added [Workflow Automation](./features/workflows.md) documentation
   - Added [Quality Gates](./features/quality-gates.md) documentation
   - Added [CTEM Finding Fields](./features/ctem-fields.md) documentation
-  - Added [Platform Agents v3.2 Architecture](./architecture/platform-agents-v3.md)
+  - Added Platform Agents v3.2 Architecture
   - Added [Admin System Architecture](./architecture/admin-system.md)
   - Fixed Jekyll rendering issues (code block spacing, Liquid syntax)
 
@@ -819,7 +789,7 @@ See `docs/_internal/rfcs/2026-01-27-group-access-control-phase-7-10.md` for full
   - New modules: `pentest`, `remediation`, `threat_intel`, `components`, `credentials`
   - Sidebar now filters based on tenant's plan modules
   - Release status support: `coming_soon` (disabled with "Soon" badge), `beta` (enabled with "Beta" badge)
-  - Documentation: [Plans & Licensing Guide](./operations/plans-licensing.md)
+  - Documentation: Plans & Licensing Guide
 
 ### 2026-01-22
 - **Notification Integrations** - Implemented full notification channel management

@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Web3 Asset Schema
-parent: RIS Schema Reference
+title: CTIS Web3 Asset Schema
+parent: CTIS Schema Reference
 nav_order: 5
 ---
 
-# RIS Web3 Asset Schema
+# CTIS Web3 Asset Schema
 
 The Web3 Asset schema provides blockchain-specific technical details for smart contracts, wallets, tokens, DeFi protocols, and NFT collections.
 
-**Schema Location**: `schemas/ris/v1/web3-asset.json`
+**Schema Location**: `schemas/ctis/v1/web3-asset.json`
 
 ---
 
@@ -459,5 +459,5 @@ NFT collection-specific details.
 
 ## Related Documentation
 
-- [Asset Schema](ris-asset.md) - Base asset schema with `web3` field
-- [Web3 Finding Schema](ris-web3-finding.md) - Smart contract vulnerabilities
+- [Asset Schema](ctis-asset.md) - Base asset schema with `web3` field
+- [Web3 Finding Schema](ctis-web3-finding.md) - Smart contract vulnerabilities

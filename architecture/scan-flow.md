@@ -7,7 +7,7 @@ nav_order: 10
 
 # Scan Flow Architecture
 
-This document explains the complete scan flow in Rediverio - from when a user creates a scan to when results are displayed.
+This document explains the complete scan flow in OpenCTEMio - from when a user creates a scan to when results are displayed.
 
 ---
 
@@ -15,7 +15,7 @@ This document explains the complete scan flow in Rediverio - from when a user cr
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                           REDIVERIO SCAN FLOW                                    │
+│                           OPENCTEMIO SCAN FLOW                                    │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
  ┌──────────────┐      ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
@@ -26,7 +26,7 @@ This document explains the complete scan flow in Rediverio - from when a user cr
         ▼                     ▼                     ▼                     ▼
    UI Wizard            Command Queue         Run Tools            Batch Process
    4 Steps              Agent Routing         Collect Data         Deduplicate
-   Scan Profile         Priority Queue        RIS Format           Store Findings
+   Scan Profile         Priority Queue        CTIS Format           Store Findings
 ```
 
 ---
@@ -275,7 +275,7 @@ When a scan is triggered, the system selects an appropriate agent:
 │  Execute Scanner Tool (semgrep, trivy, nuclei...)         │
 │       │                                                   │
 │       ▼                                                   │
-│  Transform output ──▶ RIS Format                          │
+│  Transform output ──▶ CTIS Format                          │
 │       │                                                   │
 │       ▼                                                   │
 │  POST /api/v1/agent/ingest                                │
@@ -296,7 +296,7 @@ api/internal/infra/http/handler/agent_handler.go
 
 The IngestService processes scan results using optimized batch operations.
 
-### RIS Format (Rediver Ingest Schema)
+### CTIS Format (CTEM Ingest Schema)
 
 ```json
 {
@@ -651,7 +651,7 @@ Ensures dependencies stay in sync with current state.
 
 ## Summary
 
-The Rediverio scan flow is a **distributed scanning platform** with:
+The OpenCTEMio scan flow is a **distributed scanning platform** with:
 
 1. **Flexible Configuration**: Multiple scan types, schedules, and profiles
 2. **Intelligent Agent Orchestration**: Capability matching, priority queues, failure handling

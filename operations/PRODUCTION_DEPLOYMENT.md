@@ -7,7 +7,7 @@ nav_order: 13
 
 # Production Deployment Guide
 
-Deploy the Exploop platform to production environments using Kubernetes, Docker Compose, or cloud-managed services.
+Deploy the OpenCTEM platform to production environments using Kubernetes, Docker Compose, or cloud-managed services.
 
 ---
 
@@ -73,10 +73,10 @@ Deploy the Exploop platform to production environments using Kubernetes, Docker 
 
 ```bash
 # Create namespace
-kubectl create namespace.exploop
+kubectl create namespace.openctem
 
 # Set as default
-kubectl config set-context --current --namespace.exploop
+kubectl config set-context --current --namespace.openctem
 ```
 
 ---
@@ -91,12 +91,12 @@ export DB_PASSWORD=$(openssl rand -base64 32)
 export REDIS_PASSWORD=$(openssl rand -base64 32)
 
 # Create Kubernetes secrets
-kubectl create secret generic.exploop-secrets \
+kubectl create secret generic.openctem-secrets \
   --from-literal=jwt-secret=$JWT_SECRET \
   --from-literal=csrf-secret=$CSRF_SECRET \
   --from-literal=db-password=$DB_PASSWORD \
   --from-literal=redis-password=$REDIS_PASSWORD \
-  --namespace.exploop
+  --namespace.openctem
 ```
 
 ---
@@ -108,13 +108,13 @@ Create `values.yaml`:
 ```yaml
 # values.yaml
 global:
-  domain: app.exploop.io
+  domain: app.openctem.io
   tlsEnabled: true
 
 api:
   replicaCount: 3
   image:
-    repository: exploopio/api
+    repository: openctemio/api
     tag: latest
   resources:
     requests:
@@ -125,13 +125,13 @@ api:
       cpu: "1000m"
   env:
     AUTH_PROVIDER: local  # or "oidc" for Keycloak
-    CORS_ALLOWED_ORIGINS: "https://app.exploop.io"
+    CORS_ALLOWED_ORIGINS: "https://app.openctem.io"
     LOG_LEVEL: info
 
 ui:
   replicaCount: 2
   image:
-    repository: exploopio/ui
+    repository: openctemio/ui
     tag: latest
   resources:
     requests:
@@ -144,7 +144,7 @@ ui:
 postgresql:
   enabled: true
   auth:
-    existingSecret:.exploop-secrets
+    existingSecret:.openctem-secrets
     secretKeys:
       adminPasswordKey: db-password
   primary:
@@ -156,7 +156,7 @@ postgresql:
 redis:
   enabled: true
   auth:
-    existingSecret:.exploop-secrets
+    existingSecret:.openctem-secrets
     existingSecretPasswordKey: redis-password
   master:
     persistence:
@@ -168,14 +168,14 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
   hosts:
-    - host: app.exploop.io
+    - host: app.openctem.io
       paths:
         - path: /
           pathType: Prefix
   tls:
-    - secretName:.exploop-tls
+    - secretName:.openctem-tls
       hosts:
-        - app.exploop.io
+        - app.openctem.io
 ```
 
 ---
@@ -183,18 +183,18 @@ ingress:
 ### Step 4: Install Helm Chart
 
 ```bash
-# Add Rediver Helm repository
-helm repo add.exploopio https://charts.exploop.io
+# Add OpenCTEM Helm repository
+helm repo add.openctemio https://charts.openctem.io
 helm repo update
 
 # Install
-helm install.exploop exploopio.exploop \
-  --namespace.exploop \
+helm install.openctem openctemio.openctem \
+  --namespace.openctem \
   --values values.yaml \
   --wait --timeout 10m
 
 # Check status
-helm status.exploop --namespace.exploop
+helm status.openctem --namespace.openctem
 ```
 
 ---
@@ -203,23 +203,23 @@ helm status.exploop --namespace.exploop
 
 ```bash
 # Check all pods are running
-kubectl get pods --namespace.exploop
+kubectl get pods --namespace.openctem
 
 # Expected output:
 # NAME                          READY   STATUS    RESTARTS   AGE
-# exploop-api-xxx               1/1     Running   0          2m
-# exploop-api-yyy               1/1     Running   0          2m
-# exploop-api-zzz               1/1     Running   0          2m
-#.exploop-ui-xxx                1/1     Running   0          2m
-#.exploop-ui-yyy                1/1     Running   0          2m
-#.exploop-postgresql-0          1/1     Running   0          2m
-#.exploop-redis-master-0        1/1     Running   0          2m
+# openctem-api-xxx               1/1     Running   0          2m
+# openctem-api-yyy               1/1     Running   0          2m
+# openctem-api-zzz               1/1     Running   0          2m
+#.openctem-ui-xxx                1/1     Running   0          2m
+#.openctem-ui-yyy                1/1     Running   0          2m
+#.openctem-postgresql-0          1/1     Running   0          2m
+#.openctem-redis-master-0        1/1     Running   0          2m
 
 # Check services
-kubectl get svc --namespace.exploop
+kubectl get svc --namespace.openctem
 
 # Check ingress
-kubectl get ingress --namespace.exploop
+kubectl get ingress --namespace.openctem
 ```
 
 ---
@@ -232,28 +232,28 @@ kubectl apply -f - <<EOF
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name:.exploop-migrate
-  namespace: exploop
+  name:.openctem-migrate
+  namespace: openctem
 spec:
   template:
     spec:
       containers:
       - name: migrate
-        image: exploopio/api:latest
+        image: openctemio/api:latest
         command: ["migrate", "-path", "/app/migrations", "-database", "\$(DATABASE_URL)", "up"]
         env:
         - name: DATABASE_URL
-          value: "postgres:/.exploop:\$(DB_PASSWORD).exploop-postgresql:5432/exploop?sslmode=disable"
+          value: "postgres:/.openctem:\$(DB_PASSWORD).openctem-postgresql:5432/openctem?sslmode=disable"
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name:.exploop-secrets
+              name:.openctem-secrets
               key: db-password
       restartPolicy: OnFailure
 EOF
 
 # Wait for completion
-kubectl wait --for=condition=complete job.exploop-migrate --namespace.exploop --timeout=5m
+kubectl wait --for=condition=complete job.openctem-migrate --namespace.openctem --timeout=5m
 ```
 
 ---
@@ -262,7 +262,7 @@ kubectl wait --for=condition=complete job.exploop-migrate --namespace.exploop --
 
 ```bash
 # Seed test data for staging
-kubectl exec -it deployment/exploop-api --namespace.exploop -- \
+kubectl exec -it deployment/openctem-api --namespace.openctem -- \
   psql \$DATABASE_URL -f /app/seeds/seed_required.sql
 ```
 
@@ -272,13 +272,13 @@ kubectl exec -it deployment/exploop-api --namespace.exploop -- \
 
 1. Update your DNS to point to the Ingress IP:
    ```bash
-   kubectl get ingress.exploop-ingress --namespace.exploop
+   kubectl get ingress.openctem-ingress --namespace.openctem
    ```
 
-2. Navigate to your domain: `https://app.exploop.io`
+2. Navigate to your domain: `https://app.openctem.io`
 
 3. Login with default credentials (change immediately):
-   - Email: `admin@exploop.io`
+   - Email: `admin@openctem.io`
    - Password: `Admin123!`
 
 ---
@@ -306,13 +306,13 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB:.exploop
-      POSTGRES_USER:.exploop
+      POSTGRES_DB:.openctem
+      POSTGRES_USER:.openctem
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U.exploop"]
+      test: ["CMD-SHELL", "pg_isready -U.openctem"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -328,7 +328,7 @@ services:
       interval: 10s
 
   api:
-    image: exploopio/api:latest
+    image: openctemio/api:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -338,15 +338,15 @@ services:
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USER:.exploop
+      DB_USER:.openctem
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME:.exploop
+      DB_NAME:.openctem
       REDIS_ADDR: redis:6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       AUTH_JWT_SECRET: ${JWT_SECRET}
       CSRF_SECRET: ${CSRF_SECRET}
-      CORS_ALLOWED_ORIGINS: https://app.exploop.io
-      NEXT_PUBLIC_APP_URL: https://app.exploop.io
+      CORS_ALLOWED_ORIGINS: https://app.openctem.io
+      NEXT_PUBLIC_APP_URL: https://app.openctem.io
       LOG_LEVEL: info
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
@@ -355,13 +355,13 @@ services:
       retries: 3
 
   ui:
-    image: exploopio/ui:latest
+    image: openctemio/ui:latest
     restart: unless-stopped
     depends_on:
       - api
     environment:
       NEXT_PUBLIC_BACKEND_API_URL: http://api:8080
-      NEXT_PUBLIC_APP_URL: https://app.exploop.io
+      NEXT_PUBLIC_APP_URL: https://app.openctem.io
       CSRF_SECRET: ${CSRF_SECRET}
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
@@ -402,13 +402,13 @@ upstream api {
 
 server {
     listen 80;
-    server_name app.exploop.io;
+    server_name app.openctem.io;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name app.exploop.io;
+    server_name app.openctem.io;
 
     ssl_certificate /etc/nginx/ssl/fullchain.pem;
     ssl_certificate_key /etc/nginx/ssl/privkey.pem;
@@ -447,13 +447,13 @@ sudo apt install certbot
 
 # Generate certificate
 sudo certbot certonly --standalone \
-  -d app.exploop.io \
-  --email admin@exploop.io \
+  -d app.openctem.io \
+  --email admin@openctem.io \
   --agree-tos
 
 # Copy certificates
-sudo cp /etc/letsencrypt/live/app.exploop.io/fullchain.pem ./ssl/
-sudo cp /etc/letsencrypt/live/app.exploop.io/privkey.pem ./ssl/
+sudo cp /etc/letsencrypt/live/app.openctem.io/fullchain.pem ./ssl/
+sudo cp /etc/letsencrypt/live/app.openctem.io/privkey.pem ./ssl/
 ```
 
 ---
@@ -540,10 +540,10 @@ All services expose health endpoints:
 
 ```bash
 # API
-curl https://app.exploop.io/api/health
+curl https://app.openctem.io/api/health
 
 # UI (via proxy)
-curl https://app.exploop.io/api/health
+curl https://app.openctem.io/api/health
 ```
 
 ### Metrics (Prometheus)
@@ -553,9 +553,9 @@ API exposes metrics at `/metrics`:
 ```yaml
 # prometheus.yml
 scrape_configs:
-  - job_name: 'exploop-api'
+  - job_name: 'openctem-api'
     static_configs:
-      - targets: ['exploop-api:8080']
+      - targets: ['openctem-api:8080']
 ```
 
 ### Logging
@@ -583,12 +583,12 @@ Ship logs to:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: exploop-api-hpa
+  name: openctem-api-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: exploop-api
+    name: openctem-api
   minReplicas: 3
   maxReplicas: 10
   metrics:
@@ -614,10 +614,10 @@ spec:
 
 ```bash
 # Daily automated backups
-kubectl create cronjob.exploop-backup \
+kubectl create cronjob.openctem-backup \
   --image=postgres:17 \
   --schedule="0 2 * * *" \
-  -- pg_dump -h postgres -U.exploop.exploop | gzip > /backups/backup-$(date +%Y%m%d).sql.gz
+  -- pg_dump -h postgres -U.openctem.openctem | gzip > /backups/backup-$(date +%Y%m%d).sql.gz
 ```
 
 ### Retention Policy
@@ -651,7 +651,7 @@ kubectl create cronjob.exploop-backup \
 
 ```bash
 # Check logs
-kubectl logs -l app=exploop-api --namespace.exploop --tail=100
+kubectl logs -l app=openctem-api --namespace.openctem --tail=100
 
 # Common causes:
 # - Database not ready
@@ -663,15 +663,15 @@ kubectl logs -l app=exploop-api --namespace.exploop --tail=100
 
 ```bash
 # Test connection from API pod
-kubectl exec -it deployment/exploop-api --namespace.exploop -- sh
-pg_isready -h postgres -U.exploop
+kubectl exec -it deployment/openctem-api --namespace.openctem -- sh
+pg_isready -h postgres -U.openctem
 ```
 
 ### UI Not Loading
 
 ```bash
 # Check API is reachable from UI
-kubectl exec -it deployment.exploop-ui --namespace.exploop -- curl http://exploop-api:8080/health
+kubectl exec -it deployment.openctem-ui --namespace.openctem -- curl http://openctem-api:8080/health
 ```
 
 ---
@@ -688,7 +688,7 @@ kubectl exec -it deployment.exploop-ui --namespace.exploop -- curl http://exploo
 
 - [Architecture Overview](../architecture/overview.md)
 - [End-to-End Workflow](../guides/END_TO_END_WORKFLOW.md)
-- [Agent Quick Start](https://github.com/exploopio/agent#quick-start)
+- [Agent Quick Start](https://github.com/openctemio/agent#quick-start)
 
 ---
 

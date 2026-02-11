@@ -7,7 +7,7 @@ nav_order: 11
 
 # Custom Tools Development Guide
 
-Build custom security scanners, parsers, and collectors using the Exploop SDK.
+Build custom security scanners, parsers, and collectors using the OpenCTEM SDK.
 
 ---
 
@@ -18,7 +18,7 @@ The SDK provides base implementations that you can extend:
 | Interface | Base Class | Purpose |
 |-----------|------------|---------|
 | `Scanner` | `BaseScanner` | Execute security tools |
-| `Parser` | `BaseParser` | Convert tool output to RIS |
+| `Parser` | `BaseParser` | Convert tool output to CTIS |
 | `Collector` | `BaseCollector` | Pull data from external APIs |
 | `Agent` | `BaseAgent` | Run as continuous daemon |
 
@@ -35,7 +35,7 @@ package main
 
 import (
     "time"
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -76,7 +76,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -158,7 +158,7 @@ func (s *MyScanner) SetConfigPath(path string) {
 
 ## Creating a Custom Parser
 
-Parsers convert tool output to RIS (Rediver Ingest Schema) format:
+Parsers convert tool output to CTIS (CTEM Ingest Schema) format:
 
 ```go
 package myparser
@@ -167,8 +167,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // MyToolOutput represents your tool's JSON output format
@@ -186,7 +186,7 @@ type MyIssue struct {
     Line        int    `json:"line"`
 }
 
-// MyParser converts my-tool output to RIS
+// MyParser converts my-tool output to CTIS
 type MyParser struct {
     *core.BaseParser
 }
@@ -208,15 +208,15 @@ func (p *MyParser) CanParse(data []byte) bool {
     return hasMarker
 }
 
-// Parse converts to RIS format
-func (p *MyParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptions) (*ris.Report, error) {
+// Parse converts to CTIS format
+func (p *MyParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptions) (*ctis.Report, error) {
     // Parse your tool's output
     var toolOutput MyToolOutput
     if err := json.Unmarshal(data, &toolOutput); err != nil {
         return nil, err
     }
 
-    // Create RIS report using helper
+    // Create CTIS report using helper
     report := p.CreateReport("my-tool", toolOutput.Version)
 
     // Convert each issue to a finding
@@ -228,7 +228,7 @@ func (p *MyParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptio
         )
 
         finding.Description = issue.Description
-        finding.Location = &ris.FindingLocation{
+        finding.Location = &ctis.FindingLocation{
             Path:      issue.File,
             StartLine: issue.Line,
         }
@@ -239,19 +239,19 @@ func (p *MyParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptio
     return report, nil
 }
 
-// mapSeverity converts your tool's severity to RIS severity
-func mapSeverity(severity string) ris.Severity {
+// mapSeverity converts your tool's severity to CTIS severity
+func mapSeverity(severity string) ctis.Severity {
     switch severity {
     case "critical", "CRITICAL":
-        return ris.SeverityCritical
+        return ctis.SeverityCritical
     case "high", "HIGH", "error", "ERROR":
-        return ris.SeverityHigh
+        return ctis.SeverityHigh
     case "medium", "MEDIUM", "warning", "WARNING":
-        return ris.SeverityMedium
+        return ctis.SeverityMedium
     case "low", "LOW":
-        return ris.SeverityLow
+        return ctis.SeverityLow
     default:
-        return ris.SeverityInfo
+        return ctis.SeverityInfo
     }
 }
 ```
@@ -280,8 +280,8 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 type MyAPICollector struct {
@@ -313,11 +313,11 @@ func (c *MyAPICollector) Collect(ctx context.Context, opts *core.CollectOptions)
         return nil, err
     }
 
-    // Convert to RIS
-    report := ris.NewReport()
+    // Convert to CTIS
+    report := ctis.NewReport()
     for _, vuln := range data.Vulnerabilities {
-        finding := ris.Finding{
-            Type:     ris.FindingTypeVulnerability,
+        finding := ctis.Finding{
+            Type:     ctis.FindingTypeVulnerability,
             Title:    vuln.Title,
             Severity: mapSeverity(vuln.Severity),
             // ... more fields
@@ -328,7 +328,7 @@ func (c *MyAPICollector) Collect(ctx context.Context, opts *core.CollectOptions)
     return &core.CollectResult{
         SourceName: c.Name(),
         SourceType: c.Type(),
-        Reports:    []*ris.Report{report},
+        Reports:    []*ctis.Report{report},
         TotalItems: len(data.Vulnerabilities),
     }, nil
 }
@@ -342,65 +342,65 @@ func (c *MyAPICollector) TestConnection(ctx context.Context) error {
 
 ---
 
-## RIS Schema Reference
+## CTIS Schema Reference
 
 ### Finding Types
 
 ```go
-ris.FindingTypeVulnerability    // "vulnerability" - CVE-based
-ris.FindingTypeSecret           // "secret" - hardcoded credentials
-ris.FindingTypeMisconfiguration // "misconfiguration" - IaC issues
-ris.FindingTypeCompliance       // "compliance" - policy violations
-ris.FindingTypeWeb3             // "web3" - smart contract vulns
+ctis.FindingTypeVulnerability    // "vulnerability" - CVE-based
+ctis.FindingTypeSecret           // "secret" - hardcoded credentials
+ctis.FindingTypeMisconfiguration // "misconfiguration" - IaC issues
+ctis.FindingTypeCompliance       // "compliance" - policy violations
+ctis.FindingTypeWeb3             // "web3" - smart contract vulns
 ```
 
 ### Severity Levels
 
 ```go
-ris.SeverityCritical  // "critical" - CVSS 9.0-10.0
-ris.SeverityHigh      // "high" - CVSS 7.0-8.9
-ris.SeverityMedium    // "medium" - CVSS 4.0-6.9
-ris.SeverityLow       // "low" - CVSS 0.1-3.9
-ris.SeverityInfo      // "info" - informational
+ctis.SeverityCritical  // "critical" - CVSS 9.0-10.0
+ctis.SeverityHigh      // "high" - CVSS 7.0-8.9
+ctis.SeverityMedium    // "medium" - CVSS 4.0-6.9
+ctis.SeverityLow       // "low" - CVSS 0.1-3.9
+ctis.SeverityInfo      // "info" - informational
 ```
 
 ### Asset Types
 
 ```go
-ris.AssetTypeDomain         // "domain"
-ris.AssetTypeIPAddress      // "ip_address"
-ris.AssetTypeRepository     // "repository"
-ris.AssetTypeSmartContract  // "smart_contract"
-ris.AssetTypeCloudAccount   // "cloud_account"
-// ... see ris/types.go for full list
+ctis.AssetTypeDomain         // "domain"
+ctis.AssetTypeIPAddress      // "ip_address"
+ctis.AssetTypeRepository     // "repository"
+ctis.AssetTypeSmartContract  // "smart_contract"
+ctis.AssetTypeCloudAccount   // "cloud_account"
+// ... see ctis/types.go for full list
 ```
 
 ### Creating a Finding
 
 ```go
-finding := ris.Finding{
+finding := ctis.Finding{
     ID:          "finding-uuid",
-    Type:        ris.FindingTypeVulnerability,
+    Type:        ctis.FindingTypeVulnerability,
     Title:       "SQL Injection in login handler",
     Description: "User input is concatenated directly into SQL query",
-    Severity:    ris.SeverityCritical,
+    Severity:    ctis.SeverityCritical,
     Confidence:  95,
     RuleID:      "CWE-89",
 
-    Location: &ris.FindingLocation{
+    Location: &ctis.FindingLocation{
         Path:      "src/auth/login.go",
         StartLine: 45,
         EndLine:   47,
         Snippet:   `query := "SELECT * FROM users WHERE id = " + userID`,
     },
 
-    Vulnerability: &ris.VulnerabilityDetails{
+    Vulnerability: &ctis.VulnerabilityDetails{
         CWEID:      "CWE-89",
         CVSSScore:  9.8,
         CVSSVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
     },
 
-    Remediation: &ris.Remediation{
+    Remediation: &ctis.Remediation{
         Recommendation: "Use parameterized queries",
         Steps: []string{
             "Replace string concatenation with prepared statements",
@@ -419,7 +419,7 @@ finding := ris.Finding{
 Use the shared fingerprint package for consistent deduplication:
 
 ```go
-import "github.com/exploopio/sdk/pkg/shared/fingerprint"
+import "github.com/openctemio/sdk/pkg/shared/fingerprint"
 
 // SAST findings
 fp := fingerprint.GenerateSAST("src/main.go", "CWE-89", 42, 44)
@@ -502,4 +502,4 @@ func TestMyParser_Parse(t *testing.T) {
 - **[SDK Quick Start](sdk-quick-start.md)** - Basic SDK usage
 - **[Agent Usage](agent-usage.md)** - Run as continuous scanner
 - **[Building Ingestion Tools](building-ingestion-tools.md)** - Detailed guide
-- **[RIS Schema Reference](https://github.com/exploopio/schemas)** - Full schema documentation
+- **[CTIS Schema Reference](https://github.com/openctemio/schemas)** - Full schema documentation

@@ -344,8 +344,8 @@ package app
 import (
     "context"
 
-    "github.com/exploopio/api/internal/domain/agent"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/agent"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // PlatformAgentLimits contains the platform agent limits for a tenant.

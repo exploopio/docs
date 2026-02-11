@@ -1,4 +1,4 @@
-# RFC: RIS to Domain Mapping Gaps Fix
+# RFC: CTIS to Domain Mapping Gaps Fix
 
 **Date:** 2026-01-29
 **Status:** In Progress
@@ -9,13 +9,13 @@
 
 ## Summary
 
-This RFC documents the identified gaps in RIS (Rediver Ingest Schema) to domain entity mapping and provides the implementation plan to fix them. The goal is to ensure **zero data loss** when ingesting security findings from agents.
+This RFC documents the identified gaps in CTIS (CTEM Ingest Schema) to domain entity mapping and provides the implementation plan to fix them. The goal is to ensure **zero data loss** when ingesting security findings from agents.
 
 ---
 
 ## Problem Statement
 
-During the analysis of SDK → Agent → API data flow, we identified **20+ fields** in the RIS schema that are NOT being mapped to domain entities during ingestion. This results in data loss for:
+During the analysis of SDK -> Agent -> API data flow, we identified **20+ fields** in the CTIS schema that are NOT being mapped to domain entities during ingestion. This results in data loss for:
 
 1. **Secret findings** - 8 fields not mapped (expires_at, verified_at, scopes, etc.)
 2. **Compliance findings** - 2 fields not mapped (framework_version, control_description)
@@ -28,12 +28,12 @@ During the analysis of SDK → Agent → API data flow, we identified **20+ fiel
 ## Current Architecture
 
 ```
-Scanner Output → SDK Parser → RIS Report → API Ingest → Domain Entity → Database
-                    ↓              ↓              ↓
+Scanner Output -> SDK Parser -> CTIS Report -> API Ingest -> Domain Entity -> Database
+                    |              |              |
               [COMPLETE]     [COMPLETE]    [DATA LOSS HERE]
 ```
 
-The SDK parsers correctly populate all RIS fields, but `processor_findings.go` in the API does not map all fields to the domain `Finding` entity.
+The SDK parsers correctly populate all CTIS fields, but `processor_findings.go` in the API does not map all fields to the domain `Finding` entity.
 
 ---
 
@@ -41,7 +41,7 @@ The SDK parsers correctly populate all RIS fields, but `processor_findings.go` i
 
 ### Gap #1: Secret Fields (8 fields)
 
-| RIS Field | Domain Field | Current Setter | Status |
+| CTIS Field | Domain Field | Current Setter | Status |
 |-----------|-------------|----------------|--------|
 | `secret.expires_at` | `secretExpiresAt` | `SetSecretExpiresAt()` | EXISTS but NOT CALLED |
 | `secret.verified_at` | - | - | MISSING |
@@ -58,7 +58,7 @@ The SDK parsers correctly populate all RIS fields, but `processor_findings.go` i
 
 ### Gap #2: Compliance Fields (2 fields)
 
-| RIS Field | Domain Field | Status |
+| CTIS Field | Domain Field | Status |
 |-----------|-------------|--------|
 | `compliance.framework_version` | - | MISSING |
 | `compliance.control_description` | - | MISSING |
@@ -69,7 +69,7 @@ The SDK parsers correctly populate all RIS fields, but `processor_findings.go` i
 
 ### Gap #3: Web3 Fields (3 fields)
 
-| RIS Field | Domain Field | Current Setter | Status |
+| CTIS Field | Domain Field | Current Setter | Status |
 |-----------|-------------|----------------|--------|
 | `web3.function_selector` | - | - | MISSING |
 | `web3.tx_hash` | `web3TxHash` | `SetWeb3TxHash()` | EXISTS but NOT CALLED |
@@ -81,7 +81,7 @@ The SDK parsers correctly populate all RIS fields, but `processor_findings.go` i
 
 ### Gap #4: Misconfiguration Fields (2 fields)
 
-| RIS Field | Domain Field | Status |
+| CTIS Field | Domain Field | Status |
 |-----------|-------------|--------|
 | `misconfiguration.policy_name` | - | MISSING |
 | `misconfiguration.cause` | - | MISSING |
@@ -92,7 +92,7 @@ The SDK parsers correctly populate all RIS fields, but `processor_findings.go` i
 
 ### Gap #5: Remediation Fields (5 fields)
 
-| RIS Field | Domain Field | Status |
+| CTIS Field | Domain Field | Status |
 |-----------|-------------|--------|
 | `remediation.steps` | - | MISSING |
 | `remediation.effort` | - | MISSING |
@@ -151,7 +151,7 @@ Add corresponding setters following existing pattern.
 
 Update `setSecretFields()`:
 ```go
-func (p *FindingProcessor) setSecretFields(f *vulnerability.Finding, secret *ris.SecretDetails) {
+func (p *FindingProcessor) setSecretFields(f *vulnerability.Finding, secret *ctis.SecretDetails) {
     // ... existing fields ...
 
     // NEW: Extended secret fields
@@ -231,7 +231,7 @@ Update `finding_repository.go` to persist new fields in `Create`, `Update`, and 
 1. Run `go build ./api/...` - verify compilation
 2. Run `go test ./api/...` - verify tests pass
 3. Create integration test for field mapping verification
-4. Manual verification with sample RIS reports
+4. Manual verification with sample CTIS reports
 
 ---
 
@@ -258,7 +258,7 @@ func TestFinding_SecretExtendedFields(t *testing.T) {
 
 ```go
 func TestIngest_AllFieldsPreserved_Secret(t *testing.T) {
-    report := createRISReport(
+    report := createCTISReport(
         withFinding(
             withSecretDetails(
                 expiresAt: time.Now().Add(30*24*time.Hour),
@@ -315,7 +315,7 @@ func TestIngest_AllFieldsPreserved_Secret(t *testing.T) {
 
 ## References
 
-- [RIS Schema Types](/home/ubuntu/exploopio/sdk/pkg/ris/types.go)
-- [Domain Finding Entity](/home/ubuntu/exploopio/api/internal/domain/vulnerability/finding.go)
-- [Ingest Processor](/home/ubuntu/exploopio/api/internal/app/ingest/processor_findings.go)
-- [JSON Schemas](/home/ubuntu/exploopio/schemas/ris/v1/)
+- [CTIS Schema Types](/home/ubuntu/projects/openctemio/sdk/pkg/ctis/types.go)
+- [Domain Finding Entity](/home/ubuntu/projects/openctemio/api/internal/domain/vulnerability/finding.go)
+- [Ingest Processor](/home/ubuntu/projects/openctemio/api/internal/app/ingest/processor_findings.go)
+- [JSON Schemas](/home/ubuntu/projects/openctemio/schemas/ctis/v1/)

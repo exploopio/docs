@@ -69,11 +69,11 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_scan_sessions_scanner ON scan_sessio
 **Status:** COMPLETED
 
 Added metrics to `api/internal/metrics/metrics.go`:
-- `exploop_scans_trigger_duration_seconds` - Histogram for trigger latency
-- `exploop_scans_scheduler_errors_total` - Counter for scheduler errors
-- `exploop_scans_scheduler_lag_seconds` - Gauge for scheduler lag
-- `exploop_scans_concurrent_runs` - Gauge for concurrent runs per tenant
-- `exploop_scans_quality_gate_results_total` - Counter for quality gate results
+- `openctem_scans_trigger_duration_seconds` - Histogram for trigger latency
+- `openctem_scans_scheduler_errors_total` - Counter for scheduler errors
+- `openctem_scans_scheduler_lag_seconds` - Gauge for scheduler lag
+- `openctem_scans_concurrent_runs` - Gauge for concurrent runs per tenant
+- `openctem_scans_quality_gate_results_total` - Counter for quality gate results
 
 Re-exported in `api/internal/app/metrics.go` for backward compatibility.
 

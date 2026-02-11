@@ -95,7 +95,7 @@ type RateLimitConfig struct {
 | Per-user limits | Medium | Rate limit by authenticated user |
 | Auth endpoint protection | Critical | Stricter limits for login/register |
 | Trusted proxy validation | High | Prevent IP spoofing |
-| Rate limit tiers | Low | Different limits per subscription plan |
+| Rate limit tiers | Low | Different limits per tenant configuration |
 | Adaptive rate limiting | Low | Adjust limits based on load |
 
 ### Security Vulnerabilities
@@ -171,7 +171,7 @@ Risk: Low
 **Tasks:**
 
 1. Per-endpoint rate limit configuration
-2. Rate limit tiers based on subscription plan
+2. Rate limit tiers based on tenant configuration
 3. Rate limit dashboard/metrics
 4. Admin API to view/reset rate limits
 5. Rate limit exemption for internal services
@@ -242,9 +242,9 @@ import (
     "sync"
     "time"
 
-    "github.com/exploopio/api/internal/config"
-    "github.com/exploopio/api/pkg/apierror"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/config"
+    "github.com/openctemio/api/pkg/apierror"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // AuthRateLimiter provides rate limiting for authentication endpoints

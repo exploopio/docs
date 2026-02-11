@@ -7,7 +7,7 @@ nav_order: 2
 
 # Component Interactions
 
-This document provides a comprehensive overview of how all major components in the Exploop CTEM Platform interact with each other.
+This document provides a comprehensive overview of how all major components in the OpenCTEM CTEM Platform interact with each other.
 
 ---
 
@@ -32,7 +32,7 @@ This document provides a comprehensive overview of how all major components in t
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                              REDIVER CTEM PLATFORM                                   │
+│                              OPENCTEM CTEM PLATFORM                                   │
 │                                                                                      │
 │  ┌─────────────────────────────────────────────────────────────────────────────┐   │
 │  │                           TENANT LAYER                                       │   │
@@ -526,7 +526,7 @@ User → Scan Definition → Schedule/Trigger → Command Queue → Agent Pollin
                                               │  1. Get tool configuration  │
                                               │  2. Download custom templates│
                                               │  3. Run scanner tools       │
-                                              │  4. Transform to RIS format │
+                                              │  4. Transform to CTIS format │
                                               │  5. POST to ingest endpoint │
                                               └─────────────┬───────────────┘
                                                             │
@@ -620,7 +620,7 @@ User → Scan Definition → Schedule/Trigger → Command Queue → Agent Pollin
 
 ## Summary
 
-The Exploop CTEM Platform is built around these core interaction patterns:
+The OpenCTEM CTEM Platform is built around these core interaction patterns:
 
 1. **Tenant Isolation**: All resources scoped by `tenant_id`, enforced at every layer
 2. **Configuration Reuse**: Scan Profiles define reusable configurations with quality gates

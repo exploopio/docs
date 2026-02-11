@@ -522,7 +522,7 @@ regexes = [
 
 ---
 
-## Recommendations for Rediver
+## Recommendations for OpenCTEM
 
 Based on this analysis, we recommend:
 

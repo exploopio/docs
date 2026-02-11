@@ -5,21 +5,20 @@ nav_order: 1
 permalink: /
 ---
 
-# Rediver Documentation
+# OpenCTEM Documentation
 
-Welcome to the **Exploop Platform** documentation - a Continuous Threat Exposure Management (CTEM) platform for discovering assets, scanning vulnerabilities, and prioritizing remediation.
+Welcome to the **OpenCTEM Platform** documentation - a Continuous Threat Exposure Management (CTEM) platform for discovering assets, scanning vulnerabilities, and prioritizing remediation.
 
 ---
 
 ## 🚀 Getting Started
 
-New to Rediver? Start here:
+New to OpenCTEM? Start here:
 
 | Guide | Description |
 |-------|-------------|
 | **[Quick Start](./getting-started/quick-start.md)** | Get the platform running in 5 minutes |
 | **[First Scan Tutorial](./getting-started/first-scan.md)** | Run your first security scan |
-| **[Enterprise Setup](./getting-started/enterprise-setup.md)** | Production deployment with SSO |
 
 ---
 
@@ -123,7 +122,7 @@ Platform administration console:
 |-----------|---------------|
 | **Agent** | [Agent Quick Start](../agent/docs/QUICK_START.md) \| [Full README](../agent/README.md) |
 | **SDK** | [SDK README](../sdk/README.md) \| [Security Guide](../sdk/docs/SECURITY.md) |
-| **Schemas** | [RIS Format](../schemas/README.md) |
+| **Schemas** | [CTIS Format](../schemas/README.md) |
 
 ---
 
@@ -131,9 +130,9 @@ Platform administration console:
 
 | Link | Description |
 |------|-------------|
-| [Platform](https://app.exploop.io) | Live platform |
-| [API Docs](https://api.exploop.io/docs) | Interactive API explorer |
-| [GitHub](https://github.com/exploopio) | Source code |
+| [Platform](https://app.openctem.io) | Live platform |
+| [API Docs](https://api.openctem.io/docs) | Interactive API explorer |
+| [GitHub](https://github.com/openctemio) | Source code |
 
 ---
 
@@ -149,4 +148,4 @@ Please refer to the [Contributing Guide](../CONTRIBUTING.md) for contribution gu
 
 ---
 
-**Questions?** Browse the sidebar or visit [docs.exploop.io](https://docs.exploop.io)
+**Questions?** Browse the sidebar or visit [docs.openctem.io](https://docs.openctem.io)

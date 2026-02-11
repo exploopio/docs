@@ -10,7 +10,7 @@ nav_order: 4
 ---
 # Server-Agent Command Architecture
 
-This document describes how the Rediver Server controls agents, scanners, and collectors remotely.
+This document describes how the OpenCTEM Server controls agents, scanners, and collectors remotely.
 
 ---
 
@@ -18,7 +18,7 @@ This document describes how the Rediver Server controls agents, scanners, and co
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           REDIVER PLATFORM                                   │
+│                           OPENCTEM PLATFORM                                   │
 │                                                                              │
 │   ┌─────────────────────────────────────────────────────────────────────┐   │
 │   │                      Command Service                                 │   │
@@ -91,7 +91,7 @@ Agent                                Server
   │                                    │
   │──── GET /api/v1/commands ─────────>│
   │     Authorization: Bearer {key}    │
-  │     X-Rediver-Source-ID: {source}  │
+  │     X-OpenCTEM-Source-ID: {source}  │
   │                                    │
   │<─── 200 OK ────────────────────────│
   │     {                              │
@@ -155,7 +155,7 @@ Retrieve pending commands for the agent.
 ```http
 GET /api/v1/commands?limit=10&status=pending HTTP/1.1
 Authorization: Bearer rs_src_xxxxxxxx
-X-Rediver-Source-ID: src_abc123
+X-OpenCTEM-Source-ID: src_abc123
 ```
 
 **Response:**
@@ -609,7 +609,7 @@ Server should rate limit command creation per tenant.
 
 ## Comparison with Industry Solutions
 
-| Feature | Tenable | Qualys | Rediver (Proposed) |
+| Feature | Tenable | Qualys | OpenCTEM (Proposed) |
 |---------|---------|--------|---------------------|
 | Agent communication | Poll + Push | Poll | Poll + WS notification |
 | Command dispatch | Centralized | Centralized | Per-tenant |

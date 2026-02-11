@@ -7,7 +7,7 @@ nav_order: 4
 
 # Capabilities Registry (Tool Capabilities)
 
-The Capabilities Registry provides a normalized system for managing **tool capabilities** across the Exploop platform. Capabilities define what security tools can do (e.g., SAST, SCA, DAST, secrets detection).
+The Capabilities Registry provides a normalized system for managing **tool capabilities** across the OpenCTEM platform. Capabilities define what security tools can do (e.g., SAST, SCA, DAST, secrets detection).
 
 {: .important }
 > **Not to be confused with [Finding Sources](finding-sources.md)**

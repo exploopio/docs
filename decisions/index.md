@@ -8,7 +8,7 @@ permalink: /decisions/
 
 # Architecture Decision Records (ADRs)
 
-This section contains Architecture Decision Records documenting significant technical decisions made in the Exploop platform.
+This section contains Architecture Decision Records documenting significant technical decisions made in the OpenCTEM platform.
 
 ---
 

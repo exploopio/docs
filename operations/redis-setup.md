@@ -9,7 +9,7 @@ nav_order: 5
 
 ## Overview
 
-Rediver uses Redis to cache user permissions, enabling:
+OpenCTEM uses Redis to cache user permissions, enabling:
 - **Fast permission checks** (<1ms cache hit)
 - **Real-time permission updates** (via cache invalidation)
 - **Reduced database load** (95%+ cache hit rate)
@@ -32,9 +32,9 @@ This guide covers Redis setup, configuration, and monitoring for the permission 
 
 ```bash
 docker run -d \
-  --name.exploop-redis \
+  --name.openctem-redis \
   -p 6379:6379 \
-  -v.exploop-redis-data:/data \
+  -v.openctem-redis-data:/data \
   redis:7-alpine \
   redis-server --appendonly yes
 ```

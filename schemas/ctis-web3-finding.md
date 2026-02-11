@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Web3 Finding Schema
-parent: RIS Schema Reference
+title: CTIS Web3 Finding Schema
+parent: CTIS Schema Reference
 nav_order: 6
 ---
 
-# RIS Web3 Finding Schema
+# CTIS Web3 Finding Schema
 
 The Web3 Finding schema provides smart contract and blockchain-specific vulnerability details, including SWC IDs, attack vectors, and specialized issue types like reentrancy, oracle manipulation, and flash loan attacks.
 
-**Schema Location**: `schemas/ris/v1/web3-finding.json`
+**Schema Location**: `schemas/ctis/v1/web3-finding.json`
 
 ---
 
@@ -486,6 +486,6 @@ Common SWC IDs for smart contract vulnerabilities:
 
 ## Related Documentation
 
-- [Finding Schema](ris-finding.md) - Base finding schema with `web3` field
-- [Web3 Asset Schema](ris-web3-asset.md) - Smart contract assets
+- [Finding Schema](ctis-finding.md) - Base finding schema with `web3` field
+- [Web3 Asset Schema](ctis-web3-asset.md) - Smart contract assets
 - [SWC Registry](https://swcregistry.io/) - Smart Contract Weakness Classification

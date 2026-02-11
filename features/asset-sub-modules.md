@@ -29,13 +29,13 @@ Currently, all 17 asset types are hardcoded in the sidebar. We need:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    PLAN LEVEL (plan_modules)                     │
+│                  TENANT LEVEL (tenant_modules)                    │
 │                                                                  │
-│  Plan "free"  → has module "assets" ✓                           │
-│  Plan "team"  → has module "assets" ✓                           │
-│  Plan "business" → has module "assets" ✓                        │
+│  Tenant A → has module "assets" ✓                                │
+│  Tenant B → has module "assets" ✓                                │
+│  Tenant C → has module "assets" ✓                                │
 │                                                                  │
-│  (No need to add sub-modules to plan_modules)                   │
+│  (No need to add sub-modules to tenant_modules)                  │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼ Inheritance
@@ -223,13 +223,13 @@ Update existing methods to include parent_module_id in SELECT.
 
 ### Phase 4: Backend Service
 
-**File**: `api/internal/app/licensing_service.go`
+**File**: `api/internal/app/module_service.go`
 
 Add method:
 ```go
 // GetTenantModulesWithSubModules returns modules with their sub-modules
-func (s *LicensingService) GetTenantModulesWithSubModules(ctx context.Context, tenantID uuid.UUID) (*TenantModulesResult, error) {
-    // 1. Get tenant's enabled modules (from plan)
+func (s *ModuleService) GetTenantModulesWithSubModules(ctx context.Context, tenantID uuid.UUID) (*TenantModulesResult, error) {
+    // 1. Get tenant's enabled modules
     modules, err := s.GetTenantEnabledModules(ctx, tenantID)
     if err != nil {
         return nil, err
@@ -446,8 +446,8 @@ ORDER BY display_order;
 ## Future Enhancements
 
 1. **Admin UI**: Web interface to manage module status
-2. **Per-Plan Sub-Modules**: Add sub-modules to plan_modules for granular control
-3. **Module Limits**: Add limits like `{"max_domains": 100}` per plan
+2. **Per-Tenant Sub-Modules**: Add sub-modules to tenant_modules for granular control
+3. **Module Limits**: Add limits like `{"max_domains": 100}` per tenant
 4. **Audit Logging**: Log module status changes
 
 ## Files to Modify

@@ -6,7 +6,7 @@
 
 ---
 
-This document outlines the comprehensive implementation plan for Rediver's Scan Management system, inspired by best practices from reNgine and other security scanning platforms.
+This document outlines the comprehensive implementation plan for OpenCTEM's Scan Management system, inspired by best practices from reNgine and other security scanning platforms.
 
 ## Overview
 
@@ -507,4 +507,4 @@ The Tool Registry integrates with `sdk` through:
 
 - reNgine Wiki: https://rengine.wiki
 - React Flow: https://reactflow.dev
-- Existing Rediver architecture: `docs/architecture/overview.md`
+- Existing OpenCTEM architecture: `docs/architecture/overview.md`

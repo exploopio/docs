@@ -4,7 +4,7 @@ title: SDK Development
 parent: Platform Guides
 nav_order: 8
 ---
-# Exploop SDK Development Guide
+# OpenCTEM SDK Development Guide
 
 This guide shows how to use the **sdk** to build custom scanners, collectors, and agents.
 
@@ -12,12 +12,12 @@ This guide shows how to use the **sdk** to build custom scanners, collectors, an
 
 ## Overview
 
-The `sdk` provides a complete toolkit for building security scanning and data collection tools that integrate with Rediver. Key features:
+The `sdk` provides a complete toolkit for building security scanning and data collection tools that integrate with OpenCTEM. Key features:
 
 - **Base implementations** - Extend `BaseScanner`, `BaseCollector`, `BaseAgent` for rapid development
 - **Preset scanners** - Ready-to-use configurations for popular tools
 - **Parser registry** - Built-in SARIF and JSON parsers with plugin support
-- **RIS types** - Complete type definitions for Rediver Ingest Schema
+- **CTIS types** - Complete type definitions for CTEM Ingest Schema
 - **Push/Pull modes** - Support for both agent-based and collector-based architectures
 - **Retry queue** - Automatic retry with disk persistence for offline resilience
 - **Shared packages** - Unified fingerprint and severity algorithms (shared with backend)
@@ -28,7 +28,7 @@ The `sdk` provides a complete toolkit for building security scanning and data co
 ## Installation
 
 ```bash
-go get github.com/exploopio/sdk
+go get github.com/openctemio/sdk
 ```
 
 ---
@@ -44,7 +44,7 @@ import (
     "context"
     "fmt"
 
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -111,7 +111,7 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -157,7 +157,7 @@ import (
     "fmt"
     "time"
 
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 // MyScanner extends BaseScanner with custom logic
@@ -256,7 +256,7 @@ if parser == nil {
 report, err := parser.Parse(ctx, scanResult.RawOutput, &core.ParseOptions{
     ToolName:  "semgrep",
     ToolType:  "sast",
-    AssetType: ris.AssetTypeRepository,
+    AssetType: ctis.AssetTypeRepository,
     AssetValue: "github.com/org/repo",
     Branch:    "main",
     CommitSHA: "abc123",
@@ -272,8 +272,8 @@ import (
     "context"
     "encoding/json"
 
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // MyToolParser parses output from my-tool
@@ -298,8 +298,8 @@ func (p *MyToolParser) CanParse(data []byte) bool {
     return hasMyToolMarker
 }
 
-// Parse converts to RIS format
-func (p *MyToolParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptions) (*ris.Report, error) {
+// Parse converts to CTIS format
+func (p *MyToolParser) Parse(ctx context.Context, data []byte, opts *core.ParseOptions) (*ctis.Report, error) {
     // Parse your tool's output format
     var toolOutput MyToolOutput
     if err := json.Unmarshal(data, &toolOutput); err != nil {
@@ -317,7 +317,7 @@ func (p *MyToolParser) Parse(ctx context.Context, data []byte, opts *core.ParseO
             mapSeverity(issue.Severity),
         )
         finding.Description = issue.Description
-        finding.Location = &ris.FindingLocation{
+        finding.Location = &ctis.FindingLocation{
             Path:      issue.File,
             StartLine: issue.Line,
         }
@@ -425,8 +425,8 @@ func (c *MyAPICollector) Collect(ctx context.Context, opts *core.CollectOptions)
         return nil, err
     }
 
-    // Convert to RIS
-    report := ris.NewReport()
+    // Convert to CTIS
+    report := ctis.NewReport()
     for _, vuln := range data.Vulnerabilities {
         report.Findings = append(report.Findings, convertVuln(vuln))
     }
@@ -434,7 +434,7 @@ func (c *MyAPICollector) Collect(ctx context.Context, opts *core.CollectOptions)
     return &core.CollectResult{
         SourceName: c.Name(),
         SourceType: c.Type(),
-        Reports:    []*ris.Report{report},
+        Reports:    []*ctis.Report{report},
         TotalItems: len(data.Vulnerabilities),
     }, nil
 }
@@ -458,8 +458,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -476,7 +476,7 @@ func main() {
 
     // Create API client for pushing results
     pusher := client.New(&client.Config{
-        BaseURL: "https://api.exploop.io",
+        BaseURL: "https://api.openctem.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -531,7 +531,7 @@ The SDK includes a ready-to-use CLI:
 go build -o agent ./cmd/agent
 
 # Run single scan
-./agent -tool semgrep -target /path/to/project -api-url https://api.exploop.io -api-key $API_KEY
+./agent -tool semgrep -target /path/to/project -api-url https://api.openctem.io -api-key $API_KEY
 
 # Run as daemon with config file
 ./agent -daemon -config config.yaml
@@ -550,7 +550,7 @@ agent:
   verbose: true
 
 server:
-  base_url: https://api.exploop.io
+  base_url: https://api.openctem.io
   api_key: ${API_KEY}
   timeout: 30s
 
@@ -576,53 +576,53 @@ targets:
 
 ---
 
-## RIS (Rediver Ingest Schema)
+## CTIS (CTEM Ingest Schema)
 
 ### Creating Reports Programmatically
 
 ```go
-import "github.com/exploopio/sdk/pkg/ris"
+import "github.com/openctemio/sdk/pkg/ctis"
 
 // Create new report
-report := ris.NewReport()
+report := ctis.NewReport()
 
 // Set tool info
-report.Tool = &ris.Tool{
+report.Tool = &ctis.Tool{
     Name:         "my-scanner",
     Version:      "1.0.0",
     Capabilities: []string{"vulnerability", "secret"},
 }
 
 // Add assets
-report.Assets = append(report.Assets, ris.Asset{
+report.Assets = append(report.Assets, ctis.Asset{
     ID:          "asset-1",
-    Type:        ris.AssetTypeRepository,
+    Type:        ctis.AssetTypeRepository,
     Value:       "github.com/org/repo",
     Name:        "My Repository",
-    Criticality: ris.CriticalityHigh,
+    Criticality: ctis.CriticalityHigh,
 })
 
 // Add findings
-report.Findings = append(report.Findings, ris.Finding{
+report.Findings = append(report.Findings, ctis.Finding{
     ID:          "finding-1",
-    Type:        ris.FindingTypeVulnerability,
+    Type:        ctis.FindingTypeVulnerability,
     Title:       "SQL Injection",
-    Severity:    ris.SeverityCritical,
+    Severity:    ctis.SeverityCritical,
     Confidence:  95,
     RuleID:      "CWE-89",
     AssetRef:    "asset-1",
-    Location: &ris.FindingLocation{
+    Location: &ctis.FindingLocation{
         Path:      "src/db/query.go",
         StartLine: 45,
         EndLine:   47,
         Snippet:   "query := \"SELECT * FROM users WHERE id = \" + userID",
     },
-    Vulnerability: &ris.VulnerabilityDetails{
+    Vulnerability: &ctis.VulnerabilityDetails{
         CWEID:      "CWE-89",
         CVSSScore:  9.8,
         CVSSVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
     },
-    Remediation: &ris.Remediation{
+    Remediation: &ctis.Remediation{
         Recommendation: "Use parameterized queries",
         Steps: []string{
             "Replace string concatenation with prepared statements",
@@ -632,15 +632,15 @@ report.Findings = append(report.Findings, ris.Finding{
 })
 ```
 
-### Converting SARIF to RIS
+### Converting SARIF to CTIS
 
 ```go
-import "github.com/exploopio/sdk/pkg/ris"
+import "github.com/openctemio/sdk/pkg/ctis"
 
 sarifData := []byte(`{"version": "2.1.0", ...}`)
 
-report, err := ris.FromSARIF(sarifData, &ris.ConvertOptions{
-    AssetType:  ris.AssetTypeRepository,
+report, err := ctis.FromSARIF(sarifData, &ctis.ConvertOptions{
+    AssetType:  ctis.AssetTypeRepository,
     AssetValue: "github.com/org/repo",
     Branch:     "main",
     CommitSHA:  "abc123",
@@ -652,32 +652,32 @@ report, err := ris.FromSARIF(sarifData, &ris.ConvertOptions{
 
 ```go
 // Asset Types
-ris.AssetTypeDomain         // "domain"
-ris.AssetTypeIPAddress      // "ip_address"
-ris.AssetTypeRepository     // "repository"
-ris.AssetTypeSmartContract  // "smart_contract"
+ctis.AssetTypeDomain         // "domain"
+ctis.AssetTypeIPAddress      // "ip_address"
+ctis.AssetTypeRepository     // "repository"
+ctis.AssetTypeSmartContract  // "smart_contract"
 // ... see types.go for full list
 
 // Finding Types
-ris.FindingTypeVulnerability    // "vulnerability"
-ris.FindingTypeSecret           // "secret"
-ris.FindingTypeMisconfiguration // "misconfiguration"
-ris.FindingTypeCompliance       // "compliance"
-ris.FindingTypeWeb3             // "web3"
+ctis.FindingTypeVulnerability    // "vulnerability"
+ctis.FindingTypeSecret           // "secret"
+ctis.FindingTypeMisconfiguration // "misconfiguration"
+ctis.FindingTypeCompliance       // "compliance"
+ctis.FindingTypeWeb3             // "web3"
 
 // Severity Levels
-ris.SeverityCritical // "critical"
-ris.SeverityHigh     // "high"
-ris.SeverityMedium   // "medium"
-ris.SeverityLow      // "low"
-ris.SeverityInfo     // "info"
+ctis.SeverityCritical // "critical"
+ctis.SeverityHigh     // "high"
+ctis.SeverityMedium   // "medium"
+ctis.SeverityLow      // "low"
+ctis.SeverityInfo     // "info"
 
 // Criticality Levels
-ris.CriticalityCritical // "critical"
-ris.CriticalityHigh     // "high"
-ris.CriticalityMedium   // "medium"
-ris.CriticalityLow      // "low"
-ris.CriticalityInfo     // "info"
+ctis.CriticalityCritical // "critical"
+ctis.CriticalityHigh     // "high"
+ctis.CriticalityMedium   // "medium"
+ctis.CriticalityLow      // "low"
+ctis.CriticalityInfo     // "info"
 ```
 
 ---
@@ -693,8 +693,8 @@ import (
     "context"
     "fmt"
 
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
@@ -712,7 +712,7 @@ func main() {
     parsers := core.NewParserRegistry()
     report, _ := parsers.Get("sarif").Parse(ctx, result.RawOutput, &core.ParseOptions{
         ToolType: "web3",
-        AssetType: ris.AssetTypeSmartContract,
+        AssetType: ctis.AssetTypeSmartContract,
         AssetValue: "0x1234567890abcdef1234567890abcdef12345678",
     })
 
@@ -728,14 +728,14 @@ func main() {
 
 ---
 
-## Pushing Results to Rediver
+## Pushing Results to OpenCTEM
 
 ```go
-import "github.com/exploopio/sdk/pkg/client"
+import "github.com/openctemio/sdk/pkg/client"
 
 // Create API client
 c := client.New(&client.Config{
-    BaseURL: "https://api.exploop.io",
+    BaseURL: "https://api.openctem.io",
     APIKey:  os.Getenv("API_KEY"),
     Timeout: 30 * time.Second,
     Verbose: true,
@@ -830,7 +830,7 @@ log.Printf("[%s] Scanning %s", scanner.Name(), target)
 
 ## Server-Controlled Agents
 
-Agents can be controlled remotely from the Rediver platform using the CommandPoller.
+Agents can be controlled remotely from the OpenCTEM platform using the CommandPoller.
 
 ### Command Poller Setup
 
@@ -844,8 +844,8 @@ import (
     "syscall"
     "time"
 
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -862,7 +862,7 @@ func main() {
 
     // Create API client (implements core.CommandClient)
     apiClient := client.New(&client.Config{
-        BaseURL:  "https://api.exploop.io",
+        BaseURL:  "https://api.openctem.io",
         APIKey:   os.Getenv("API_KEY"),
         SourceID: os.Getenv("SOURCE_ID"), // For tenant tracking
         Verbose:  true,
@@ -926,13 +926,13 @@ The Processor provides a complete scan-parse-push workflow.
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 // Create API client
 pusher := client.New(&client.Config{
-    BaseURL:  "https://api.exploop.io",
+    BaseURL:  "https://api.openctem.io",
     APIKey:   os.Getenv("API_KEY"),
     SourceID: "src_abc123",
 })
@@ -951,7 +951,7 @@ result, err := processor.Process(ctx, scanner, &core.ProcessOptions{
         ToolName: "semgrep",
         ToolType: "sast",
     },
-    Push:      true,  // Push to Rediver
+    Push:      true,  // Push to OpenCTEM
     SaveLocal: true,  // Also save locally
     OutputDir: "./reports",
 })
@@ -987,7 +987,7 @@ type Logger interface {
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
     "github.com/sirupsen/logrus"
 )
 
@@ -1046,7 +1046,7 @@ Validate configurations before use.
 ### Using the Validator
 
 ```go
-import "github.com/exploopio/sdk/pkg/core"
+import "github.com/openctemio/sdk/pkg/core"
 
 // Validate scanner config
 err := core.ValidateBaseScannerConfig(&core.BaseScannerConfig{
@@ -1095,7 +1095,7 @@ if err := v.Validate(); err != nil {
 
 ## Tenant Identification
 
-When pushing data to Rediver, tenant identification is done via API Key + Source ID.
+When pushing data to OpenCTEM, tenant identification is done via API Key + Source ID.
 
 ### How It Works
 
@@ -1105,7 +1105,7 @@ When pushing data to Rediver, tenant identification is done via API Key + Source
 ```go
 // Create client with Source ID
 client := client.New(&client.Config{
-    BaseURL:  "https://api.exploop.io",
+    BaseURL:  "https://api.openctem.io",
     APIKey:   "rs_src_xxxxxxxxxxxxxxxxxxxxxxxx", // Identifies tenant
     SourceID: "src_abc123def456",                // Identifies this scanner/agent
     Timeout:  30 * time.Second,
@@ -1116,19 +1116,19 @@ client := client.New(&client.Config{
 
 ```http
 POST /api/v1/ingest/findings HTTP/1.1
-Host: api.exploop.io
+Host: api.openctem.io
 Content-Type: application/json
 Authorization: Bearer rs_src_xxxxxxxxxxxxxxxxxxxxxxxx
-X-Rediver-Source-ID: src_abc123def456
+X-OpenCTEM-Source-ID: src_abc123def456
 User-Agent: sdk/1.0
 ```
 
 ### Registering a Source
 
-Sources should be registered via the Rediver API or UI before use:
+Sources should be registered via the OpenCTEM API or UI before use:
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/sources \
+curl -X POST https://api.openctem.io/api/v1/sources \
   -H "Authorization: Bearer $USER_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1155,7 +1155,7 @@ The SDK can auto-detect CI environments (GitHub Actions, GitLab CI) and provide 
 ### Auto-Detection
 
 ```go
-import "github.com/exploopio/sdk/pkg/gitenv"
+import "github.com/openctemio/sdk/pkg/gitenv"
 
 // Auto-detect CI environment
 ci := gitenv.Detect()
@@ -1226,8 +1226,8 @@ Automatically determine whether to scan all files or only changed files based on
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/gitenv"
-    "github.com/exploopio/sdk/pkg/strategy"
+    "github.com/openctemio/sdk/pkg/gitenv"
+    "github.com/openctemio/sdk/pkg/strategy"
 )
 
 // Detect CI environment
@@ -1306,7 +1306,7 @@ type ScanHandler interface {
 ### Console Handler (Local Development)
 
 ```go
-import "github.com/exploopio/sdk/pkg/handler"
+import "github.com/openctemio/sdk/pkg/handler"
 
 // Simple handler that prints to console
 h := handler.NewConsoleHandler(true) // verbose=true
@@ -1326,13 +1326,13 @@ h.OnCompleted()
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/handler"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/handler"
 )
 
 // Create API client
 pusher := client.New(&client.Config{
-    BaseURL: "https://api.exploop.io",
+    BaseURL: "https://api.openctem.io",
     APIKey:  os.Getenv("API_KEY"),
 })
 
@@ -1372,7 +1372,7 @@ The Remote Handler automatically creates inline comments on PRs/MRs for findings
 // **Rule:** `CWE-89`
 // **Remediation:** Use parameterized queries
 // ---
-// *Detected by Rediver Security Scanner*
+// *Detected by OpenCTEM Security Scanner*
 ```
 
 ### Custom Handler
@@ -1416,8 +1416,8 @@ The SDK includes native scanner implementations with full parsing support.
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/scanners"
-    "github.com/exploopio/sdk/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk/pkg/scanners"
+    "github.com/openctemio/sdk/pkg/scanners/semgrep"
 )
 
 // Create scanner with defaults
@@ -1439,7 +1439,7 @@ scanner := scanners.SemgrepWithConfig(scanners.SemgrepOptions{
 // Run scan
 result, _ := scanner.Scan(ctx, "/path/to/project", &core.ScanOptions{})
 
-// Parse to RIS
+// Parse to CTIS
 parser := &semgrep.Parser{}
 report, _ := parser.Parse(ctx, result.RawOutput, nil)
 
@@ -1461,8 +1461,8 @@ for _, f := range report.Findings {
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/scanners"
-    "github.com/exploopio/sdk/pkg/scanners/gitleaks"
+    "github.com/openctemio/sdk/pkg/scanners"
+    "github.com/openctemio/sdk/pkg/scanners/gitleaks"
 )
 
 // Create scanner with defaults
@@ -1487,7 +1487,7 @@ for _, s := range result.Secrets {
         s.SecretType, s.File, s.StartLine, s.MaskedValue)
 }
 
-// Or use generic scan for RIS parsing
+// Or use generic scan for CTIS parsing
 genericResult, _ := scanner.GenericScan(ctx, "/path/to/project", nil)
 parser := &gitleaks.Parser{}
 report, _ := parser.Parse(ctx, genericResult.RawOutput, nil)
@@ -1497,8 +1497,8 @@ report, _ := parser.Parse(ctx, genericResult.RawOutput, nil)
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/scanners"
-    "github.com/exploopio/sdk/pkg/scanners/trivy"
+    "github.com/openctemio/sdk/pkg/scanners"
+    "github.com/openctemio/sdk/pkg/scanners/trivy"
 )
 
 // Create scanner with defaults (filesystem mode, vulnerability scanning)
@@ -1526,7 +1526,7 @@ scanner := scanners.TrivyWithConfig(scanners.TrivyOptions{
 // Run scan (returns ScanResult with raw JSON)
 result, _ := scanner.Scan(ctx, "/path/to/project", &core.ScanOptions{})
 
-// Parse to RIS
+// Parse to CTIS
 parser := &trivy.Parser{Verbose: true}
 report, _ := parser.Parse(ctx, result.RawOutput, nil)
 
@@ -1615,7 +1615,7 @@ for _, vuln := range result.Vulnerabilities {
 ### Scanner Registry
 
 ```go
-import "github.com/exploopio/sdk/pkg/scanners"
+import "github.com/openctemio/sdk/pkg/scanners"
 
 // Create registry with all built-in scanners
 registry := scanners.NewRegistry()
@@ -1659,9 +1659,9 @@ import (
     "context"
     "fmt"
 
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/scanners/recon/subfinder"
-    "github.com/exploopio/sdk/pkg/scanners/recon/httpx"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/scanners/recon/subfinder"
+    "github.com/openctemio/sdk/pkg/scanners/recon/httpx"
 )
 
 func main() {
@@ -1738,8 +1738,8 @@ Enrichers add threat intelligence data to findings.
 ```go
 import (
     "context"
-    "github.com/exploopio/sdk/pkg/enrichers/epss"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/enrichers/epss"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
@@ -1749,9 +1749,9 @@ func main() {
     enricher := epss.NewEnricher()
 
     // Enrich a single finding
-    finding := ris.Finding{
-        Type: ris.FindingTypeVulnerability,
-        Vulnerability: &ris.VulnerabilityDetails{
+    finding := ctis.Finding{
+        Type: ctis.FindingTypeVulnerability,
+        Vulnerability: &ctis.VulnerabilityDetails{
             CVEID: "CVE-2023-44487",
         },
     }
@@ -1762,7 +1762,7 @@ func main() {
         enriched.Vulnerability.EPSSPercentile)
 
     // Batch enrichment
-    findings := []ris.Finding{finding1, finding2, finding3}
+    findings := []ctis.Finding{finding1, finding2, finding3}
     enrichedFindings, _ := enricher.EnrichBatch(ctx, findings)
 }
 ```
@@ -1772,7 +1772,7 @@ func main() {
 ```go
 import (
     "context"
-    "github.com/exploopio/sdk/pkg/enrichers/kev"
+    "github.com/openctemio/sdk/pkg/enrichers/kev"
 )
 
 func main() {
@@ -1818,7 +1818,7 @@ findings, _ = kevEnricher.EnrichBatch(ctx, findings)
 
 // Now findings have EPSS scores and KEV status
 for _, f := range findings {
-    if f.Type == ris.FindingTypeVulnerability && f.Vulnerability != nil {
+    if f.Type == ctis.FindingTypeVulnerability && f.Vulnerability != nil {
         fmt.Printf("%s: EPSS=%.4f, InKEV=%v\n",
             f.Vulnerability.CVEID,
             f.Vulnerability.EPSSScore,
@@ -1839,12 +1839,12 @@ import (
     "fmt"
     "os"
 
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/gitenv"
-    "github.com/exploopio/sdk/pkg/handler"
-    "github.com/exploopio/sdk/pkg/scanners"
-    "github.com/exploopio/sdk/pkg/scanners/semgrep"
-    "github.com/exploopio/sdk/pkg/strategy"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/gitenv"
+    "github.com/openctemio/sdk/pkg/handler"
+    "github.com/openctemio/sdk/pkg/scanners"
+    "github.com/openctemio/sdk/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk/pkg/strategy"
 )
 
 func main() {
@@ -1867,7 +1867,7 @@ func main() {
 
     // 3. Initialize handler
     pusher := client.New(&client.Config{
-        BaseURL: "https://api.exploop.io",
+        BaseURL: "https://api.openctem.io",
         APIKey:  os.Getenv("API_KEY"),
     })
     h := handler.NewRemoteHandler(&handler.RemoteHandlerConfig{
@@ -1923,16 +1923,16 @@ The SDK includes a built-in retry queue for handling failed uploads. This ensure
 
 ```go
 import (
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/retry"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/retry"
 )
 
 // Create client with retry enabled
 c := client.New(&client.Config{
-    BaseURL:       "https://api.exploop.io",
+    BaseURL:       "https://api.openctem.io",
     APIKey:        os.Getenv("API_KEY"),
     RetryEnabled:  true,                        // Enable retry queue
-    RetryQueueDir: "/var/lib/exploop/queue",    // Queue storage path
+    RetryQueueDir: "/var/lib/openctem/queue",    // Queue storage path
 })
 
 // Push findings - automatically queued on failure
@@ -1949,11 +1949,11 @@ defer c.Close()
 ### Manual Queue Management
 
 ```go
-import "github.com/exploopio/sdk/pkg/retry"
+import "github.com/openctemio/sdk/pkg/retry"
 
 // Create queue directly
 queue, _ := retry.NewFileQueue(&retry.FileQueueConfig{
-    StoragePath:   "/var/lib/exploop/queue",
+    StoragePath:   "/var/lib/openctem/queue",
     MaxItems:      10000,
     MaxItemAge:    7 * 24 * time.Hour, // 7 days
     FlushInterval: 5 * time.Second,
@@ -2012,7 +2012,7 @@ The SDK uses fingerprints to deduplicate findings. Both SDK and backend use the 
 ### Shared Fingerprint Package
 
 ```go
-import "github.com/exploopio/sdk/pkg/shared/fingerprint"
+import "github.com/openctemio/sdk/pkg/shared/fingerprint"
 
 // Generate fingerprint based on finding type
 fp := fingerprint.Generate(fingerprint.Input{
@@ -2088,11 +2088,11 @@ The SDK includes a metrics package for collecting and exposing application metri
 ### Basic Usage
 
 ```go
-import "github.com/exploopio/sdk/pkg/metrics"
+import "github.com/openctemio/sdk/pkg/metrics"
 
 // Create Prometheus collector with default metrics
 collector := metrics.NewPrometheusCollector(&metrics.PrometheusConfig{
-    Namespace:              .exploopio",
+    Namespace:              .openctemio",
     RegisterDefaultMetrics: true,
 })
 
@@ -2100,16 +2100,16 @@ collector := metrics.NewPrometheusCollector(&metrics.PrometheusConfig{
 metrics.SetDefaultCollector(collector)
 
 // Use metrics
-metrics.GetDefaultCollector().CounterInc(.exploopio_scanner_scans_total", "scanner", "semgrep", "status", "success")
-metrics.GetDefaultCollector().HistogramObserve(.exploopio_scanner_scan_duration_seconds", 45.5, "scanner", "semgrep")
-metrics.GetDefaultCollector().GaugeSet(.exploopio_agent_active_jobs", 3)
+metrics.GetDefaultCollector().CounterInc(.openctemio_scanner_scans_total", "scanner", "semgrep", "status", "success")
+metrics.GetDefaultCollector().HistogramObserve(.openctemio_scanner_scan_duration_seconds", 45.5, "scanner", "semgrep")
+metrics.GetDefaultCollector().GaugeSet(.openctemio_agent_active_jobs", 3)
 ```
 
 ### Timer Helper
 
 ```go
 // Measure operation duration
-timer := metrics.NewTimer(collector, .exploopio_http_request_duration_seconds", "method", "GET", "host", "api.exploopio.com")
+timer := metrics.NewTimer(collector, .openctemio_http_request_duration_seconds", "method", "GET", "host", "api.openctemio.com")
 // ... do operation ...
 duration := timer.ObserveDuration() // Records to histogram and returns duration
 ```
@@ -2128,13 +2128,13 @@ http.ListenAndServe(":8080", nil)
 
 | Metric | Type | Description |
 |--------|------|-------------|
-| .exploopio_scanner_scans_total` | Counter | Total scans executed |
-| .exploopio_scanner_scan_duration_seconds` | Histogram | Scan duration |
-| .exploopio_scanner_findings_total` | Counter | Total findings discovered |
-| .exploopio_agent_jobs_total` | Counter | Total jobs processed |
-| .exploopio_agent_active_jobs` | Gauge | Currently executing jobs |
-| .exploopio_enricher_cache_hits_total` | Counter | Cache hits |
-| .exploopio_http_requests_total` | Counter | HTTP requests made |
+| .openctemio_scanner_scans_total` | Counter | Total scans executed |
+| .openctemio_scanner_scan_duration_seconds` | Histogram | Scan duration |
+| .openctemio_scanner_findings_total` | Counter | Total findings discovered |
+| .openctemio_agent_jobs_total` | Counter | Total jobs processed |
+| .openctemio_agent_active_jobs` | Gauge | Currently executing jobs |
+| .openctemio_enricher_cache_hits_total` | Counter | Cache hits |
+| .openctemio_http_requests_total` | Counter | HTTP requests made |
 
 ### In-Memory Collector (Testing)
 
@@ -2156,7 +2156,7 @@ The SDK provides a credential management system for secure storage and retrieval
 ### Store Interface
 
 ```go
-import "github.com/exploopio/sdk/pkg/credentials"
+import "github.com/openctemio/sdk/pkg/credentials"
 
 // Get credential from default store (environment variables)
 cred, err := credentials.Get(ctx, "github.token")
@@ -2172,10 +2172,10 @@ value, err := credentials.GetValue(ctx, "api.key")
 ### Environment Store (Default)
 
 ```go
-// Default store reads from environment variables with REDIVERIO_ prefix
-// REDIVERIO_GITHUB_TOKEN -> key "github.token"
+// Default store reads from environment variables with OPENCTEMIO_ prefix
+// OPENCTEMIO_GITHUB_TOKEN -> key "github.token"
 
-os.Setenv("REDIVERIO_GITHUB_TOKEN", "ghp_xxx")
+os.Setenv("OPENCTEMIO_GITHUB_TOKEN", "ghp_xxx")
 cred, _ := credentials.Get(ctx, "github.token")
 ```
 
@@ -2216,7 +2216,7 @@ store.Set(ctx, "my.secret", &credentials.Credential{
 
 ```go
 // Check multiple stores in order
-env := credentials.NewEnvStore("REDIVERIO_")
+env := credentials.NewEnvStore("OPENCTEMIO_")
 file, _ := credentials.NewFileStore(".secrets.json")
 chain := credentials.NewChainedStore(env, file) // env first, then file
 
@@ -2242,7 +2242,7 @@ The SDK includes Kubernetes-compatible health check endpoints for liveness and r
 ### Basic Setup
 
 ```go
-import "github.com/exploopio/sdk/pkg/health"
+import "github.com/openctemio/sdk/pkg/health"
 
 // Create health handler with version info
 h := health.NewHandler(
@@ -2302,7 +2302,7 @@ health.SetReady(false)
 ```go
 // HTTP endpoint check
 h.Register("api", &health.HTTPCheck{
-    URL:     "https://api.exploop.io/health",
+    URL:     "https://api.openctem.io/health",
     Timeout: 5 * time.Second,
 })
 
@@ -2355,7 +2355,7 @@ The SDK provides unified severity mapping across different scanner formats.
 ### Shared Severity Package
 
 ```go
-import "github.com/exploopio/sdk/pkg/shared/severity"
+import "github.com/openctemio/sdk/pkg/shared/severity"
 
 // Parse severity from various formats
 level := severity.FromString("HIGH")      // From Trivy
@@ -2414,20 +2414,20 @@ The SDK provides Docker images for easy deployment. See the [Docker Deployment G
 
 ```bash
 # Run scan with Docker
-docker run --rm -v $(pwd):/scan ghcr.io/exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan ghcr.io/openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy -target /scan -verbose
 
 # Check tools
-docker run --rm ghcr.io/exploopio/agent:latest -check-tools
+docker run --rm ghcr.io/openctemio/agent:latest -check-tools
 ```
 
 ### Available Images
 
 | Image | Description |
 |-------|-------------|
-| `ghcr.io/exploopio/agent:latest` | Full image with all tools |
-| `ghcr.io/exploopio/agent:slim` | Minimal (tools mounted) |
-| `ghcr.io/exploopio/agent:ci` | CI/CD optimized |
+| `ghcr.io/openctemio/agent:latest` | Full image with all tools |
+| `ghcr.io/openctemio/agent:slim` | Minimal (tools mounted) |
+| `ghcr.io/openctemio/agent:ci` | CI/CD optimized |
 
 ---
 
@@ -2440,7 +2440,7 @@ The SDK includes components for managing agent resources efficiently when runnin
 Prevent disk bloat by automatically cleaning up uploaded chunk data:
 
 ```go
-import "github.com/exploopio/sdk/pkg/chunk"
+import "github.com/openctemio/sdk/pkg/chunk"
 
 cfg := &chunk.Config{
     AutoCleanupOnUpload:     true,   // Delete data after upload
@@ -2459,7 +2459,7 @@ defer manager.Close()
 Separate scan and upload processes for non-blocking operations:
 
 ```go
-import "github.com/exploopio/sdk/pkg/pipeline"
+import "github.com/openctemio/sdk/pkg/pipeline"
 
 p := pipeline.NewPipeline(&pipeline.PipelineConfig{
     QueueSize:     1000,            // Max pending uploads
@@ -2487,7 +2487,7 @@ stats := p.GetStats()
 Monitor CPU/memory and throttle jobs when resources are constrained:
 
 ```go
-import "github.com/exploopio/sdk/pkg/resource"
+import "github.com/openctemio/sdk/pkg/resource"
 
 controller := resource.NewController(&resource.ControllerConfig{
     CPUThreshold:      85.0,              // Pause above 85% CPU
@@ -2515,12 +2515,12 @@ if controller.AcquireSlot(ctx) {
 Comprehensive structured logging for debugging and compliance:
 
 ```go
-import "github.com/exploopio/sdk/pkg/audit"
+import "github.com/openctemio/sdk/pkg/audit"
 
 logger, _ := audit.NewLogger(&audit.LoggerConfig{
     AgentID:  "agent-001",
     TenantID: "tenant-123",
-    LogFile:  "~/.exploop/audit.log",
+    LogFile:  "~/.openctem/audit.log",
     Verbose:  true,
 })
 
@@ -2545,7 +2545,7 @@ See [Agent Resource Management Architecture](../architecture/agent-resource-mana
 - [SDK & API Integration Architecture](../architecture/sdk-api-integration.md) - How SDK integrates with API
 - [Server-Agent Command Architecture](../architecture/server-agent-command.md) - Remote agent control
 - [Agent Resource Management](../architecture/agent-resource-management.md) - Auto-cleanup, pipeline, throttling
-- [Building Ingestion Tools](./building-ingestion-tools.md) - RIS schema reference
+- [Building Ingestion Tools](./building-ingestion-tools.md) - CTIS schema reference
 - [API Reference](../backend/api-reference.md) - Full API documentation
 - [Authentication Guide](./authentication.md) - API key management
 
@@ -2555,7 +2555,7 @@ See [Agent Resource Management Architecture](../architecture/agent-resource-mana
 
 Full working examples are available in the SDK repository:
 
-- [`examples/custom-scanner`](https://github.com/exploopio/sdk/tree/main/examples/custom-scanner) - Custom scanner implementation
-- [`examples/semgrep-test`](https://github.com/exploopio/sdk/tree/main/examples/semgrep-test) - Semgrep scanner integration
-- [`examples/integration-test`](https://github.com/exploopio/sdk/tree/main/examples/integration-test) - API client integration
-- [`cmd/agent`](https://github.com/exploopio/sdk/tree/main/cmd/agent) - CLI agent
+- [`examples/custom-scanner`](https://github.com/openctemio/sdk/tree/main/examples/custom-scanner) - Custom scanner implementation
+- [`examples/semgrep-test`](https://github.com/openctemio/sdk/tree/main/examples/semgrep-test) - Semgrep scanner integration
+- [`examples/integration-test`](https://github.com/openctemio/sdk/tree/main/examples/integration-test) - API client integration
+- [`cmd/agent`](https://github.com/openctemio/sdk/tree/main/cmd/agent) - CLI agent

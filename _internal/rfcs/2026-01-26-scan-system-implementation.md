@@ -9,7 +9,7 @@
 
 ## Summary
 
-Rediver already has good backend architecture. Implementation completed:
+OpenCTEM already has good backend architecture. Implementation completed:
 1. ✅ Completed orchestration (scheduler, cron)
 2. ✅ Added Quick Scan and Stats API
 3. ✅ Backend support for Visual Workflow Builder

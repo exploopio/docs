@@ -555,85 +555,6 @@ For tenants using Bring Your Own Key (BYOK) mode:
 }
 ```
 
-### Self-Hosted Agent Configuration
-
-For enterprise tenants using self-hosted AI Agent mode. See [Self-Hosted AI Agent](ai-agent.md) for full deployment guide.
-
-```json
-{
-    "ai": {
-        "mode": "agent",
-        "agent_endpoint": "https://ai-agent.internal.corp.com",
-        "agent_api_key": "enc:v1:...",
-        "agent_model": "llama2:70b",
-        "agent_timeout": 60,
-        "agent_health_check": true,
-        "fallback_enabled": false
-    }
-}
-```
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `mode` | string | Yes | Must be `"agent"` for self-hosted mode |
-| `agent_endpoint` | string | Yes | HTTPS URL to self-hosted agent |
-| `agent_api_key` | string | Yes | Encrypted API key for agent authentication |
-| `agent_model` | string | No | Model name (informational only) |
-| `agent_timeout` | int | No | Request timeout in seconds (default: 60) |
-| `agent_health_check` | bool | No | Enable periodic health monitoring |
-| `fallback_enabled` | bool | No | Fall back to platform if agent unavailable |
-
-#### Agent Connection Testing
-
-Test agent connectivity before enabling:
-
-```http
-POST /api/v1/settings/ai-triage/test-agent
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-    "endpoint": "https://ai-agent.internal.corp.com",
-    "api_key": "your-agent-api-key",
-    "model": "llama2:70b"
-}
-```
-
-**Response:**
-```json
-{
-    "success": true,
-    "agent_version": "1.0.0",
-    "model": "llama2:70b",
-    "capabilities": ["json_mode"],
-    "latency_ms": 150,
-    "backend": "ollama"
-}
-```
-
-#### Agent Health Monitoring
-
-When `agent_health_check` is enabled, the platform periodically calls:
-
-```
-GET https://ai-agent.internal.corp.com/v1/health
-```
-
-Health status is displayed in the tenant settings UI:
-- 🟢 **Healthy**: Agent and LLM backend operational
-- 🟡 **Degraded**: Agent running but LLM backend issues
-- 🔴 **Unhealthy**: Agent not responding
-
-#### Fallback Behavior
-
-When `fallback_enabled: true`:
-1. Platform attempts to use self-hosted agent
-2. If agent returns error or times out, automatically falls back to platform AI
-3. Fallback events are logged in audit log
-4. UI shows warning when fallback is active
-
-**Note:** Fallback sends finding data to external LLM providers. Disable for strict data sovereignty requirements.
-
 ---
 
 ## Data Model
@@ -1025,89 +946,6 @@ Trigger(ai_triage_failed)
 
 ---
 
-## Plan & Pricing
-
-AI Triage features are gated by subscription plan. Each plan includes different capabilities and token limits.
-
-### Feature Availability by Plan
-
-| Feature | Free | Starter | Pro | Business | Enterprise |
-|---------|:----:|:-------:|:---:|:--------:|:----------:|
-| Manual AI Triage | - | ✓ | ✓ | ✓ | ✓ |
-| Bulk AI Triage | - | - | ✓ | ✓ | ✓ |
-| Auto-Triage | - | - | ✓ | ✓ | ✓ |
-| Workflow Integration | - | - | ✓ | ✓ | ✓ |
-| BYOK (own API key) | - | - | ✓ | ✓ | ✓ |
-| Self-hosted Agent | - | - | - | - | ✓ |
-| Priority Queue | - | - | - | ✓ | ✓ |
-| Custom Prompts | - | - | - | - | ✓ |
-
-### Token Limits by Plan
-
-| Plan | Monthly Token Limit | Overage |
-|------|---------------------|---------|
-| **Free** | 0 (AI disabled) | N/A |
-| **Starter** | 10,000 tokens | Not available |
-| **Pro** | 100,000 tokens | $0.01 per 1K tokens |
-| **Business** | 500,000 tokens | $0.008 per 1K tokens |
-| **Enterprise** | Unlimited | Included |
-
-**Note:** Token limits apply to Platform mode only. BYOK and Agent modes use your own infrastructure/API keys.
-
-### AI Modes by Plan
-
-| Plan | Platform | BYOK | Agent |
-|------|:--------:|:----:|:-----:|
-| **Free** | - | - | - |
-| **Starter** | ✓ | - | - |
-| **Pro** | ✓ | ✓ | - |
-| **Business** | ✓ | ✓ | - |
-| **Enterprise** | ✓ | ✓ | ✓ |
-
-### Module IDs (for licensing)
-
-AI Triage uses hierarchical module IDs for granular feature gating:
-
-| Module ID | Description | Plans |
-|-----------|-------------|-------|
-| `ai_triage` | Base AI Triage access | Starter+ |
-| `ai_triage.bulk` | Bulk triage operations | Pro+ |
-| `ai_triage.auto` | Auto-triage on finding creation | Pro+ |
-| `ai_triage.workflow` | Workflow triggers and actions | Pro+ |
-| `ai_triage.byok` | Bring Your Own Key mode | Pro+ |
-| `ai_triage.agent` | Self-hosted Agent mode | Enterprise |
-| `ai_triage.custom_prompts` | Custom prompt templates | Enterprise |
-
-### Checking Feature Access
-
-```go
-// Check if tenant has AI Triage access
-if !plan.HasModule("ai_triage") {
-    return ErrAITriageNotAvailable
-}
-
-// Check specific feature
-if !plan.HasModule("ai_triage.bulk") {
-    return ErrBulkTriageNotAvailable
-}
-
-// Get token limit
-tokenLimit := plan.GetModuleLimit("ai_triage", "monthly_token_limit")
-```
-
-### Upgrade Prompts
-
-When a user tries to access a feature not in their plan:
-
-| Feature Attempted | Error Message |
-|-------------------|---------------|
-| AI Triage (Free) | "Upgrade to Starter to use AI-powered vulnerability analysis" |
-| Bulk Triage (Starter) | "Upgrade to Pro to analyze multiple findings at once" |
-| BYOK (Starter) | "Upgrade to Pro to use your own API keys" |
-| Agent Mode (Pro/Business) | "Contact sales for Enterprise features including self-hosted AI" |
-
----
-
 ## Stuck Job Recovery
 
 AI Triage includes an automatic recovery system for stuck jobs. Jobs can become stuck due to:
@@ -1283,7 +1121,7 @@ useEffect(() => {
 
 1. **Configure AI Provider (Required)**
 
-   For Platform mode (Exploop-managed AI):
+   For Platform mode (OpenCTEM-managed AI):
    ```bash
    # .env
    AI_TRIAGE_ENABLED=true
@@ -1331,7 +1169,7 @@ useEffect(() => {
 For WebSocket to work through nginx, add this configuration:
 
 ```nginx
-# /etc/nginx/sites-available/exploop
+# /etc/nginx/sites-available/openctem
 
 upstream api_backend {
     server localhost:8080;
@@ -1339,7 +1177,7 @@ upstream api_backend {
 
 server {
     listen 80;
-    server_name exploop.local;
+    server_name openctem.local;
 
     # Regular API requests
     location /api/ {
@@ -1383,7 +1221,7 @@ server {
 # docker-compose.yml
 services:
   api:
-    image: exploop/api:latest
+    image: openctem/api:latest
     environment:
       # AI Triage Configuration
       - AI_TRIAGE_ENABLED=true
@@ -1396,7 +1234,7 @@ services:
       - "8080:8080"
 
   ui:
-    image: exploop/ui:latest
+    image: openctem/ui:latest
     environment:
       - BACKEND_API_URL=http://api:8080
       - NEXT_PUBLIC_SSE_BASE_URL=  # Empty for same-origin WebSocket
@@ -1469,4 +1307,3 @@ websocat "ws://localhost:8080/api/v1/ws?token=$TOKEN"
 - [Finding Lifecycle](finding-lifecycle.md) - How findings are managed
 - [Workflow Automation](workflows.md) - Automate actions based on AI results
 - [WebSocket Architecture](../architecture/overview.md#websocket) - Real-time communication
-- [Self-Hosted AI Agent](ai-agent.md) - Enterprise self-hosted AI deployment

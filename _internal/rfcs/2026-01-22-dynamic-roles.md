@@ -802,7 +802,7 @@ import (
     "database/sql"
 
     "github.com/lib/pq"
-    "exploopio/api/internal/domain/role"
+    "openctemio/api/internal/domain/role"
 )
 
 type roleRepository struct {
@@ -991,8 +991,8 @@ package app
 import (
     "context"
 
-    "exploopio/api/internal/domain/role"
-    "exploopio/api/internal/domain/permission"
+    "openctemio/api/internal/domain/role"
+    "openctemio/api/internal/domain/permission"
 )
 
 type RoleService struct {
@@ -1199,8 +1199,8 @@ package accesscontrol
 import (
     "context"
 
-    "exploopio/api/internal/domain/role"
-    "exploopio/api/internal/domain/group"
+    "openctemio/api/internal/domain/role"
+    "openctemio/api/internal/domain/group"
 )
 
 type AccessScope struct {
@@ -1379,7 +1379,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "exploopio/api/internal/app"
+    "openctemio/api/internal/app"
 )
 
 type RoleHandler struct {
@@ -1560,7 +1560,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "exploopio/api/internal/domain/permission"
+    "openctemio/api/internal/domain/permission"
 )
 
 type PermissionHandler struct {
@@ -1653,7 +1653,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "exploopio/api/internal/app"
+    "openctemio/api/internal/app"
 )
 
 type UserRoleHandler struct {
@@ -1851,7 +1851,7 @@ package middleware
 
 import (
     "github.com/gin-gonic/gin"
-    "exploopio/api/internal/domain/accesscontrol"
+    "openctemio/api/internal/domain/accesscontrol"
 )
 
 func PermissionMiddleware(resolver *accesscontrol.AccessResolver) gin.HandlerFunc {

@@ -392,8 +392,8 @@ import (
     "fmt"
     "time"
 
-    "github.com/exploopio/api/internal/infra/redis"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/infra/redis"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // PermissionVersionService manages permission version tracking in Redis.
@@ -494,9 +494,9 @@ import (
     "fmt"
     "time"
 
-    "github.com/exploopio/api/internal/domain/role"
-    "github.com/exploopio/api/internal/infra/redis"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/domain/role"
+    "github.com/openctemio/api/internal/infra/redis"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // PermissionCacheService provides cached access to user permissions.
@@ -707,10 +707,10 @@ import (
     "slices"
     "strconv"
 
-    "github.com/exploopio/api/internal/app"
-    "github.com/exploopio/api/internal/domain/permission"
-    "github.com/exploopio/api/pkg/apierror"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/app"
+    "github.com/openctemio/api/internal/domain/permission"
+    "github.com/openctemio/api/pkg/apierror"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // PermissionMiddleware handles permission checking using Redis cache.
@@ -940,10 +940,10 @@ import (
     "strconv"
     "strings"
 
-    "github.com/exploopio/api/internal/app"
-    "github.com/exploopio/api/internal/infra/http/middleware"
-    "github.com/exploopio/api/pkg/apierror"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/app"
+    "github.com/openctemio/api/internal/infra/http/middleware"
+    "github.com/openctemio/api/pkg/apierror"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // PermissionHandler handles permission-related HTTP requests.

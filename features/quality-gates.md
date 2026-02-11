@@ -273,11 +273,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Rediver Scan
+      - name: Run OpenCTEM Scan
         id: scan
         run: |
-          RESULT=$(curl -s -X POST https://api.exploop.io/api/v1/scans \
-            -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
+          RESULT=$(curl -s -X POST https://api.openctem.io/api/v1/scans \
+            -H "Authorization: Bearer ${{ secrets.OPENCTEM_TOKEN }}" \
             -H "Content-Type: application/json" \
             -d '{
               "asset_id": "${{ vars.ASSET_ID }}",
@@ -291,8 +291,8 @@ jobs:
 
           # Wait for scan completion and check quality gate
           while true; do
-            STATUS=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
-              -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
+            STATUS=$(curl -s "https://api.openctem.io/api/v1/scans/$SCAN_ID" \
+              -H "Authorization: Bearer ${{ secrets.OPENCTEM_TOKEN }}" \
               | jq -r '.status')
 
             if [ "$STATUS" = "completed" ] || [ "$STATUS" = "failed" ]; then
@@ -302,8 +302,8 @@ jobs:
           done
 
           # Check quality gate result
-          PASSED=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
-            -H "Authorization: Bearer ${{ secrets.REDIVER_TOKEN }}" \
+          PASSED=$(curl -s "https://api.openctem.io/api/v1/scans/$SCAN_ID" \
+            -H "Authorization: Bearer ${{ secrets.OPENCTEM_TOKEN }}" \
             | jq -r '.quality_gate_result.passed')
 
           if [ "$PASSED" != "true" ]; then
@@ -320,8 +320,8 @@ security-scan:
   stage: test
   script:
     - |
-      RESULT=$(curl -s -X POST https://api.exploop.io/api/v1/scans \
-        -H "Authorization: Bearer $REDIVER_TOKEN" \
+      RESULT=$(curl -s -X POST https://api.openctem.io/api/v1/scans \
+        -H "Authorization: Bearer $OPENCTEM_TOKEN" \
         -H "Content-Type: application/json" \
         -d "{
           \"asset_id\": \"$ASSET_ID\",
@@ -334,8 +334,8 @@ security-scan:
 
       # Poll for completion
       while true; do
-        SCAN=$(curl -s "https://api.exploop.io/api/v1/scans/$SCAN_ID" \
-          -H "Authorization: Bearer $REDIVER_TOKEN")
+        SCAN=$(curl -s "https://api.openctem.io/api/v1/scans/$SCAN_ID" \
+          -H "Authorization: Bearer $OPENCTEM_TOKEN")
         STATUS=$(echo $SCAN | jq -r '.status')
 
         if [ "$STATUS" = "completed" ]; then
@@ -355,11 +355,11 @@ security-scan:
       done
 ```
 
-### Rediver Agent (CLI)
+### OpenCTEM Agent (CLI)
 
 ```bash
 # Run scan with quality gate check
-exploop scan --profile production-ci \
+openctem scan --profile production-ci \
   --target . \
   --branch main \
   --commit $(git rev-parse HEAD) \

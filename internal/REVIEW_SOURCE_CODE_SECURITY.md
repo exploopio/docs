@@ -59,7 +59,7 @@ Implementation Plan cho Source Code Security feature được đánh giá **SOLI
 
 **Concerns:**
 1. ⚠️ Large main.go file (1600+ lines) - should refactor
-2. ⚠️ SARIF output duplicates RIS format - potential maintenance burden
+2. ⚠️ SARIF output duplicates CTIS format - potential maintenance burden
 3. ⚠️ No explicit tenant isolation check in repository layer
 
 ### 1.4 Technical Debt Introduced
@@ -207,9 +207,9 @@ h.logger.Info("activities accessed",
 
 #### Issue #8: CI Template Exposes API Key Pattern
 
-**Location**: `ci/gitlab/exploop-security.yml`
+**Location**: `ci/gitlab/openctem-security.yml`
 
-**Problem**: Template shows where API keys are stored (`$REDIVER_API_TOKEN`), making it easier for attackers to target.
+**Problem**: Template shows where API keys are stored (`$OPENCTEM_API_TOKEN`), making it easier for attackers to target.
 
 **Mitigation**: Use masked variables and document security best practices.
 

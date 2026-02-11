@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This RFC proposes a **chunked upload mechanism** for handling large scan outputs in the Exploop SDK. When security tools generate thousands of findings, uploading everything in a single request causes:
+This RFC proposes a **chunked upload mechanism** for handling large scan outputs in the OpenCTEM SDK. When security tools generate thousands of findings, uploading everything in a single request causes:
 - Server congestion and timeouts
 - Memory pressure on both client and server
 - Network instability in constrained environments
@@ -55,7 +55,7 @@ Semgrep scan on large monorepo:
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │  ┌──────────────┐                                               │
-│  │   Scanner    │  Generates large RIS Report                   │
+│  │   Scanner    │  Generates large CTIS Report                   │
 │  │  (Semgrep)   │  (15,000 findings, 500 assets)                │
 │  └──────┬───────┘                                               │
 │         │                                                        │
@@ -86,7 +86,7 @@ Semgrep scan on large monorepo:
 │         │                                                        │
 │         ▼                                                        │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │                   Rediver API Server                      │   │
+│  │                   OpenCTEM API Server                      │   │
 │  │                                                           │   │
 │  │  POST /api/v1/agent/ingest/chunk                         │   │
 │  │  {                                                        │   │
@@ -134,7 +134,7 @@ type Config struct {
     RetryBackoffMs         int           // Initial backoff between retries (default: 1000ms)
 
     // Storage configuration
-    DatabasePath           string        // SQLite database path (default: ~/.exploop/chunks.db)
+    DatabasePath           string        // SQLite database path (default: ~/.openctem/chunks.db)
     RetentionHours         int           // How long to keep completed chunks (default: 24h)
     MaxStorageMB           int           // Max storage for chunk DB (default: 500MB)
 
@@ -168,7 +168,7 @@ func DefaultConfig() *Config {
 ### 2. SQLite Database Schema
 
 ```sql
--- Database: ~/.exploop/chunks.db
+-- Database: ~/.openctem/chunks.db
 
 -- Reports table: tracks overall report status
 CREATE TABLE IF NOT EXISTS reports (
@@ -217,7 +217,7 @@ package chunk
 
 import (
     "time"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // Report represents a chunked report in the database.
@@ -254,10 +254,10 @@ type ChunkData struct {
     ReportID   string       `json:"report_id"`
     ChunkIndex int          `json:"chunk_index"`
     TotalChunks int         `json:"total_chunks"`
-    Tool       *ris.Tool    `json:"tool,omitempty"`
-    Metadata   *ris.Metadata `json:"metadata,omitempty"`
-    Assets     []ris.Asset  `json:"assets,omitempty"`
-    Findings   []ris.Finding `json:"findings,omitempty"`
+    Tool       *ctis.Tool    `json:"tool,omitempty"`
+    Metadata   *ctis.Metadata `json:"metadata,omitempty"`
+    Assets     []ctis.Asset  `json:"assets,omitempty"`
+    Findings   []ctis.Finding `json:"findings,omitempty"`
     IsFinal    bool         `json:"is_final"`
 }
 
@@ -306,7 +306,7 @@ type Progress struct {
 package chunk
 
 import (
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // Splitter handles report chunking logic.
@@ -320,7 +320,7 @@ func NewSplitter(cfg *Config) *Splitter {
 }
 
 // NeedsChunking determines if a report should be chunked.
-func (s *Splitter) NeedsChunking(report *ris.Report) bool {
+func (s *Splitter) NeedsChunking(report *ctis.Report) bool {
     return len(report.Findings) >= s.cfg.MinFindingsForChunking ||
            len(report.Assets) >= s.cfg.MinAssetsForChunking
 }
@@ -331,7 +331,7 @@ func (s *Splitter) NeedsChunking(report *ris.Report) bool {
 // 2. Create chunks that respect both findings and assets limits
 // 3. First chunk always includes tool and metadata
 // 4. Each chunk is self-contained with its assets and findings
-func (s *Splitter) Split(report *ris.Report) ([]*ChunkData, error) {
+func (s *Splitter) Split(report *ctis.Report) ([]*ChunkData, error) {
     if !s.NeedsChunking(report) {
         // Single chunk - just wrap the whole report
         return []*ChunkData{{
@@ -349,15 +349,15 @@ func (s *Splitter) Split(report *ris.Report) ([]*ChunkData, error) {
     chunks := make([]*ChunkData, 0)
 
     // Build asset reference map: assetRef -> asset
-    assetMap := make(map[string]*ris.Asset)
+    assetMap := make(map[string]*ctis.Asset)
     for i := range report.Assets {
         a := &report.Assets[i]
         assetMap[a.ID] = a
     }
 
     // Group findings by asset reference
-    findingsByAsset := make(map[string][]ris.Finding)
-    orphanFindings := make([]ris.Finding, 0) // Findings without asset_ref
+    findingsByAsset := make(map[string][]ctis.Finding)
+    orphanFindings := make([]ctis.Finding, 0) // Findings without asset_ref
 
     for _, f := range report.Findings {
         if f.AssetRef != "" {
@@ -369,8 +369,8 @@ func (s *Splitter) Split(report *ris.Report) ([]*ChunkData, error) {
 
     // Create chunks
     chunkIndex := 0
-    currentAssets := make([]ris.Asset, 0, s.cfg.MaxAssetsPerChunk)
-    currentFindings := make([]ris.Finding, 0, s.cfg.MaxFindingsPerChunk)
+    currentAssets := make([]ctis.Asset, 0, s.cfg.MaxAssetsPerChunk)
+    currentFindings := make([]ctis.Finding, 0, s.cfg.MaxFindingsPerChunk)
 
     flushChunk := func(isFinal bool) {
         if len(currentAssets) == 0 && len(currentFindings) == 0 {
@@ -394,8 +394,8 @@ func (s *Splitter) Split(report *ris.Report) ([]*ChunkData, error) {
         chunks = append(chunks, chunk)
         chunkIndex++
 
-        currentAssets = make([]ris.Asset, 0, s.cfg.MaxAssetsPerChunk)
-        currentFindings = make([]ris.Finding, 0, s.cfg.MaxFindingsPerChunk)
+        currentAssets = make([]ctis.Asset, 0, s.cfg.MaxAssetsPerChunk)
+        currentFindings = make([]ctis.Finding, 0, s.cfg.MaxFindingsPerChunk)
     }
 
     // Process findings grouped by asset
@@ -464,7 +464,7 @@ import (
     "sync"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
     _ "modernc.org/sqlite" // Pure Go SQLite driver
 )
 
@@ -513,7 +513,7 @@ func (m *Manager) SetUploader(uploader *Uploader) {
 
 // SubmitReport queues a report for chunked upload.
 // Returns immediately after storing chunks to SQLite.
-func (m *Manager) SubmitReport(ctx context.Context, report *ris.Report) (*Report, error) {
+func (m *Manager) SubmitReport(ctx context.Context, report *ctis.Report) (*Report, error) {
     // Split report into chunks
     chunks, err := m.splitter.Split(report)
     if err != nil {
@@ -644,7 +644,7 @@ import (
     "net/http"
 
     "github.com/gin-gonic/gin"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // ChunkRequest represents a chunk upload request.
@@ -685,7 +685,7 @@ func (h *Handler) HandleChunkIngest(c *gin.Context) {
     // Get tenant from context (set by auth middleware)
     tenantID := c.MustGet("tenant_id").(shared.ID)
 
-    // Convert chunk data to RIS format
+    // Convert chunk data to CTIS format
     report := h.convertChunkToReport(&req)
 
     // Process using existing service (reuses all validation/processing logic)
@@ -718,7 +718,7 @@ func (h *Handler) HandleChunkIngest(c *gin.Context) {
 ```yaml
 # agent.yaml
 
-exploop:
+openctem:
   base_url: ${API_URL}
   api_key: ${API_KEY}
 
@@ -745,7 +745,7 @@ exploop:
     retry_backoff_ms: 1000
 
     # Storage
-    database_path: ~/.exploop/chunks.db
+    database_path: ~/.openctem/chunks.db
     retention_hours: 24
     max_storage_mb: 500
 
@@ -758,19 +758,19 @@ exploop:
 
 ```bash
 # Enable chunked upload
-export REDIVER_CHUNKED_UPLOAD_ENABLED=true
+export OPENCTEM_CHUNKED_UPLOAD_ENABLED=true
 
 # Chunk size
-export REDIVER_MAX_FINDINGS_PER_CHUNK=500
-export REDIVER_MAX_ASSETS_PER_CHUNK=100
+export OPENCTEM_MAX_FINDINGS_PER_CHUNK=500
+export OPENCTEM_MAX_ASSETS_PER_CHUNK=100
 
 # Upload behavior
-export REDIVER_CHUNK_UPLOAD_DELAY_MS=100
-export REDIVER_CHUNK_MAX_CONCURRENT=2
+export OPENCTEM_CHUNK_UPLOAD_DELAY_MS=100
+export OPENCTEM_CHUNK_MAX_CONCURRENT=2
 
 # Storage
-export REDIVER_CHUNK_DB_PATH=~/.exploop/chunks.db
-export REDIVER_CHUNK_RETENTION_HOURS=24
+export OPENCTEM_CHUNK_DB_PATH=~/.openctem/chunks.db
+export OPENCTEM_CHUNK_RETENTION_HOURS=24
 ```
 
 ---

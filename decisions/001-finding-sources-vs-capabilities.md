@@ -15,7 +15,7 @@ nav_order: 1
 
 ## Context
 
-The Exploop platform has two similar-sounding concepts:
+The OpenCTEM platform has two similar-sounding concepts:
 1. **Finding Sources** - Categorizes where findings come from
 2. **Capabilities** - Describes what tools can do
 

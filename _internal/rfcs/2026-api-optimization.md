@@ -209,11 +209,11 @@ import (
     "net/http"
     "sync"
 
-    "github.com/exploopio/api/internal/app"
-    "github.com/exploopio/api/internal/domain/shared"
-    "github.com/exploopio/api/internal/infra/http/middleware"
-    "github.com/exploopio/api/pkg/apierror"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/app"
+    "github.com/openctemio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/infra/http/middleware"
+    "github.com/openctemio/api/pkg/apierror"
+    "github.com/openctemio/api/pkg/logger"
     "golang.org/x/sync/errgroup"
 )
 

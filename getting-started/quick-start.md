@@ -7,13 +7,13 @@ nav_order: 1
 
 # 5-Minute Quick Start
 
-Get Exploop CTEM platform running in 5 minutes.
+Get OpenCTEM CTEM platform running in 5 minutes.
 
 ---
 
-## What is Rediver?
+## What is OpenCTEM?
 
-Rediver is a **Continuous Threat Exposure Management (CTEM)** platform that helps you:
+OpenCTEM is a **Continuous Threat Exposure Management (CTEM)** platform that helps you:
 
 - 🔍 **Discover** assets across repos, cloud, and infrastructure
 - 🛡️ **Scan** for vulnerabilities (SAST, SCA, secrets, IaC)
@@ -36,8 +36,8 @@ Rediver is a **Continuous Threat Exposure Management (CTEM)** platform that help
 
 ```bash
 # Clone the meta-repository
-git clone https://github.com/exploopio.exploop-platform.git.exploopio
-cd.exploopio
+git clone https://github.com/openctemio.openctem-platform.git.openctemio
+cd.openctemio
 
 # Initialize all sub-repositories
 make setup
@@ -77,7 +77,7 @@ Wait ~30 seconds for all services to be healthy.
 
 **Default credentials:**
 ```
-Email: admin@exploop.io
+Email: admin@openctem.io
 Password: Admin123!
 ```
 
@@ -95,7 +95,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://host.docker.internal:8080 \
   -e API_KEY=your-api-key \
-  exploopio/agent:latest \
+  openctemio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push
 ```
 

@@ -36,7 +36,7 @@ nav_order: 26
 
 ### 1.1 Problem Statement
 
-Currently, Rediver has a **tenant-scoped notification outbox** system that sends notifications to external channels (Slack, Email, etc.). However, there is no **user-scoped in-app inbox** where users can:
+Currently, OpenCTEM has a **tenant-scoped notification outbox** system that sends notifications to external channels (Slack, Email, etc.). However, there is no **user-scoped in-app inbox** where users can:
 - See notifications relevant to them
 - Track read/unread status
 - Manage notification preferences

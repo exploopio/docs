@@ -7,7 +7,7 @@ nav_order: 15
 
 # Trivy Ingest Data Flow
 
-This document describes the data flow when ingesting scan results from Trivy into the Exploop system, including both vulnerabilities and SBOM (Software Bill of Materials).
+This document describes the data flow when ingesting scan results from Trivy into the OpenCTEM system, including both vulnerabilities and SBOM (Software Bill of Materials).
 
 ---
 
@@ -28,7 +28,7 @@ Trivy scan produces 2 main types of data:
     │  ─────────────────────►     │                               │
     │  (trivy.Parser)             │                               │
     │                             │                               │
-    │  2. Convert to EIS Report   │                               │
+    │  2. Convert to CTIS Report   │                               │
     │  ┌─────────────────────┐    │                               │
     │  │ Report {            │    │                               │
     │  │   Findings[]        │────────►  3. POST /ingest          │
@@ -66,13 +66,13 @@ The agent receives JSON output from Trivy and parses it into 2 separate parts:
 
 ```go
 // trivy/parser.go
-func (p *Parser) Parse(data []byte, opts *core.ParseOptions) (*eis.Report, error) {
+func (p *Parser) Parse(data []byte, opts *core.ParseOptions) (*ctis.Report, error) {
     var trivyReport Report
     json.Unmarshal(data, &trivyReport)
 
-    report := &eis.Report{
-        Findings:     []eis.Finding{},
-        Dependencies: []eis.Dependency{},
+    report := &ctis.Report{
+        Findings:     []ctis.Finding{},
+        Dependencies: []ctis.Dependency{},
     }
 
     for _, result := range trivyReport.Results {
@@ -90,12 +90,12 @@ func (p *Parser) Parse(data []byte, opts *core.ParseOptions) (*eis.Report, error
 }
 ```
 
-### Step 2: Convert to EIS Report
+### Step 2: Convert to CTIS Report
 
-**EIS (Exploop Interchange Schema)** is the standard format for data exchange between Agent and API.
+**CTIS (CTEM Ingest Schema)** is the standard format for data exchange between Agent and API.
 
 ```go
-// eis/report.go
+// ctis/report.go
 type Report struct {
     Version      string       `json:"version"`
     Metadata     Metadata     `json:"metadata"`
@@ -109,7 +109,7 @@ type Report struct {
 #### Dependency Structure
 
 ```go
-// eis/dependency_types.go
+// ctis/dependency_types.go
 type Dependency struct {
     ID           string              `json:"id,omitempty"`
     Name         string              `json:"name"`
@@ -136,7 +136,7 @@ type DependencyLocation struct {
 **File**: `api/internal/app/ingest/service.go`
 
 ```go
-func (s *Service) IngestReport(ctx context.Context, tenantID shared.ID, report *eis.Report) (*Output, error) {
+func (s *Service) IngestReport(ctx context.Context, tenantID shared.ID, report *ctis.Report) (*Output, error) {
     output := &Output{}
 
     // Step 1: Process Assets
@@ -162,7 +162,7 @@ func (s *Service) IngestReport(ctx context.Context, tenantID shared.ID, report *
 func (p *ComponentProcessor) ProcessBatch(
     ctx context.Context,
     tenantID shared.ID,
-    report *eis.Report,
+    report *ctis.Report,
     assetMap map[string]shared.ID,
     output *Output,
 ) error {
@@ -200,7 +200,7 @@ The system uses two different terms for the same concept, each term appropriate 
 
 | Context | Term | Meaning |
 |---------|------|---------|
-| **EIS Schema (Input)** | `dependencies[]` | Packages that the project **depends on** |
+| **CTIS Schema (Input)** | `dependencies[]` | Packages that the project **depends on** |
 | **Database (Storage)** | `components` | Packages that **exist in the system** (global catalog) |
 | **Junction Table** | `asset_components` | Links between assets and components |
 
@@ -211,7 +211,7 @@ The system uses two different terms for the same concept, each term appropriate 
 │                        DATA FLOW                                     │
 └─────────────────────────────────────────────────────────────────────┘
 
-  Scanner Output          EIS Schema              Database
+  Scanner Output          CTIS Schema              Database
   ─────────────          ───────────              ────────
 
   Trivy packages  ──►  dependencies[]  ──►  components (global)
@@ -223,7 +223,7 @@ The system uses two different terms for the same concept, each term appropriate 
                     (relationship)          (entity)
 ```
 
-**1. `dependencies` (EIS/Input)** - Describes **dependency relationship**:
+**1. `dependencies` (CTIS/Input)** - Describes **dependency relationship**:
 - "Project A **depends on** package X"
 - Has context: direct/indirect relationship
 - Per-asset scope
@@ -242,7 +242,7 @@ The system uses two different terms for the same concept, each term appropriate 
 | Trivy | `packages` | - |
 | Snyk | `dependencies` | - |
 | GitHub Dependabot | `dependencies` | - |
-| **Exploop** | `dependencies` | `components` |
+| **OpenCTEM** | `dependencies` | `components` |
 
 ### Design Benefits
 
@@ -506,6 +506,6 @@ After successful ingestion, the API returns:
 ## Related Documentation
 
 - [Finding Ingestion Workflow](finding-ingestion-workflow.md) - Details about finding processing
-- [EIS Report Schema](../schemas/eis-report.md) - Schema reference
+- [CTIS Report Schema](../schemas/ctis-report.md) - Schema reference
 - [SDK Quick Start](sdk-quick-start.md) - SDK usage guide
 - [Ingest API Reference](../api/ingest-api.md) - API endpoints

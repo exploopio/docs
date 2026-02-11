@@ -10,13 +10,13 @@ nav_order: 99
 {: .warning }
 > **⚠️ Deprecated**: This document describes the legacy RBAC system. For the current access control system, see **[Group-Based Access Control](./group-based-access-control.md)** which provides more granular control with Groups, Permission Sets, and Assignment Rules.
 
-Complete guide to role-based access control (RBAC) in Rediver.
+Complete guide to role-based access control (RBAC) in OpenCTEM.
 
 ---
 
 ## Overview
 
-Rediver uses a **role-based access control** system where:
+OpenCTEM uses a **role-based access control** system where:
 - Each user belongs to one or more **Tenants** (Teams)
 - Each membership has a **Role** that defines permissions
 - Permissions control access to resources and actions

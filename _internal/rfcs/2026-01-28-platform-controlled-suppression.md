@@ -24,7 +24,7 @@ Enhance the existing finding status system to:
 The platform already has finding status functionality:
 
 ```go
-// RIS Schema (sdk/pkg/ris/types.go)
+// CTIS Schema (sdk/pkg/ctis/types.go)
 type FindingStatus string
 const (
     FindingStatusOpen          FindingStatus = "open"
@@ -668,7 +668,7 @@ INSERT INTO finding_suppressions (
 ### Finding Hash Calculation
 
 ```go
-func CalculateFindingHash(f *ris.Finding) string {
+func CalculateFindingHash(f *ctis.Finding) string {
     data := fmt.Sprintf("%s:%s:%d:%s",
         f.RuleID,
         f.Location.Path,
@@ -794,7 +794,7 @@ if cfg.AutoCI {
 ### Phase 2: Fetch Platform Suppressions
 
 ```go
-func (g *SecurityGate) Check(findings []*ris.Finding) *GateResult {
+func (g *SecurityGate) Check(findings []*ctis.Finding) *GateResult {
     // Fetch suppressions from platform
     suppressions, err := g.client.GetSuppressions(g.assetID)
     if err != nil {
@@ -802,7 +802,7 @@ func (g *SecurityGate) Check(findings []*ris.Finding) *GateResult {
     }
 
     // Filter findings
-    var activeFindings []*ris.Finding
+    var activeFindings []*ctis.Finding
     for _, f := range findings {
         if !g.isSuppressed(f, suppressions) {
             activeFindings = append(activeFindings, f)
@@ -813,7 +813,7 @@ func (g *SecurityGate) Check(findings []*ris.Finding) *GateResult {
     return g.checkThreshold(activeFindings)
 }
 
-func (g *SecurityGate) isSuppressed(f *ris.Finding, suppressions []Suppression) bool {
+func (g *SecurityGate) isSuppressed(f *ctis.Finding, suppressions []Suppression) bool {
     hash := CalculateFindingHash(f)
 
     for _, s := range suppressions {
@@ -1003,8 +1003,8 @@ func (c *Client) GetSuppressions(assetID string) ([]Suppression, error) {
 | Component | Status | Location |
 |-----------|--------|----------|
 | Fingerprint Algorithm | ✅ Complete (all types) | `sdk/pkg/shared/fingerprint/fingerprint.go` |
-| Finding Status Model | ✅ Exists | `sdk/pkg/ris/types.go` - FindingStatus enum |
-| Suppression Entity | ✅ Exists | `sdk/pkg/ris/types.go` - Suppression struct |
+| Finding Status Model | ✅ Exists | `sdk/pkg/ctis/types.go` - FindingStatus enum |
+| Suppression Entity | ✅ Exists | `sdk/pkg/ctis/types.go` - Suppression struct |
 | UI Mark False Positive | ✅ Works | Finding detail page |
 | **API Upsert Preserves Status** | ✅ Fixed | `api/internal/infra/postgres/finding_repository.go` |
 | **DAST/Container/Web3 Types** | ✅ Added | `sdk/pkg/shared/fingerprint/fingerprint.go` |
@@ -1047,5 +1047,5 @@ WHERE tenant_id = $2 AND fingerprint = ANY($3)
 - [Fingerprint Package](../../../sdk/pkg/shared/fingerprint/fingerprint.go) - Fingerprint algorithm (all types)
 - [Finding Repository](../../../api/internal/infra/postgres/finding_repository.go) - Upsert logic (status preserved)
 - [Ingest Processor](../../../api/internal/app/ingest/processor_findings.go) - Scan ingestion flow
-- [RIS Types](../../../sdk/pkg/ris/types.go) - Suppression data model
+- [CTIS Types](../../../sdk/pkg/ctis/types.go) - Suppression data model
 - [Security Gate](../../../agent/internal/gate/security.go) - Gate implementation

@@ -9,7 +9,7 @@ nav_order: 15
 
 ## Overview
 
-Platform Agents v3.2 is a multi-tenant agent architecture that provides Rediver-managed execution infrastructure shared across all tenants. Key features include:
+Platform Agents v3.2 is a multi-tenant agent architecture that provides OpenCTEM-managed execution infrastructure shared across all tenants. Key features include:
 
 - **Self-registration** via bootstrap tokens
 - **Kubernetes-style lease-based** health monitoring
@@ -61,7 +61,7 @@ Platform Agents v3.2 is a multi-tenant agent architecture that provides Rediver-
 | `is_platform_agent` | false | true |
 | Execution Mode | Configurable | Always Daemon |
 | Tier | N/A | shared/dedicated/premium |
-| Management | Customer self-managed | Rediver-managed |
+| Management | Customer self-managed | OpenCTEM-managed |
 | Creation | `NewAgent()` | `NewPlatformAgent()` |
 
 ### Database Constraint
@@ -115,9 +115,9 @@ Kubeadm-style tokens for agent self-registration without manual API key provisio
 ### Token Format
 
 ```
-Prefix:  rdv-bt- (7 chars)
+Prefix:  oc-bt- (7 chars)
 Length:  32 bytes (256 bits) random hex
-Example: rdv-bt-3c4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h
+Example: oc-bt-3c4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h
 Storage: SHA256 hash (never plaintext)
 ```
 
@@ -127,7 +127,7 @@ Storage: SHA256 hash (never plaintext)
 type BootstrapToken struct {
     ID          string
     TokenHash   string    // SHA256 of full token
-    TokenPrefix string    // "rdv-bt-abc123de"
+    TokenPrefix string    // "oc-bt-abc123de"
     Description string
 
     ExpiresAt   time.Time
@@ -176,7 +176,7 @@ Content-Type: application/json
 
 ```json
 {
-  "bootstrap_token": "rdv-bt-...",
+  "bootstrap_token": "oc-bt-...",
   "name": "us-east-1-scanner",
   "capabilities": ["sast", "sca"],
   "tools": ["semgrep", "trivy"],
@@ -192,8 +192,8 @@ Content-Type: application/json
 ```json
 {
   "agent_id": "550e8400-e29b-41d4-a716-446655440000",
-  "api_key": "rdv-ak-...",
-  "api_base_url": "https://api.exploop.io"
+  "api_key": "oc-ak-...",
+  "api_base_url": "https://api.openctem.io"
 }
 ```
 

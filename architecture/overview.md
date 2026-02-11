@@ -6,7 +6,7 @@ nav_order: 1
 ---
 # Architecture Overview
 
-This document describes the architecture of the ReDiver platform.
+This document describes the architecture of the OpenCTEM platform.
 
 ## System Architecture
 

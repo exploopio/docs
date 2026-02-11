@@ -9,9 +9,9 @@ title: SDK Deployment Modes
 parent: Architecture
 nav_order: 2
 ---
-# Exploop SDK Deployment Modes
+# OpenCTEM SDK Deployment Modes
 
-This document describes the different ways to deploy and use the Exploop SDK based on real-world use cases.
+This document describes the different ways to deploy and use the OpenCTEM SDK based on real-world use cases.
 
 ---
 
@@ -19,7 +19,7 @@ This document describes the different ways to deploy and use the Exploop SDK bas
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                         REDIVER PLATFORM                                     │
+│                         OPENCTEM PLATFORM                                     │
 │                                                                              │
 │   ┌─────────────────┐  ┌─────────────────┐  ┌───────────────────────────┐  │
 │   │   Command API   │  │   Ingest API    │  │  WebSocket (real-time)    │  │
@@ -65,9 +65,9 @@ This document describes the different ways to deploy and use the Exploop SDK bas
 │          │                                                       │
 │          ▼                                                       │
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │ .exploop scan --tool semgrep --target ./ --push           │  │
+│  │ .openctem scan --tool semgrep --target ./ --push           │  │
 │  │                                                            │  │
-│  │  [Scan] → [Parse SARIF] → [Push to Rediver] → [Exit 0]   │  │
+│  │  [Scan] → [Parse SARIF] → [Push to OpenCTEM] → [Exit 0]   │  │
 │  └───────────────────────────────────────────────────────────┘  │
 │          │                                                       │
 │          ▼                                                       │
@@ -80,12 +80,12 @@ This document describes the different ways to deploy and use the Exploop SDK bas
 
 ```bash
 # GitHub Actions
-- name: Run Rediver Scan
+- name: Run OpenCTEM Scan
   run: |
-   .exploop scan \
+   .openctem scan \
       --tool semgrep \
       --target . \
-      --api-url https://api.exploop.io \
+      --api-url https://api.openctem.io \
       --api-key ${{ secrets.API_KEY }} \
       --source-id ${{ secrets.SOURCE_ID }} \
       --push
@@ -93,7 +93,7 @@ This document describes the different ways to deploy and use the Exploop SDK bas
 # GitLab CI
 security_scan:
   script:
-    -.exploop scan --tool trivy-fs --target . --push
+    -.openctem scan --tool trivy-fs --target . --push
 ```
 
 **When to use:**
@@ -197,7 +197,7 @@ collectors:
     poll_interval: 1h            # Collect from GitHub every hour
 
 server:
-  base_url: https://api.exploop.io
+  base_url: https://api.openctem.io
   api_key: ${API_KEY}
   source_id: ${SOURCE_ID}
 ```
@@ -245,12 +245,12 @@ server:
 │   │                                │                               │    │
 │   │                                ▼                               │    │
 │   │                    ┌─────────────────────┐                    │    │
-│   │                    │  Normalize to RIS   │                    │    │
+│   │                    │  Normalize to CTIS   │                    │    │
 │   │                    └──────────┬──────────┘                    │    │
 │   │                               │                                │    │
 │   │                               ▼                                │    │
 │   │                    ┌─────────────────────┐                    │    │
-│   │                    │  Push to Rediver    │                    │    │
+│   │                    │  Push to OpenCTEM    │                    │    │
 │   │                    └─────────────────────┘                    │    │
 │   │                                                                │    │
 │   └───────────────────────────────────────────────────────────────┘    │
@@ -262,14 +262,14 @@ server:
 
 ```bash
 # One-shot mode - collect once and exit
-exploop collect \
+openctem collect \
   --source github \
   --token $GITHUB_TOKEN \
   --org myorg \
   --push
 
 # Daemon mode - continuous collection
-exploop collect \
+openctem collect \
   --source github \
   --token $GITHUB_TOKEN \
   --org myorg \
@@ -382,47 +382,47 @@ Start
 ### Runner Commands
 ```bash
 # Single tool scan
-exploop scan --tool semgrep --target ./src --push
+openctem scan --tool semgrep --target ./src --push
 
 # Multiple tools
-exploop scan --tools semgrep,gitleaks,trivy-fs --target . --push
+openctem scan --tools semgrep,gitleaks,trivy-fs --target . --push
 
 # With custom config
-exploop scan --tool semgrep --config ./semgrep.yml --target . --push
+openctem scan --tool semgrep --config ./semgrep.yml --target . --push
 
 # Dry run (no push)
-exploop scan --tool semgrep --target . --output ./report.json
+openctem scan --tool semgrep --target . --output ./report.json
 ```
 
 ### Agent Commands
 ```bash
 # Start agent with config file
-exploop agent --config ./agent.yaml
+openctem agent --config ./agent.yaml
 
 # Start with inline config
-exploop agent \
+openctem agent \
   --name my-scanner \
   --scan-interval 6h \
   --target /opt/code \
   --tool semgrep,gitleaks
 
 # Standalone mode (no server polling)
-exploop agent --config ./agent.yaml --standalone
+openctem agent --config ./agent.yaml --standalone
 
 # With server control enabled
-exploop agent --config ./agent.yaml --enable-commands
+openctem agent --config ./agent.yaml --enable-commands
 ```
 
 ### Collector Commands
 ```bash
 # One-shot GitHub collection
-exploop collect github --token $TOKEN --org myorg --push
+openctem collect github --token $TOKEN --org myorg --push
 
 # Daemon mode
-exploop collect github --token $TOKEN --org myorg --daemon --interval 1h
+openctem collect github --token $TOKEN --org myorg --daemon --interval 1h
 
 # Multiple sources
-exploop collect --config ./collectors.yaml --daemon
+openctem collect --config ./collectors.yaml --daemon
 ```
 
 ---

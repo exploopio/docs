@@ -9,7 +9,7 @@ nav_order: 16
 
 ## Overview
 
-The Admin System provides platform-level administration capabilities for managing Rediver infrastructure. It includes:
+The Admin System provides platform-level administration capabilities for managing OpenCTEM infrastructure. It includes:
 
 - **Admin User Management** - Super admins, ops admins, viewers
 - **API Key Authentication** - Secure bcrypt-based authentication
@@ -78,9 +78,9 @@ The Admin System provides platform-level administration capabilities for managin
 ### Key Format
 
 ```
-Prefix:  rdv-admin-
+Prefix:  oc-admin-
 Length:  64 hex characters (32 bytes = 256 bits entropy)
-Example: rdv-admin-3c4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h9i0j...
+Example: oc-admin-3c4f5a6b7c8d9e0f1a2b3c4d5e6f7g8h9i0j...
 Storage: Bcrypt hash (cost factor 12)
 ```
 
@@ -276,7 +276,7 @@ Query Parameters:
 ```bash
 # Create first super admin
 ./bootstrap-admin \
-  -db=postgres://user:pass@localhost.exploop \
+  -db=postgres://user:pass@localhost.openctem \
   -email=admin@example.com \
   -role=super_admin
 
@@ -396,6 +396,5 @@ Generic messages prevent information leakage:
 
 ## Related Documentation
 
-- [Platform Agents v3.2](platform-agents-v3.md)
 - [Access Control](access-control-flows-and-data.md)
 - [Production Deployment](../operations/PRODUCTION_DEPLOYMENT.md)

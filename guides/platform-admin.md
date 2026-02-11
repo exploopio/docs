@@ -6,13 +6,13 @@ nav_order: 20
 ---
 # Platform Administration Guide
 
-This guide covers how to set up and manage the Rediver platform, including bootstrapping admin credentials, managing platform agents, and using the admin CLI.
+This guide covers how to set up and manage the OpenCTEM platform, including bootstrapping admin credentials, managing platform agents, and using the admin CLI.
 
 ---
 
 ## Overview
 
-The Rediver platform has two types of administration:
+The OpenCTEM platform has two types of administration:
 
 | Type | Purpose | Tools |
 |------|---------|-------|
@@ -25,7 +25,7 @@ This guide focuses on **Platform Administration**.
 
 ## Initial Setup (Bootstrap)
 
-When deploying Rediver for the first time, you need to create the first admin user. This is done using the `bootstrap-admin` tool which connects directly to the database.
+When deploying OpenCTEM for the first time, you need to create the first admin user. This is done using the `bootstrap-admin` tool which connects directly to the database.
 
 ### Prerequisites
 
@@ -69,7 +69,7 @@ docker-compose exec api ./bootstrap-admin \
 
 ```bash
 # If using plain docker (not compose)
-docker exec -it exploop-api ./bootstrap-admin \
+docker exec -it openctem-api ./bootstrap-admin \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 ```
@@ -82,9 +82,9 @@ docker exec -it exploop-api ./bootstrap-admin \
 docker run --rm \
   --network your-network \
   --entrypoint /usr/local/bin/bootstrap-admin \
-  -e DATABASE_URL="postgres://user:pass@db:5432/exploop?sslmode=disable" \
+  -e DATABASE_URL="postgres://user:pass@db:5432/openctem?sslmode=disable" \
   -e ADMIN_EMAIL="admin@yourcompany.com" \
-  exploopio/admin-cli:latest
+  openctemio/admin-cli:latest
 ```
 
 #### Option 5: Kubernetes Job (Recommended for K8s)
@@ -95,7 +95,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: bootstrap-admin-config
-  namespace: exploop
+  namespace: openctem
 type: Opaque
 stringData:
   ADMIN_EMAIL: "admin@yourcompany.com"
@@ -104,7 +104,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: bootstrap-admin
-  namespace: exploop
+  namespace: openctem
 spec:
   ttlSecondsAfterFinished: 300  # Clean up after 5 minutes
   template:
@@ -112,29 +112,29 @@ spec:
       restartPolicy: Never
       containers:
         - name: bootstrap-admin
-          image: exploopio/api:latest
+          image: openctemio/api:latest
           command: ["./bootstrap-admin"]
           args: ["-role", "super_admin"]
           env:
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
-                  name: exploop-db-credentials
+                  name: openctem-db-credentials
                   key: host
             - name: DB_PORT
               value: "5432"
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: exploop-db-credentials
+                  name: openctem-db-credentials
                   key: username
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: exploop-db-credentials
+                  name: openctem-db-credentials
                   key: password
             - name: DB_NAME
-              value: exploop
+              value: openctem
             - name: DB_SSLMODE
               value: require
             - name: ADMIN_EMAIL
@@ -149,17 +149,17 @@ spec:
 kubectl apply -f bootstrap-admin-job.yaml
 
 # Watch for completion and get the API key from logs
-kubectl logs -f job/bootstrap-admin -n exploop
+kubectl logs -f job/bootstrap-admin -n openctem
 
 # Clean up (or wait for ttlSecondsAfterFinished)
-kubectl delete job bootstrap-admin -n exploop
+kubectl delete job bootstrap-admin -n openctem
 ```
 
 #### Option 6: kubectl exec (Quick method for K8s)
 
 ```bash
 # If API pod is already running
-kubectl exec -it deploy/exploop-api -n exploop -- \
+kubectl exec -it deploy/openctem-api -n openctem -- \
   ./bootstrap-admin -email "admin@yourcompany.com" -role "super_admin"
 ```
 
@@ -168,7 +168,7 @@ kubectl exec -it deploy/exploop-api -n exploop -- \
 ```bash
 # Only for local development with direct DB access
 ./bootstrap-admin \
-  -db "postgres://user:pass@localhost:5432/exploop?sslmode=disable" \
+  -db "postgres://user:pass@localhost:5432/openctem?sslmode=disable" \
   -email "admin@yourcompany.com" \
   -role "super_admin"
 ```
@@ -182,18 +182,18 @@ kubectl exec -it deploy/exploop-api -n exploop -- \
   Role:  super_admin
 
 API Key (save this, it won't be shown again):
-  radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  oc-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 
 Configure the CLI:
-  export EXPLOOP_API_KEY=radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
-  export EXPLOOP_API_URL=https://your-api-url
+  export OPENCTEM_API_KEY=oc-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  export OPENCTEM_API_URL=https://your-api-url
 
   # Or save to config file:
-  exploop-admin config set-context prod --api-url=https://your-api-url --api-key=radm_...
-  exploop-admin config use-context prod
+  openctem-admin config set-context prod --api-url=https://your-api-url --api-key=oc-admin-...
+  openctem-admin config use-context prod
 
 Test the connection:
-  exploop-admin cluster-info
+  openctem-admin cluster-info
 ```
 
 > **Important**: Save the API key immediately! It cannot be retrieved later.
@@ -208,9 +208,9 @@ Test the connection:
 
 ---
 
-## Admin CLI (exploop-admin)
+## Admin CLI (openctem-admin)
 
-The `exploop-admin` CLI provides kubectl-style commands for platform management.
+The `openctem-admin` CLI provides kubectl-style commands for platform management.
 
 ### Installation
 
@@ -218,26 +218,26 @@ The `exploop-admin` CLI provides kubectl-style commands for platform management.
 
 ```bash
 # Download from releases
-curl -LO https://github.com/exploopio/api/releases/latest/download/exploop-admin-linux-amd64
-chmod +x exploop-admin-linux-amd64
-sudo mv exploop-admin-linux-amd64 /usr/local/bin/exploop-admin
+curl -LO https://github.com/openctemio/api/releases/latest/download/openctem-admin-linux-amd64
+chmod +x openctem-admin-linux-amd64
+sudo mv openctem-admin-linux-amd64 /usr/local/bin/openctem-admin
 
 # Verify installation
-exploop-admin version
+openctem-admin version
 ```
 
 #### Using Docker
 
 ```bash
 # Create alias for convenience
-alias exploop-admin='docker run --rm -it \
-  -e EXPLOOP_API_URL=$EXPLOOP_API_URL \
-  -e EXPLOOP_API_KEY=$EXPLOOP_API_KEY \
-  -v ~/.exploop:/root/.exploop \
-  exploopio/admin-cli:latest'
+alias openctem-admin='docker run --rm -it \
+  -e OPENCTEM_API_URL=$OPENCTEM_API_URL \
+  -e OPENCTEM_API_KEY=$OPENCTEM_API_KEY \
+  -v ~/.openctem:/root/.openctem \
+  openctemio/admin-cli:latest'
 
 # Use normally
-exploop-admin get agents
+openctem-admin get agents
 ```
 
 ### Configuration
@@ -247,62 +247,62 @@ The CLI supports three configuration methods (in priority order):
 #### 1. Command Line Flags (Highest Priority)
 
 ```bash
-exploop-admin --api-url=https://api.exploop.io --api-key=radm_xxx get agents
+openctem-admin --api-url=https://api.openctem.io --api-key=oc-admin-xxx get agents
 ```
 
 #### 2. Environment Variables
 
 ```bash
-export EXPLOOP_API_URL=https://api.exploop.io
-export EXPLOOP_API_KEY=radm_a1b2c3d4e5f6...
-exploop-admin get agents
+export OPENCTEM_API_URL=https://api.openctem.io
+export OPENCTEM_API_KEY=oc-admin-a1b2c3d4e5f6...
+openctem-admin get agents
 ```
 
-#### 3. Config File (~/.exploop/config.yaml)
+#### 3. Config File (~/.openctem/config.yaml)
 
 ```bash
 # Create context
-exploop-admin config set-context prod \
-  --api-url=https://api.exploop.io \
-  --api-key=radm_a1b2c3d4e5f6...
+openctem-admin config set-context prod \
+  --api-url=https://api.openctem.io \
+  --api-key=oc-admin-a1b2c3d4e5f6...
 
 # Or use key file for security
-echo "radm_a1b2c3d4e5f6..." > ~/.exploop/prod-key
-chmod 600 ~/.exploop/prod-key
-exploop-admin config set-context prod \
-  --api-url=https://api.exploop.io \
-  --api-key-file=~/.exploop/prod-key
+echo "oc-admin-a1b2c3d4e5f6..." > ~/.openctem/prod-key
+chmod 600 ~/.openctem/prod-key
+openctem-admin config set-context prod \
+  --api-url=https://api.openctem.io \
+  --api-key-file=~/.openctem/prod-key
 
 # Switch contexts
-exploop-admin config use-context prod
+openctem-admin config use-context prod
 
 # List contexts
-exploop-admin config get-contexts
+openctem-admin config get-contexts
 ```
 
 **Config file format:**
 
 ```yaml
-# ~/.exploop/config.yaml
-apiVersion: admin.exploop.io/v1
+# ~/.openctem/config.yaml
+apiVersion: admin.openctem.io/v1
 kind: Config
 current-context: prod
 
 contexts:
   - name: prod
     context:
-      api-url: https://api.exploop.io
-      api-key-file: ~/.exploop/prod-key
+      api-url: https://api.openctem.io
+      api-key-file: ~/.openctem/prod-key
 
   - name: staging
     context:
-      api-url: https://api.staging.exploop.io
-      api-key-file: ~/.exploop/staging-key
+      api-url: https://api.staging.openctem.io
+      api-key-file: ~/.openctem/staging-key
 
   - name: local
     context:
       api-url: http://localhost:8080
-      api-key: radm_local_dev_key
+      api-key: oc-admin-local_dev_key
 ```
 
 ### Command Reference
@@ -325,7 +325,7 @@ All commands support these global flags:
 
 ```bash
 # Get platform status
-exploop-admin cluster-info
+openctem-admin cluster-info
 
 # Output:
 # Platform Cluster Info
@@ -353,35 +353,35 @@ exploop-admin cluster-info
 
 ```bash
 # List agents
-exploop-admin get agents
-exploop-admin get agents -o wide
-exploop-admin get agents -o json
+openctem-admin get agents
+openctem-admin get agents -o wide
+openctem-admin get agents -o json
 
 # Get specific agent
-exploop-admin describe agent agent-us-east-1
+openctem-admin describe agent agent-us-east-1
 
 # Create agent (for manual registration)
-exploop-admin create agent \
+openctem-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca,secrets \
   --max-jobs=10
 
 # Maintenance operations
-exploop-admin drain agent agent-us-east-1      # Stop accepting new jobs
-exploop-admin uncordon agent agent-us-east-1   # Resume operations
-exploop-admin delete agent agent-us-east-1     # Remove agent
+openctem-admin drain agent agent-us-east-1      # Stop accepting new jobs
+openctem-admin uncordon agent agent-us-east-1   # Resume operations
+openctem-admin delete agent agent-us-east-1     # Remove agent
 ```
 
 #### Bootstrap Token Management
 
 ```bash
 # List tokens
-exploop-admin get tokens
-exploop-admin get tokens -o wide
+openctem-admin get tokens
+openctem-admin get tokens -o wide
 
 # Create token for agent registration
-exploop-admin create token --max-uses=5 --expires=24h
+openctem-admin create token --max-uses=5 --expires=24h
 
 # Output:
 # token/tok-abc123 created
@@ -395,20 +395,20 @@ exploop-admin create token --max-uses=5 --expires=24h
 #   abc123.xxxxxxxxxxxxxxxx
 #
 # Use this token to register a platform agent:
-#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.exploop.io
+#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.openctem.io
 
 # Revoke token
-exploop-admin revoke token tok-abc123 --reason="No longer needed"
+openctem-admin revoke token tok-abc123 --reason="No longer needed"
 ```
 
 #### Admin User Management (super_admin only)
 
 ```bash
 # List admins
-exploop-admin get admins
+openctem-admin get admins
 
 # Create new admin
-exploop-admin create admin --email=ops@company.com --role=ops_admin
+openctem-admin create admin --email=ops@company.com --role=ops_admin
 
 # Output includes the new admin's API key
 ```
@@ -417,22 +417,22 @@ exploop-admin create admin --email=ops@company.com --role=ops_admin
 
 ```bash
 # List jobs
-exploop-admin get jobs
-exploop-admin get jobs --status=pending
-exploop-admin get jobs --status=running
-exploop-admin get jobs -o wide
+openctem-admin get jobs
+openctem-admin get jobs --status=pending
+openctem-admin get jobs --status=running
+openctem-admin get jobs -o wide
 
 # Job details
-exploop-admin describe job job-xyz123
+openctem-admin describe job job-xyz123
 
 # View job logs
-exploop-admin logs job job-xyz123
+openctem-admin logs job job-xyz123
 
 # Follow job logs in real-time (updates every 2s)
-exploop-admin logs job job-xyz123 -f
+openctem-admin logs job job-xyz123 -f
 
 # Show last N lines
-exploop-admin logs job job-xyz123 --tail=100
+openctem-admin logs job job-xyz123 --tail=100
 ```
 
 #### Declarative Configuration (apply)
@@ -441,17 +441,17 @@ Similar to `kubectl apply`, you can create resources from YAML files:
 
 ```bash
 # Apply from file
-exploop-admin apply -f agent.yaml
+openctem-admin apply -f agent.yaml
 
 # Apply from stdin
-cat agent.yaml | exploop-admin apply -f -
+cat agent.yaml | openctem-admin apply -f -
 ```
 
 **Agent manifest example:**
 
 ```yaml
 # agent.yaml
-apiVersion: admin.exploop.io/v1
+apiVersion: admin.openctem.io/v1
 kind: Agent
 metadata:
   name: agent-us-east-1
@@ -470,7 +470,7 @@ spec:
 
 ```yaml
 # token.yaml
-apiVersion: admin.exploop.io/v1
+apiVersion: admin.openctem.io/v1
 kind: Token
 metadata:
   name: bootstrap-token-prod
@@ -483,7 +483,7 @@ spec:
 
 ```yaml
 # admin.yaml
-apiVersion: admin.exploop.io/v1
+apiVersion: admin.openctem.io/v1
 kind: Admin
 metadata:
   name: ops-team
@@ -496,46 +496,46 @@ spec:
 
 ```bash
 # Delete an agent (with confirmation prompt)
-exploop-admin delete agent agent-us-east-1
+openctem-admin delete agent agent-us-east-1
 
 # Force delete without confirmation
-exploop-admin delete agent agent-us-east-1 --force
+openctem-admin delete agent agent-us-east-1 --force
 
 # Delete a token
-exploop-admin delete token tok-abc123 --force
+openctem-admin delete token tok-abc123 --force
 ```
 
 ### Output Formats
 
 ```bash
 # Default table format
-exploop-admin get agents
+openctem-admin get agents
 
 # Wide table with more columns
-exploop-admin get agents -o wide
+openctem-admin get agents -o wide
 
 # JSON output (for scripting)
-exploop-admin get agents -o json
+openctem-admin get agents -o json
 
 # YAML output
-exploop-admin get agents -o yaml
+openctem-admin get agents -o yaml
 
 # Just names (for scripting)
-exploop-admin get agents -o name
+openctem-admin get agents -o name
 ```
 
 ### Watch Mode
 
 ```bash
 # Real-time updates (refreshes every 2s)
-exploop-admin get agents -w
+openctem-admin get agents -w
 ```
 
 ---
 
 ## Platform Agent Setup
 
-Platform agents are Rediver-managed agents that can be used by multiple tenants.
+Platform agents are OpenCTEM-managed agents that can be used by multiple tenants.
 
 ### Registration Methods
 
@@ -543,12 +543,12 @@ Platform agents are Rediver-managed agents that can be used by multiple tenants.
 
 ```bash
 # 1. Create bootstrap token (on admin machine)
-exploop-admin create token --max-uses=1 --expires=1h
+openctem-admin create token --max-uses=1 --expires=1h
 
 # 2. Start agent with token (on agent machine)
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.exploop.io \
+  -api-url=https://api.openctem.io \
   -region=us-east-1 \
   -capabilities=sast,sca,secrets
 
@@ -562,7 +562,7 @@ exploop-admin create token --max-uses=1 --expires=1h
 
 ```bash
 # 1. Create agent record (on admin machine)
-exploop-admin create agent \
+openctem-admin create agent \
   --name=agent-us-east-1 \
   --region=us-east-1 \
   --capabilities=sast,sca
@@ -571,7 +571,7 @@ exploop-admin create agent \
 # 3. Start agent with key (on agent machine)
 ./agent -platform \
   -api-key=ragent_xxxxx \
-  -api-url=https://api.exploop.io
+  -api-url=https://api.openctem.io
 ```
 
 ### Docker Deployment
@@ -579,20 +579,20 @@ exploop-admin create agent \
 ```bash
 # Using bootstrap token
 docker run -d \
-  --name exploop-platform-agent \
+  --name openctem-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.exploop.io \
+  -e API_URL=https://api.openctem.io \
   -e BOOTSTRAP_TOKEN=abc123.xxxxxxxxxxxxxxxx \
-  -v agent-data:/home/exploop/.exploop \
-  exploopio/agent:platform
+  -v agent-data:/home/openctem/.openctem \
+  openctemio/agent:platform
 
 # Using pre-assigned API key
 docker run -d \
-  --name exploop-platform-agent \
+  --name openctem-platform-agent \
   --restart unless-stopped \
-  -e API_URL=https://api.exploop.io \
+  -e API_URL=https://api.openctem.io \
   -e API_KEY=ragent_xxxxx \
-  exploopio/agent:platform
+  openctemio/agent:platform
 ```
 
 ### Kubernetes Deployment
@@ -601,12 +601,12 @@ docker run -d \
 
 ```bash
 # 1. Create agent and get API key
-exploop-admin create agent --name=agent-k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
+openctem-admin create agent --name=agent-k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
 
 # 2. Create secret with the API key
-kubectl create secret generic exploop-agent-credentials \
+kubectl create secret generic openctem-agent-credentials \
   --from-literal=api-key=ragent_xxxxx \
-  -n exploop
+  -n openctem
 ```
 
 ```yaml
@@ -614,28 +614,28 @@ kubectl create secret generic exploop-agent-credentials \
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: exploop-platform-agent
-  namespace: exploop
+  name: openctem-platform-agent
+  namespace: openctem
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: exploop-platform-agent
+      app: openctem-platform-agent
   template:
     metadata:
       labels:
-        app: exploop-platform-agent
+        app: openctem-platform-agent
     spec:
       containers:
         - name: agent
-          image: exploopio/agent:platform
+          image: openctemio/agent:platform
           env:
             - name: API_URL
-              value: "https://api.exploop.io"
+              value: "https://api.openctem.io"
             - name: API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: exploop-agent-credentials
+                  name: openctem-agent-credentials
                   key: api-key
             - name: REGION
               value: "us-east-1"
@@ -650,7 +650,7 @@ spec:
               cpu: "2000m"
           volumeMounts:
             - name: agent-data
-              mountPath: /home/exploop/.exploop
+              mountPath: /home/openctem/.openctem
       volumes:
         - name: agent-data
           emptyDir: {}
@@ -662,12 +662,12 @@ For dynamic scaling where each pod registers independently:
 
 ```bash
 # 1. Create bootstrap token with enough uses for your replicas
-exploop-admin create token --max-uses=10 --expires=24h
+openctem-admin create token --max-uses=10 --expires=24h
 
 # 2. Create secret with the bootstrap token
-kubectl create secret generic.exploop-bootstrap-token \
+kubectl create secret generic.openctem-bootstrap-token \
   --from-literal=token=abc123.xxxxxxxxxxxxxxxx \
-  -n exploop
+  -n openctem
 ```
 
 ```yaml
@@ -675,29 +675,29 @@ kubectl create secret generic.exploop-bootstrap-token \
 apiVersion: apps/v1
 kind: StatefulSet  # StatefulSet ensures unique agent names
 metadata:
-  name: exploop-platform-agent
-  namespace: exploop
+  name: openctem-platform-agent
+  namespace: openctem
 spec:
-  serviceName: exploop-platform-agent
+  serviceName: openctem-platform-agent
   replicas: 3
   selector:
     matchLabels:
-      app: exploop-platform-agent
+      app: openctem-platform-agent
   template:
     metadata:
       labels:
-        app: exploop-platform-agent
+        app: openctem-platform-agent
     spec:
       containers:
         - name: agent
-          image: exploopio/agent:platform
+          image: openctemio/agent:platform
           env:
             - name: API_URL
-              value: "https://api.exploop.io"
+              value: "https://api.openctem.io"
             - name: BOOTSTRAP_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name:.exploop-bootstrap-token
+                  name:.openctem-bootstrap-token
                   key: token
             - name: REGION
               value: "us-east-1"
@@ -717,7 +717,7 @@ spec:
               cpu: "2000m"
           volumeMounts:
             - name: agent-data
-              mountPath: /home/exploop/.exploop
+              mountPath: /home/openctem/.openctem
   volumeClaimTemplates:
     - metadata:
         name: agent-data
@@ -735,7 +735,7 @@ Helm chart simplifies deployment with sensible defaults and easy configuration.
 **Add Repository:**
 
 ```bash
-helm repo add.exploop https://charts.exploop.io
+helm repo add.openctem https://charts.openctem.io
 helm repo update
 ```
 
@@ -745,13 +745,13 @@ Best for dynamic scaling where each pod registers as a unique agent.
 
 ```bash
 # 1. Create bootstrap token
-exploop-admin create token --max-uses=10 --expires=24h
+openctem-admin create token --max-uses=10 --expires=24h
 
 # 2. Install with bootstrap token
-helm install platform-agent exploop/platform-agent \
-  --namespace.exploop \
+helm install platform-agent openctem/platform-agent \
+  --namespace.openctem \
   --create-namespace \
-  --set apiUrl=https://api.exploop.io \
+  --set apiUrl=https://api.openctem.io \
   --set bootstrapToken=abc123.xxxxxxxxxxxxxxxx \
   --set replicaCount=3 \
   --set agent.region=us-east-1 \
@@ -764,13 +764,13 @@ Best for production with fixed replicas sharing the same agent identity.
 
 ```bash
 # 1. Create agent
-exploop-admin create agent --name=k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
+openctem-admin create agent --name=k8s-pool --region=us-east-1 --capabilities=sast,sca,secrets
 
 # 2. Install with API key (uses Deployment instead of StatefulSet)
-helm install platform-agent exploop/platform-agent \
-  --namespace.exploop \
+helm install platform-agent openctem/platform-agent \
+  --namespace.openctem \
   --create-namespace \
-  --set apiUrl=https://api.exploop.io \
+  --set apiUrl=https://api.openctem.io \
   --set apiKey=ragent_xxxxx \
   --set useStatefulSet=false \
   --set replicaCount=3
@@ -782,16 +782,16 @@ Use credentials stored in an existing Kubernetes secret.
 
 ```bash
 # 1. Create secret with credentials
-kubectl create secret generic exploop-agent-creds \
+kubectl create secret generic openctem-agent-creds \
   --from-literal=api-key=ragent_xxxxx \
-  -n exploop
+  -n openctem
 
 # 2. Install using existing secret
-helm install platform-agent exploop/platform-agent \
-  --namespace.exploop \
-  --set apiUrl=https://api.exploop.io \
+helm install platform-agent openctem/platform-agent \
+  --namespace.openctem \
+  --set apiUrl=https://api.openctem.io \
   --set existingSecret.enabled=true \
-  --set existingSecret.name=exploop-agent-creds \
+  --set existingSecret.name=openctem-agent-creds \
   --set useStatefulSet=false
 ```
 
@@ -799,7 +799,7 @@ helm install platform-agent exploop/platform-agent \
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `apiUrl` | Rediver API URL (required) | `""` |
+| `apiUrl` | OpenCTEM API URL (required) | `""` |
 | `bootstrapToken` | Bootstrap token for auto-registration | `""` |
 | `apiKey` | Pre-assigned API key | `""` |
 | `replicaCount` | Number of agent replicas | `3` |
@@ -814,24 +814,24 @@ helm install platform-agent exploop/platform-agent \
 
 ```bash
 # Scale up
-helm upgrade platform-agent exploop/platform-agent \
-  --namespace.exploop \
+helm upgrade platform-agent openctem/platform-agent \
+  --namespace.openctem \
   --reuse-values \
   --set replicaCount=5
 
 # Upgrade chart version
-helm upgrade platform-agent exploop/platform-agent \
-  --namespace.exploop \
+helm upgrade platform-agent openctem/platform-agent \
+  --namespace.openctem \
   --reuse-values
 
 # Uninstall
-helm uninstall platform-agent -n exploop
+helm uninstall platform-agent -n openctem
 
 # If using StatefulSet, also delete PVCs
-kubectl delete pvc -l app.kubernetes.io/instance=platform-agent -n exploop
+kubectl delete pvc -l app.kubernetes.io/instance=platform-agent -n openctem
 ```
 
-For full documentation, see the [Helm chart README](https://github.com/exploopio/charts/tree/main/charts/platform-agent).
+For full documentation, see the [Helm chart README](https://github.com/openctemio/charts/tree/main/charts/platform-agent).
 
 ---
 
@@ -868,8 +868,8 @@ For full documentation, see the [Helm chart README](https://github.com/exploopio
 │                                                                           │
 │  Operator Workstation              Load Balancer                          │
 │  ┌─────────────────┐              ┌─────────────────┐                    │
-│  │ exploop-admin   │──HTTPS:443──▶│   nginx/ALB     │                    │
-│  │ ~/.exploop/     │              │   :443          │                    │
+│  │ openctem-admin   │──HTTPS:443──▶│   nginx/ALB     │                    │
+│  │ ~/.openctem/     │              │   :443          │                    │
 │  │   config.yaml   │              └────────┬────────┘                    │
 │  └─────────────────┘                       │                              │
 │                                            ▼                              │
@@ -909,15 +909,15 @@ For full documentation, see the [Helm chart README](https://github.com/exploopio
 2. **Use key files instead of inline keys in config**
    ```bash
    # Good: key in separate file with restricted permissions
-   echo "radm_xxx" > ~/.exploop/prod-key
-   chmod 600 ~/.exploop/prod-key
+   echo "oc-admin-xxx" > ~/.openctem/prod-key
+   chmod 600 ~/.openctem/prod-key
 
    # Bad: key directly in config.yaml
    ```
 
 3. **Rotate keys periodically**
    ```bash
-   exploop-admin rotate-key admin <admin-id>
+   openctem-admin rotate-key admin <admin-id>
    ```
 
 4. **Use least-privilege roles**
@@ -947,23 +947,23 @@ For full documentation, see the [Helm chart README](https://github.com/exploopio
 
 ```bash
 # Check configuration
-exploop-admin config view
+openctem-admin config view
 
 # Test with verbose output
-exploop-admin --verbose get agents
+openctem-admin --verbose get agents
 
 # Verify network connectivity
-curl -v https://api.exploop.io/health
+curl -v https://api.openctem.io/health
 ```
 
 ### Agent Not Registering
 
 ```bash
 # Check token validity
-exploop-admin get tokens
+openctem-admin get tokens
 
 # Check agent logs
-docker logs exploop-platform-agent
+docker logs openctem-platform-agent
 
 # Verify bootstrap token format: xxxxxx.yyyyyyyyyyyyyyyy
 ```
@@ -972,7 +972,7 @@ docker logs exploop-platform-agent
 
 ```bash
 # Verify your role
-exploop-admin get admins | grep your-email
+openctem-admin get admins | grep your-email
 
 # Check if operation requires super_admin
 # Operations like "create admin" require super_admin role
@@ -986,47 +986,47 @@ exploop-admin get admins | grep your-email
 
 ```bash
 # === CLUSTER INFO ===
-exploop-admin cluster-info              # Platform overview
-exploop-admin version                   # CLI version
+openctem-admin cluster-info              # Platform overview
+openctem-admin version                   # CLI version
 
 # === AGENTS ===
-exploop-admin get agents                # List all agents
-exploop-admin get agents -o wide        # Detailed list
-exploop-admin get agents -w             # Watch mode (auto-refresh)
-exploop-admin describe agent <name>     # Agent details
-exploop-admin create agent --name=<n> --region=<r> --capabilities=sast,sca
-exploop-admin drain agent <name>        # Stop accepting new jobs
-exploop-admin uncordon agent <name>     # Resume operations
-exploop-admin delete agent <name>       # Remove agent
+openctem-admin get agents                # List all agents
+openctem-admin get agents -o wide        # Detailed list
+openctem-admin get agents -w             # Watch mode (auto-refresh)
+openctem-admin describe agent <name>     # Agent details
+openctem-admin create agent --name=<n> --region=<r> --capabilities=sast,sca
+openctem-admin drain agent <name>        # Stop accepting new jobs
+openctem-admin uncordon agent <name>     # Resume operations
+openctem-admin delete agent <name>       # Remove agent
 
 # === TOKENS ===
-exploop-admin get tokens                # List bootstrap tokens
-exploop-admin create token --max-uses=5 --expires=24h
-exploop-admin describe token <id>       # Token details
-exploop-admin revoke token <id> --reason="..."
-exploop-admin delete token <id>         # Remove token
+openctem-admin get tokens                # List bootstrap tokens
+openctem-admin create token --max-uses=5 --expires=24h
+openctem-admin describe token <id>       # Token details
+openctem-admin revoke token <id> --reason="..."
+openctem-admin delete token <id>         # Remove token
 
 # === JOBS ===
-exploop-admin get jobs                  # List platform jobs
-exploop-admin get jobs --status=pending # Filter by status
-exploop-admin describe job <id>         # Job details
-exploop-admin logs job <id>             # View job logs
-exploop-admin logs job <id> -f          # Follow logs in real-time
+openctem-admin get jobs                  # List platform jobs
+openctem-admin get jobs --status=pending # Filter by status
+openctem-admin describe job <id>         # Job details
+openctem-admin logs job <id>             # View job logs
+openctem-admin logs job <id> -f          # Follow logs in real-time
 
 # === ADMINS ===
-exploop-admin get admins                # List admin users
-exploop-admin create admin --email=<e> --role=ops_admin
+openctem-admin get admins                # List admin users
+openctem-admin create admin --email=<e> --role=ops_admin
 
 # === CONFIG ===
-exploop-admin config set-context <name> --api-url=<url> --api-key=<key>
-exploop-admin config use-context <name> # Switch context
-exploop-admin config current-context    # Show current
-exploop-admin config get-contexts       # List all contexts
-exploop-admin config view               # Show full config
+openctem-admin config set-context <name> --api-url=<url> --api-key=<key>
+openctem-admin config use-context <name> # Switch context
+openctem-admin config current-context    # Show current
+openctem-admin config get-contexts       # List all contexts
+openctem-admin config view               # Show full config
 
 # === DECLARATIVE ===
-exploop-admin apply -f agent.yaml       # Apply from file
-cat manifest.yaml | exploop-admin apply -f -  # Apply from stdin
+openctem-admin apply -f agent.yaml       # Apply from file
+cat manifest.yaml | openctem-admin apply -f -  # Apply from stdin
 ```
 
 ### Resource Aliases
@@ -1076,7 +1076,7 @@ go build -o ./bin/bootstrap-admin ./cmd/bootstrap-admin
 
 # Run with database connection
 ./bin/bootstrap-admin \
-  -db "postgres:/.exploop.exploop@localhost:5432/exploop?sslmode=disable" \
+  -db "postgres:/.openctem.openctem@localhost:5432/openctem?sslmode=disable" \
   -email "admin@localhost" \
   -name "Dev Admin" \
   -role "super_admin"
@@ -1091,7 +1091,7 @@ go build -o ./bin/bootstrap-admin ./cmd/bootstrap-admin
   Role:  super_admin
 
 API Key (save this, it won't be shown again):
-  rdv-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
+  oc-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
 
 Use this key to authenticate with the Admin UI or API.
 ```
@@ -1134,15 +1134,15 @@ If the bootstrap-admin tool is unavailable, you can insert directly via SQL:
 ```bash
 # Generate a bcrypt hash for your API key
 # Use this Go snippet or an online bcrypt generator:
-# echo -n "rdv-admin-your-secret-key-here" | htpasswd -bnBC 12 "" - | tr -d ':\n'
+# echo -n "oc-admin-your-secret-key-here" | htpasswd -bnBC 12 "" - | tr -d ':\n'
 
 # Or generate in Go:
-go run -e 'import "golang.org/x/crypto/bcrypt"; hash, _ := bcrypt.GenerateFromPassword([]byte("rdv-admin-testsecretkey123456789012345678901234567890123456"), 12); print(string(hash))'
+go run -e 'import "golang.org/x/crypto/bcrypt"; hash, _ := bcrypt.GenerateFromPassword([]byte("oc-admin-testsecretkey123456789012345678901234567890123456"), 12); print(string(hash))'
 ```
 
 ```sql
 -- Connect to database
-psql -h localhost -U.exploop -d.exploop
+psql -h localhost -U.openctem -d.openctem
 
 -- Insert admin user
 INSERT INTO admin_users (
@@ -1153,7 +1153,7 @@ INSERT INTO admin_users (
   'Dev Admin',
   'super_admin',
   '$2a$12$your-bcrypt-hash-here',  -- bcrypt hash of your API key
-  'rdv-admin-testsecr...',          -- first 20 chars of your key
+  'oc-admin-testsecr...',          -- first 20 chars of your key
   true,
   NOW(),
   NOW()
@@ -1176,7 +1176,7 @@ Once you have the API key, you can use it in several ways:
 
 ```bash
 # Set your API key
-export ADMIN_API_KEY="rdv-admin-your-key-here"
+export ADMIN_API_KEY="oc-admin-your-key-here"
 
 # Validate the key
 curl -X GET http://localhost:8080/api/v1/admin/auth/validate \
@@ -1195,23 +1195,23 @@ curl -X GET http://localhost:8080/api/v1/admin/bootstrap-tokens \
   -H "X-Admin-API-Key: $ADMIN_API_KEY"
 ```
 
-#### 3. Admin CLI (exploop-admin)
+#### 3. Admin CLI (openctem-admin)
 
 ```bash
 # Set environment variables
-export EXPLOOP_API_URL=http://localhost:8080
-export EXPLOOP_API_KEY=rdv-admin-your-key-here
+export OPENCTEM_API_URL=http://localhost:8080
+export OPENCTEM_API_KEY=oc-admin-your-key-here
 
 # Or create a config context
-exploop-admin config set-context local \
+openctem-admin config set-context local \
   --api-url=http://localhost:8080 \
-  --api-key=rdv-admin-your-key-here
+  --api-key=oc-admin-your-key-here
 
-exploop-admin config use-context local
+openctem-admin config use-context local
 
 # Now use commands
-exploop-admin get agents
-exploop-admin get tokens
+openctem-admin get agents
+openctem-admin get tokens
 ```
 
 ### Environment Variables for Development
@@ -1220,7 +1220,7 @@ Create a `.env.local` file for easy development:
 
 ```bash
 # .env.local
-ADMIN_API_KEY=rdv-admin-your-key-here
+ADMIN_API_KEY=oc-admin-your-key-here
 ADMIN_API_URL=http://localhost:8080
 ```
 
@@ -1298,7 +1298,7 @@ Create a `scripts/dev-setup-admin.sh` for convenience:
 
 set -e
 
-DB_URL="${DB_URL:-postgres:/.exploop.exploop@localhost:5432/exploop?sslmode=disable}"
+DB_URL="${DB_URL:-postgres:/.openctem.openctem@localhost:5432/openctem?sslmode=disable}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-admin@localhost}"
 ADMIN_ROLE="${ADMIN_ROLE:-super_admin}"
 
@@ -1320,7 +1320,7 @@ echo "  1. Open http://localhost:3001"
 echo "  2. Enter the API key"
 echo ""
 echo "To use with curl:"
-echo "  export ADMIN_API_KEY='rdv-admin-...'"
+echo "  export ADMIN_API_KEY='oc-admin-...'"
 echo "  curl -H 'X-Admin-API-Key: \$ADMIN_API_KEY' http://localhost:8080/api/v1/admin/auth/validate"
 ```
 

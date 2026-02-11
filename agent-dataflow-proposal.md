@@ -69,7 +69,7 @@ select sink, sourceNode, sinkNode,
 **SDK Integration (Implemented):**
 
 ```go
-import "github.com/exploopio/sdk/pkg/scanners"
+import "github.com/openctemio/sdk/pkg/scanners"
 
 // Use language-specific preset
 scanner := scanners.CodeQLGo()
@@ -295,7 +295,7 @@ func (a *SemgrepProAgent) ScanWithDataflow(target string) (*Report, error) {
 │              └───────────┬───────────┘                      │
 │                          ▼                                  │
 │              ┌───────────────────────┐                      │
-│              │   RIS Report Output   │                      │
+│              │   CTIS Report Output   │                      │
 │              │   (with dataflow)     │                      │
 │              └───────────────────────┘                      │
 └─────────────────────────────────────────────────────────────┘
@@ -314,10 +314,10 @@ func (a *SemgrepProAgent) ScanWithDataflow(target string) (*Report, error) {
 
 ---
 
-## RIS Schema Extension for Dataflow
+## CTIS Schema Extension for Dataflow
 
 ```go
-// pkg/parsers/ris/finding.go
+// pkg/parsers/ctis/finding.go
 type Finding struct {
     // ... existing fields ...
 
@@ -376,7 +376,7 @@ codeql database analyze php-db \
 ## Next Steps
 
 1. ~~**Immediate**: Set up CodeQL in CI/CD~~ ✅ SDK scanner available
-2. ~~**Short-term**: Build RIS adapter for CodeQL SARIF output~~ ✅ Parser implemented
+2. ~~**Short-term**: Build CTIS adapter for CodeQL SARIF output~~ ✅ Parser implemented
 3. **Medium-term**: Develop custom taint engine for unsupported languages
 4. **Long-term**: Consider Semgrep Pro if budget allows
 
@@ -390,7 +390,7 @@ codeql database analyze php-db \
 - Full CodeQL scanner with database creation and analysis
 - SARIF parser with complete dataflow extraction from `codeFlows`
 - Language-specific presets (Go, Java, JavaScript, Python, C++)
-- Integration with RIS schema for dataflow storage
+- Integration with CTIS schema for dataflow storage
 
 **Key features:**
 - Inter-procedural taint tracking

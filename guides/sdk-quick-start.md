@@ -8,21 +8,21 @@ nav_order: 10
 
 # SDK Quick Start Guide
 
-Get started with the Exploop SDK to run security scans and push results to the platform.
+Get started with the OpenCTEM SDK to run security scans and push results to the platform.
 
 ---
 
 ## Installation
 
 ```bash
-go get github.com/exploopio/sdk@latest
+go get github.com/openctemio/sdk@latest
 ```
 
 For private repositories:
 
 ```bash
 # Set GOPRIVATE to bypass public proxy
-export GOPRIVATE=github.com/exploopio/*
+export GOPRIVATE=github.com/openctemio/*
 
 # Configure Git authentication (SSH recommended)
 git config --global url."git@github.com:".insteadOf "https://github.com/"
@@ -32,7 +32,7 @@ git config --global url."git@github.com:".insteadOf "https://github.com/"
 
 ## Quick Example
 
-Run a Semgrep scan and push results to Rediver:
+Run a Semgrep scan and push results to OpenCTEM:
 
 ```go
 package main
@@ -42,8 +42,8 @@ import (
     "fmt"
     "os"
 
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 func main() {
@@ -60,16 +60,16 @@ func main() {
         panic(err)
     }
 
-    // 3. Parse results to RIS format
+    // 3. Parse results to CTIS format
     parsers := core.NewParserRegistry()
     parser := parsers.FindParser(result.RawOutput)
     report, _ := parser.Parse(ctx, result.RawOutput, nil)
 
     fmt.Printf("Found %d findings\n", len(report.Findings))
 
-    // 4. Push to Rediver platform
+    // 4. Push to OpenCTEM platform
     apiClient := client.New(&client.Config{
-        BaseURL: "https://api.exploop.io",
+        BaseURL: "https://api.openctem.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -147,10 +147,10 @@ result, err := scanner.Scan(ctx, target, &core.ScanOptions{
 ### Create API Client
 
 ```go
-import "github.com/exploopio/sdk/pkg/client"
+import "github.com/openctemio/sdk/pkg/client"
 
 apiClient := client.New(&client.Config{
-    BaseURL:  "https://api.exploop.io",
+    BaseURL:  "https://api.openctem.io",
     APIKey:   os.Getenv("API_KEY"),
     WorkerID: "worker-uuid",  // Optional: for tracking
     Timeout:  30 * time.Second,
@@ -203,7 +203,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Security Scan
-        uses: docker://exploopio/agent:ci
+        uses: docker://openctemio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -221,7 +221,7 @@ jobs:
 
 ```yaml
 security-scan:
-  image: exploopio/agent:ci
+  image: openctemio/agent:ci
   script:
     - agent -tools semgrep,gitleaks,trivy -target . -auto-ci -push
   variables:
@@ -250,6 +250,6 @@ security-scan:
 
 - **[Custom Tools Development](custom-tools-development.md)** - Build your own scanners
 - **[Agent Usage](agent-usage.md)** - Run the full scanning agent
-- **[Running Workers](running-workers.md)** - Setup workers in Rediver UI
+- **[Running Workers](running-workers.md)** - Setup workers in OpenCTEM UI
 - **[SDK Development Guide](sdk-development.md)** - Advanced SDK usage
 {% endraw %}

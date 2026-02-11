@@ -9,7 +9,7 @@ nav_order: 21
 
 ## Overview
 
-This document describes the implementation of the **Transactional Outbox Pattern** for reliable notification delivery in the Rediver.io platform.
+This document describes the implementation of the **Transactional Outbox Pattern** for reliable notification delivery in the OpenCTEM.io platform.
 
 > **Important Note**: This system focuses on tenant-facing features. Admin features (system-wide monitoring, cross-tenant management) will be developed in a separate backend and frontend later.
 
@@ -921,11 +921,11 @@ If you're using Docker Compose (file `api/docker-compose.yml`), the default data
 ```
 Host:     localhost
 Port:     5432
-User:    .exploop
+User:    .openctem
 Password: secret
-Database:.exploop
+Database:.openctem
 
-DATABASE_URL: postgres:/.exploop:secret@localhost:5432.exploop
+DATABASE_URL: postgres:/.openctem:secret@localhost:5432.openctem
 ```
 
 #### Usage
@@ -935,10 +935,10 @@ DATABASE_URL: postgres:/.exploop:secret@localhost:5432.exploop
 chmod +x api/scripts/test_notification_outbox_e2e.sh
 
 # Option 1: Pass DATABASE_URL directly
-./api/scripts/test_notification_outbox_e2e.sh <tenant_id> 'postgres:/.exploop:secret@localhost:5432.exploop'
+./api/scripts/test_notification_outbox_e2e.sh <tenant_id> 'postgres:/.openctem:secret@localhost:5432.openctem'
 
 # Option 2: Set environment variable first
-export DATABASE_URL='postgres:/.exploop:secret@localhost:5432.exploop'
+export DATABASE_URL='postgres:/.openctem:secret@localhost:5432.openctem'
 ./api/scripts/test_notification_outbox_e2e.sh <tenant_id>
 ```
 
@@ -947,7 +947,7 @@ export DATABASE_URL='postgres:/.exploop:secret@localhost:5432.exploop'
 If you don't know the tenant_id, you can query the database:
 
 ```bash
-psql 'postgres:/.exploop:secret@localhost:5432.exploop' -c "SELECT id, name FROM tenants LIMIT 5;"
+psql 'postgres:/.openctem:secret@localhost:5432.openctem' -c "SELECT id, name FROM tenants LIMIT 5;"
 ```
 
 #### How the Script Works

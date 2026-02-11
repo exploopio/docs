@@ -12,7 +12,7 @@ nav_order: 6
 
 ## Overview
 
-This document outlines the gRPC API design for future implementation to support high-performance, real-time communication between Rediver agents and the backend server.
+This document outlines the gRPC API design for future implementation to support high-performance, real-time communication between OpenCTEM agents and the backend server.
 
 ## When to Implement gRPC
 
@@ -27,7 +27,7 @@ Consider implementing gRPC when:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Rediver Server                        │
+│                    OpenCTEM Server                        │
 ├─────────────────────────────────────────────────────────┤
 │  HTTP REST API          │  gRPC API                     │
 │  (Port 8080)            │  (Port 9090)                  │
@@ -76,9 +76,9 @@ api/
 ```protobuf
 syntax = "proto3";
 
-package.exploop.v1;
+package.openctem.v1;
 
-option go_package = "github.com/exploopio/api/api/proto/v1";
+option go_package = "github.com/openctemio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 
@@ -130,9 +130,9 @@ enum AgentStatus {
 ```protobuf
 syntax = "proto3";
 
-package.exploop.v1;
+package.openctem.v1;
 
-option go_package = "github.com/exploopio/api/api/proto/v1";
+option go_package = "github.com/openctemio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "common.proto";
@@ -215,9 +215,9 @@ message ShutdownRequest {
 ```protobuf
 syntax = "proto3";
 
-package.exploop.v1;
+package.openctem.v1;
 
-option go_package = "github.com/exploopio/api/api/proto/v1";
+option go_package = "github.com/openctemio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
@@ -307,9 +307,9 @@ message FailResponse {
 ```protobuf
 syntax = "proto3";
 
-package.exploop.v1;
+package.openctem.v1;
 
-option go_package = "github.com/exploopio/api/api/proto/v1";
+option go_package = "github.com/openctemio/api/api/proto/v1";
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";

@@ -526,7 +526,7 @@ CREATE TABLE external_sync_configs (
     --   "organization": "my-org",
     --   "token_encrypted": "...",
     --   "team_mappings": [
-    --     {"github_team": "backend", .exploop_group": "api-team", "sync_members": true}
+    --     {"github_team": "backend", .openctem_group": "api-team", "sync_members": true}
     --   ],
     --   "codeowners_sync": true
     -- }
@@ -643,14 +643,14 @@ func (s *GitHubSyncService) syncTeam(ctx context.Context, client *github.Client,
         return fmt.Errorf("failed to list team members: %w", err)
     }
 
-    // Get or create Rediver group
-    group, err := s.groupRepo.GetBySlug(ctx, config.TenantID, mapping.RediverGroup)
+    // Get or create OpenCTEM group
+    group, err := s.groupRepo.GetBySlug(ctx, config.TenantID, mapping.OpenCTEMGroup)
     if err != nil {
         // Create group
         group = &Group{
             TenantID:       config.TenantID,
             Name:           mapping.GitHubTeam,
-            Slug:           mapping.RediverGroup,
+            Slug:           mapping.OpenCTEMGroup,
             GroupType:      "team",
             ExternalID:     ptr(fmt.Sprintf("github:%s/%s", config.Organization, mapping.GitHubTeam)),
             ExternalSource: ptr("github"),

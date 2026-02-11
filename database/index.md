@@ -15,16 +15,15 @@ The database schema is organized into logical domains, supporting the clean arch
 
 - **[Schema Overview](./schema.md)**: Detailed breakdown of tables and relationships.
 - **[Migrations](./migrations.md)**: Database version control and migration history.
-- **[Platform Agent Tiers](./platform-agent-tiers.md)**: Tiered platform agent system with SQL functions (v3.3).
 - **[Finding Repository Queries](./finding-queries.md)**: SQL queries and performance optimization for ingestion.
 
 ## Connection
 
 | Environment | Host | Port | Database | User |
 |-------------|------|------|----------|------|
-| Development | `localhost` | `5432` | .exploop` | `postgres` |
-| Docker | `postgres` | `5432` | .exploop` | `postgres` |
-| Production | `<managed-db-host>` | `5432` | .exploop` | `<app-user>` |
+| Development | `localhost` | `5432` | .openctem` | `postgres` |
+| Docker | `postgres` | `5432` | .openctem` | `postgres` |
+| Production | `<managed-db-host>` | `5432` | .openctem` | `<app-user>` |
 
 ## Key Concepts
 

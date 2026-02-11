@@ -219,7 +219,7 @@ During RFC review, the following questions were raised:
 | Schema | `{type, name, value, ttl}` per record |
 | Supported Types | A, AAAA, CNAME, MX, TXT, NS, SOA, SRV, PTR |
 | Validation | `properties.go:198` validates record types |
-| EIS Schema | `DNSRecord` struct in `eis/types.go:186-192` |
+| CTIS Schema | `DNSRecord` struct in `ctis/types.go:186-192` |
 
 **Why NOT an asset type:**
 
@@ -242,7 +242,7 @@ During RFC review, the following questions were raised:
 | Storage | `properties.ip_address.asn` (integer) |
 | Storage | `properties.ip_address.asn_org` (string) |
 | Validation | `properties.go:276-282` validates range 0-4294967295 |
-| EIS Schema | `IPAddressTechnical.ASN` and `ASNOrg` in `eis/types.go:202-206` |
+| CTIS Schema | `IPAddressTechnical.ASN` and `ASNOrg` in `ctis/types.go:202-206` |
 
 **What is ASN?**
 - Autonomous System Number - unique ID for a network (e.g., AS15169 = Google)
@@ -494,17 +494,17 @@ Reasons:
 - `api/internal/infra/http/handler/scan_handler.go` - Updated swagger docs for TriggerScan
 
 #### SDK
-- `sdk/pkg/eis/types.go` - Added DataFlow helper methods (`BuildSummary`, `AddIntermediate`, etc.)
+- `sdk/pkg/ctis/types.go` - Added DataFlow helper methods (`BuildSummary`, `AddIntermediate`, etc.)
 
 #### UI Types
 - `ui/src/features/assets/types/asset.types.ts` - Added `unclassified` type, updated labels/icons
 
 #### Schemas
-- `schemas/eis/v1/asset.json` - Added `unclassified`, `cloud` to AssetType enum
-- `schemas/eis/v1/report.json` - Fixed brandname "Rediver" → "Exploop"
+- `schemas/ctis/v1/asset.json` - Added `unclassified`, `cloud` to AssetType enum
+- `schemas/ctis/v1/report.json` - Fixed brandname to "OpenCTEM"
 
 #### Cleanup
-- Removed duplicate package `api/pkg/parsers/eis/` (migrated to `sdk/pkg/eis`)
+- Removed duplicate package `api/pkg/parsers/ctis/` (migrated to `sdk/pkg/ctis`)
 
 ### Smart Filtering Flow
 
@@ -717,7 +717,7 @@ package tool
 import (
     "context"
     "time"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // TargetAssetTypeMapping represents a mapping between tool target and asset type.
@@ -766,8 +766,8 @@ package postgres
 import (
     "context"
     "database/sql"
-    "github.com/exploopio/api/internal/domain/tool"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/tool"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 type TargetMappingRepository struct {
@@ -1004,7 +1004,7 @@ package handler
 
 import (
     "github.com/gin-gonic/gin"
-    "github.com/exploopio/api/internal/domain/tool"
+    "github.com/openctemio/api/internal/domain/tool"
 )
 
 // Valid target types (whitelist for security)
@@ -1382,7 +1382,7 @@ package scan
 
 import (
     "context"
-    "github.com/exploopio/api/internal/domain/tool"
+    "github.com/openctemio/api/internal/domain/tool"
 )
 
 // AssetCompatibilityResult contains the result of compatibility check.
@@ -1814,8 +1814,8 @@ package scan
 import (
     "context"
     "time"
-    "github.com/exploopio/api/internal/domain/asset"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/asset"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // FilteringResult contains the result of smart asset filtering at trigger time.
@@ -1854,8 +1854,8 @@ package scan
 
 import (
     "context"
-    "github.com/exploopio/api/internal/domain/asset"
-    "github.com/exploopio/api/internal/domain/tool"
+    "github.com/openctemio/api/internal/domain/asset"
+    "github.com/openctemio/api/internal/domain/tool"
 )
 
 // AssetFilterService filters assets based on tool compatibility.

@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Asset Schema
-parent: RIS Schema Reference
+title: CTIS Asset Schema
+parent: CTIS Schema Reference
 nav_order: 2
 ---
 
-# RIS Asset Schema
+# CTIS Asset Schema
 
 The Asset schema represents discovered assets such as domains, IP addresses, repositories, cloud resources, and Web3 contracts.
 
-**Schema Location**: `schemas/ris/v1/asset.json`
+**Schema Location**: `schemas/ctis/v1/asset.json`
 
 ---
 
@@ -118,7 +118,7 @@ Type-specific technical details. Only the relevant sub-object should be populate
 | `certificate` | [CertificateTechnical](#certificatetechnical) | Certificate details |
 | `cloud` | [CloudTechnical](#cloudtechnical) | Cloud resource details |
 | `service` | [ServiceTechnical](#servicetechnical) | Network service details |
-| `web3` | [Web3Asset](ris-web3-asset.md) | Web3/blockchain details |
+| `web3` | [Web3Asset](ctis-web3-asset.md) | Web3/blockchain details |
 
 ---
 
@@ -373,5 +373,5 @@ Network service discovered on an asset (CTEM).
 
 ## Related Schemas
 
-- [Web3 Asset Schema](ris-web3-asset.md) - Web3-specific asset details
-- [Finding Schema](ris-finding.md) - Findings related to assets
+- [Web3 Asset Schema](ctis-web3-asset.md) - Web3-specific asset details
+- [Finding Schema](ctis-finding.md) - Findings related to assets

@@ -11,7 +11,7 @@
 
 Unified implementation plan for Platform Agent with capabilities:
 1. **Reconnaissance scanning** - Subdomain, DNS, Port, HTTP, URL discovery
-2. **Asset collection** - Convert recon results to RIS format and push to API
+2. **Asset collection** - Convert recon results to CTIS format and push to API
 3. **Agent specialization** - Modular executors that can be enabled/disabled
 
 ### Implementation Status
@@ -21,25 +21,25 @@ Unified implementation plan for Platform Agent with capabilities:
 | Phase 1: SDK Recon Scanners | ✅ DONE | ReconScanner interface, 5 tools |
 | Phase 2: API Changes | ✅ DONE | ValidScanners whitelist, capabilities |
 | Phase 3: Pipeline Engine | ✅ DONE | JobExecutor, built-in templates |
-| Phase 4: RIS Integration | ✅ DONE | Asset/Finding converters, API ingest, JSONB indexes |
+| Phase 4: CTIS Integration | ✅ DONE | Asset/Finding converters, API ingest, JSONB indexes |
 | Phase 5: Agent Specialization | ✅ DONE | Modular executor architecture |
 
 ### Key Architectural Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Asset Format | RIS (Rediver Interchange Schema) | Existing schema supports all recon data |
+| Asset Format | CTIS (CTEM Ingest Schema) | Existing schema supports all recon data |
 | Agent Architecture | Single binary + Modular Executors | Simple deployment, flexible configuration |
 | Scanner Mode | Hybrid (Library + Exec) | Library for lightweight, Exec for complex tools |
 | Storage Strategy | JSONB in assets.properties | Flexible, no new tables needed |
 
 ---
 
-## Part 1: RIS Asset Mapping
+## Part 1: CTIS Asset Mapping
 
-### 1.1 Tool → RIS Type Mapping
+### 1.1 Tool → CTIS Type Mapping
 
-| Tool | RIS Asset Type | Technical Field | Data |
+| Tool | CTIS Asset Type | Technical Field | Data |
 |------|----------------|-----------------|------|
 | **Subfinder** | `domain` | `Domain.DNSRecords` | Subdomains as A records |
 | **DNSX** | `domain` | `Domain.DNSRecords` | A, AAAA, MX, NS, TXT, CNAME |
@@ -48,21 +48,21 @@ Unified implementation plan for Platform Agent with capabilities:
 | **Katana** | (properties) | `properties` | URLs, endpoints, forms |
 | **Nuclei** | (finding) | `Vulnerability.*` | CVE, CVSS, affected |
 
-### 1.2 RIS Conversion Examples
+### 1.2 CTIS Conversion Examples
 
 ```go
-// Subdomain → RIS Domain Asset
-risAsset := ris.Asset{
+// Subdomain → CTIS Domain Asset
+risAsset := ctis.Asset{
     ID:          "domain-api-example-com",
-    Type:        ris.AssetTypeDomain,
+    Type:        ctis.AssetTypeDomain,
     Value:       "api.example.com",
     Name:        "API Subdomain",
-    Criticality: ris.CriticalityMedium,
+    Criticality: ctis.CriticalityMedium,
     Confidence:  85,
     DiscoveredAt: &now,
-    Technical: &ris.AssetTechnical{
-        Domain: &ris.DomainTechnical{
-            DNSRecords: []ris.DNSRecord{
+    Technical: &ctis.AssetTechnical{
+        Domain: &ctis.DomainTechnical{
+            DNSRecords: []ctis.DNSRecord{
                 {Type: "A", Name: "api.example.com", Value: "192.168.1.10", TTL: 300},
             },
             Nameservers: []string{"ns1.example.com", "ns2.example.com"},
@@ -70,16 +70,16 @@ risAsset := ris.Asset{
     },
 }
 
-// Open Ports → RIS IP Address Asset
-risAsset := ris.Asset{
+// Open Ports → CTIS IP Address Asset
+risAsset := ctis.Asset{
     ID:    "ip-192-168-1-10",
-    Type:  ris.AssetTypeIPAddress,
+    Type:  ctis.AssetTypeIPAddress,
     Value: "192.168.1.10",
-    Technical: &ris.AssetTechnical{
-        IPAddress: &ris.IPAddressTechnical{
+    Technical: &ctis.AssetTechnical{
+        IPAddress: &ctis.IPAddressTechnical{
             Version:  4,
             Hostname: "api.example.com",
-            Ports: []ris.PortInfo{
+            Ports: []ctis.PortInfo{
                 {Port: 80, Protocol: "tcp", State: "open", Service: "http"},
                 {Port: 443, Protocol: "tcp", State: "open", Service: "https"},
             },
@@ -87,13 +87,13 @@ risAsset := ris.Asset{
     },
 }
 
-// HTTP Service → RIS Service Asset
-risAsset := ris.Asset{
+// HTTP Service → CTIS Service Asset
+risAsset := ctis.Asset{
     ID:    "svc-https-api-example-com-443",
-    Type:  ris.AssetTypeService,
+    Type:  ctis.AssetTypeService,
     Value: "https://api.example.com:443",
-    Technical: &ris.AssetTechnical{
-        Service: &ris.ServiceTechnical{
+    Technical: &ctis.AssetTechnical{
+        Service: &ctis.ServiceTechnical{
             Name:      "nginx",
             Version:   "1.21.0",
             Port:      443,
@@ -118,19 +118,19 @@ risAsset := ris.Asset{
 │                      Asset Collection Flow                               │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
-│  Recon Tool Output                 RIS Report Builder        API        │
+│  Recon Tool Output                 CTIS Report Builder        API        │
 │  ─────────────────                 ──────────────────        ───        │
 │                                                                          │
 │  Subfinder → subdomains ─────┐                                          │
 │  DNSX → dns_records ─────────┤                                          │
-│  Naabu → ports ──────────────┼──→  RIS Asset Converter ──→ POST /ingest │
+│  Naabu → ports ──────────────┼──→  CTIS Asset Converter ──→ POST /ingest │
 │  HTTPX → http_services ──────┤          │                               │
 │  Katana → urls ──────────────┘          │                               │
 │                                         ▼                               │
-│                              ris.Report{                                │
+│                              ctis.Report{                                │
 │                                  Version: "1.0",                        │
-│                                  Assets: []ris.Asset{...},              │
-│                                  Findings: []ris.Finding{...},          │
+│                                  Assets: []ctis.Asset{...},              │
+│                                  Findings: []ctis.Finding{...},          │
 │                              }                                          │
 │                                                                          │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -153,7 +153,7 @@ risAsset := ris.Asset{
 │  │   ├── LeaseManager - K8s-style lease renewal                        │
 │  │   ├── JobPoller - Long-poll for jobs                                │
 │  │   ├── MetricsCollector - CPU/Memory/Disk                            │
-│  │   ├── RISReportBuilder - Convert tool output to RIS                 │
+│  │   ├── CTISReportBuilder - Convert tool output to CTIS                 │
 │  │   └── ExecutorRouter - Route jobs to executors                      │
 │  │                                                                      │
 │  ├── Executor: Recon (--enable-recon)                                   │
@@ -193,7 +193,7 @@ agent:
   renew_interval: 20s
 
 api:
-  base_url: "https://api.exploop.io"
+  base_url: "https://api.openctem.io"
 
 executors:
   recon:
@@ -235,22 +235,22 @@ type Executor interface {
     InstalledTools() []string
 }
 
-// RISProducer - executors that produce RIS reports
-type RISProducer interface {
+// CTISProducer - executors that produce CTIS reports
+type CTISProducer interface {
     Executor
-    ProduceRIS(ctx context.Context, job *platform.JobInfo, result interface{}) (*ris.Report, error)
+    ProduceCTIS(ctx context.Context, job *platform.JobInfo, result interface{}) (*ctis.Report, error)
 }
 
 // AssetProducer - executors that discover assets
 type AssetProducer interface {
-    RISProducer
-    ProduceAssets(ctx context.Context, output interface{}) ([]ris.Asset, error)
+    CTISProducer
+    ProduceAssets(ctx context.Context, output interface{}) ([]ctis.Asset, error)
 }
 
 // FindingProducer - executors that find vulnerabilities
 type FindingProducer interface {
-    RISProducer
-    ProduceFindings(ctx context.Context, output interface{}) ([]ris.Finding, error)
+    CTISProducer
+    ProduceFindings(ctx context.Context, output interface{}) ([]ctis.Finding, error)
 }
 ```
 
@@ -306,18 +306,18 @@ func (r *ExecutorRouter) Capabilities() []string {
 
 ## Part 3: API Ingest Endpoint
 
-### 3.1 RIS Ingest Handler
+### 3.1 CTIS Ingest Handler
 
 ```go
 // api/internal/infra/http/handler/ingest_handler.go
 
-// POST /api/v1/ingest/ris
-func (h *IngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request) {
+// POST /api/v1/ingest/ctis
+func (h *IngestHandler) IngestCTIS(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
 
-    var report ris.Report
+    var report ctis.Report
     if err := json.NewDecoder(r.Body).Decode(&report); err != nil {
-        httputil.Error(w, http.StatusBadRequest, "invalid RIS report", err)
+        httputil.Error(w, http.StatusBadRequest, "invalid CTIS report", err)
         return
     }
 
@@ -325,10 +325,10 @@ func (h *IngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request) {
     jobID := r.Header.Get("X-Job-ID")
 
     // Ingest assets
-    assetStats, _ := h.assetService.IngestRISAssets(ctx, tenantID, report.Assets, jobID)
+    assetStats, _ := h.assetService.IngestCTISAssets(ctx, tenantID, report.Assets, jobID)
 
     // Ingest findings
-    findingStats, _ := h.findingService.IngestRISFindings(ctx, tenantID, report.Findings, jobID)
+    findingStats, _ := h.findingService.IngestCTISFindings(ctx, tenantID, report.Findings, jobID)
 
     httputil.JSON(w, http.StatusOK, map[string]interface{}{
         "status":   "success",
@@ -343,11 +343,11 @@ func (h *IngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request) {
 ```go
 // api/internal/app/asset_service.go
 
-func (s *AssetService) IngestRISAssets(ctx context.Context, tenantID string, assets []ris.Asset, jobID string) (*AssetIngestStats, error) {
+func (s *AssetService) IngestCTISAssets(ctx context.Context, tenantID string, assets []ctis.Asset, jobID string) (*AssetIngestStats, error) {
     stats := &AssetIngestStats{}
 
     for _, risAsset := range assets {
-        domainAsset := s.convertRISAsset(tenantID, risAsset, jobID)
+        domainAsset := s.convertCTISAsset(tenantID, risAsset, jobID)
 
         // Find existing by value + type
         existing, err := s.repo.FindByValue(ctx, tenantID, risAsset.Value, string(risAsset.Type))
@@ -380,7 +380,7 @@ func (s *AssetService) IngestRISAssets(ctx context.Context, tenantID string, ass
 
 ### 4.1 JSONB Storage (No New Tables)
 
-Store RIS Technical details in `assets.properties` JSONB:
+Store CTIS Technical details in `assets.properties` JSONB:
 
 ```sql
 -- Example: Store DNSX results
@@ -468,7 +468,7 @@ spec:
     spec:
       containers:
       - name: agent
-        image: ghcr.io/exploopio/platform-agent:latest
+        image: ghcr.io/openctemio/platform-agent:latest
         args:
           - --enable-recon
           - --disable-vulnscan
@@ -500,7 +500,7 @@ spec:
     spec:
       containers:
       - name: agent
-        image: ghcr.io/exploopio/platform-agent:latest
+        image: ghcr.io/openctemio/platform-agent:latest
         args:
           - --disable-recon
           - --enable-vulnscan
@@ -544,14 +544,14 @@ spec:
 
 ## Part 6: Implementation Roadmap
 
-### Phase 4: RIS Integration (DONE)
+### Phase 4: CTIS Integration (DONE)
 
 | Task | Files | Status |
 |------|-------|--------|
-| RIS asset converters | `sdk/pkg/ris/recon_converter.go` | ✅ DONE |
-| RIS ingest service | `api/internal/app/ris_ingest_service.go` | ✅ DONE |
-| RIS ingest handler | `api/internal/infra/http/handler/ris_ingest_handler.go` | ✅ DONE |
-| Asset upsert logic | `api/internal/app/ris_ingest_service.go` | ✅ DONE |
+| CTIS asset converters | `sdk/pkg/ctis/recon_converter.go` | ✅ DONE |
+| CTIS ingest service | `api/internal/app/ctis_ingest_service.go` | ✅ DONE |
+| CTIS ingest handler | `api/internal/infra/http/handler/ctis_ingest_handler.go` | ✅ DONE |
+| Asset upsert logic | `api/internal/app/ctis_ingest_service.go` | ✅ DONE |
 | JSONB indexes | `api/migrations/000112_jsonb_property_indexes.up.sql` | ✅ DONE |
 
 ### Phase 5: Agent Specialization (DONE)
@@ -572,7 +572,7 @@ spec:
 - ✅ SDK ReconScanner interface with 5 tools (subfinder, dnsx, naabu, httpx, katana)
 - ✅ API ValidScanners whitelist and capabilities migration
 - ✅ Pipeline Engine with JobExecutor and built-in templates
-- ✅ RIS asset/finding converters for recon tools
+- ✅ CTIS asset/finding converters for recon tools
 - ✅ API ingest endpoint with batch upsert logic
 - ✅ JSONB indexes for efficient queries (migration 000112)
 - ✅ Executor router with enable/disable flags
@@ -582,18 +582,18 @@ spec:
 ### Implementation Files
 
 **Agent Executor System:**
-- `agent/internal/executor/interface.go` - Core interfaces (Executor, ToolExecutor, RISProducer)
+- `agent/internal/executor/interface.go` - Core interfaces (Executor, ToolExecutor, CTISProducer)
 - `agent/internal/executor/router.go` - ExecutorRouter for job routing
 - `agent/internal/executor/recon.go` - ReconExecutor with 5 tool wrappers
 - `agent/internal/config/config.go` - Modular configuration system
 
-**API RIS Ingestion:**
-- `api/internal/app/ris_ingest_service.go` - Batch asset/finding ingestion
-- `api/internal/infra/http/handler/ris_ingest_handler.go` - HTTP endpoints
-- `sdk/pkg/ris/recon_converter.go` - Recon → RIS conversion
+**API CTIS Ingestion:**
+- `api/internal/app/ctis_ingest_service.go` - Batch asset/finding ingestion
+- `api/internal/infra/http/handler/ctis_ingest_handler.go` - HTTP endpoints
+- `sdk/pkg/ctis/recon_converter.go` - Recon → CTIS conversion
 
 ### Key Benefits
-- **Reuse**: Leverage existing RIS schema and domain entities
+- **Reuse**: Leverage existing CTIS schema and domain entities
 - **Flexibility**: Enable/disable features per deployment
 - **Scalability**: Specialized agents can scale independently
 - **CTEM Alignment**: Feeds into CTEM Phase 0 services table

@@ -13,7 +13,7 @@ Multi-tenant data isolation using Defense in Depth strategy with SQL-based tenan
 
 ## Overview
 
-Exploop implements a **3-layer defense** approach for tenant data isolation:
+OpenCTEM implements a **3-layer defense** approach for tenant data isolation:
 
 | Layer | Mechanism | Protection Level |
 |-------|-----------|------------------|
@@ -479,31 +479,31 @@ Run `scripts/setup_production_db_user.sql` to create the production application 
 
 ```sql
 -- Create application user (non-superuser, RLS enforced)
-CREATE ROLE exploop_app LOGIN PASSWORD 'your-secure-password-here';
+CREATE ROLE openctem_app LOGIN PASSWORD 'your-secure-password-here';
 
 -- Grant database access
-GRANT CONNECT ON DATABASE exploop TO exploop_app;
-GRANT USAGE ON SCHEMA public TO exploop_app;
+GRANT CONNECT ON DATABASE openctem TO openctem_app;
+GRANT USAGE ON SCHEMA public TO openctem_app;
 
 -- Grant table permissions (CRUD operations)
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO exploop_app;
-GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO exploop_app;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO openctem_app;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO openctem_app;
 
 -- Ensure future tables get same permissions
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO exploop_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO openctem_app;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT USAGE ON SEQUENCES TO exploop_app;
+    GRANT USAGE ON SEQUENCES TO openctem_app;
 ```
 
 ### Environment Configuration
 
 ```bash
 # Development (superuser - for convenience, RLS NOT enforced)
-DATABASE_URL=postgres://exploop:secret@localhost:5432/exploop
+DATABASE_URL=postgres://openctem:secret@localhost:5432/openctem
 
 # Production (non-superuser - RLS ENFORCED)
-DATABASE_URL=postgres://exploop_app:secure-password@db.example.com:5432/exploop
+DATABASE_URL=postgres://openctem_app:secure-password@db.example.com:5432/openctem
 ```
 
 ### Verification
@@ -513,13 +513,13 @@ Check that your application user is not a superuser:
 ```sql
 SELECT rolname, rolsuper
 FROM pg_roles
-WHERE rolname IN ('exploop', 'exploop_app');
+WHERE rolname IN ('openctem', 'openctem_app');
 
 -- Expected output:
 --  rolname     | rolsuper
 -- -------------+----------
---  exploop     | t          -- Superuser (for migrations only)
---  exploop_app | f          -- Non-superuser (RLS enforced)
+--  openctem     | t          -- Superuser (for migrations only)
+--  openctem_app | f          -- Non-superuser (RLS enforced)
 ```
 
 ### Migration Strategy
@@ -536,14 +536,14 @@ The RLS integration tests (`tests/integration/rls_tenant_isolation_test.go`) req
 
 | Environment Variable | Purpose | Example |
 |---------------------|---------|---------|
-| `DATABASE_URL` | Superuser (for test data setup) | `postgres://exploop:secret@localhost:5432/exploop` |
-| `DATABASE_URL_RLS_TEST` | Non-superuser (for RLS tests) | `postgres://rls_test_user:test_password_123@localhost:5432/exploop` |
+| `DATABASE_URL` | Superuser (for test data setup) | `postgres://openctem:secret@localhost:5432/openctem` |
+| `DATABASE_URL_RLS_TEST` | Non-superuser (for RLS tests) | `postgres://rls_test_user:test_password_123@localhost:5432/openctem` |
 
 Run RLS tests:
 
 ```bash
-DATABASE_URL="postgres://exploop:secret@localhost:5432/exploop?sslmode=disable" \
-DATABASE_URL_RLS_TEST="postgres://rls_test_user:test_password_123@localhost:5432/exploop?sslmode=disable" \
+DATABASE_URL="postgres://openctem:secret@localhost:5432/openctem?sslmode=disable" \
+DATABASE_URL_RLS_TEST="postgres://rls_test_user:test_password_123@localhost:5432/openctem?sslmode=disable" \
 go test -v ./tests/integration -run TestRLS
 ```
 
@@ -552,7 +552,7 @@ go test -v ./tests/integration -run TestRLS
 ```sql
 -- Run scripts/test_rls.sql or execute:
 CREATE ROLE rls_test_user LOGIN PASSWORD 'test_password_123';
-GRANT CONNECT ON DATABASE exploop TO rls_test_user;
+GRANT CONNECT ON DATABASE openctem TO rls_test_user;
 GRANT USAGE ON SCHEMA public TO rls_test_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO rls_test_user;
 GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO rls_test_user;

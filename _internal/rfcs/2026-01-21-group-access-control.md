@@ -199,7 +199,7 @@ const canDeleteAssets = can(Permission.AssetsDelete);
 
 ### 1.1 Problem Statement
 
-The current Rediver platform has a simple RBAC model (Owner, Admin, Member, Viewer) that doesn't support:
+The current OpenCTEM platform has a simple RBAC model (Owner, Admin, Member, Viewer) that doesn't support:
 
 - **Multiple user personas** beyond security team (developers, asset owners, managers)
 - **Scoped access** to specific assets or findings
@@ -1204,7 +1204,7 @@ interface GitHubSyncConfig {
   // Team mapping
   team_mappings: {
     github_team: string;      // "backend-developers"
-   .exploop_group: string;    // "api-team"
+   .openctem_group: string;    // "api-team"
     sync_members: boolean;    // Sync team members
     sync_repos: boolean;      // Sync repo access as ownership
   }[];

@@ -7,13 +7,13 @@ nav_order: 15
 
 # WebSocket Setup Guide
 
-This guide covers how to configure WebSocket for real-time features in Exploop.
+This guide covers how to configure WebSocket for real-time features in OpenCTEM.
 
 ---
 
 ## Overview
 
-Exploop uses WebSocket for real-time updates including:
+OpenCTEM uses WebSocket for real-time updates including:
 
 - **Finding Activities** - Live activity stream updates
 - **Scan Progress** - Real-time scan status updates
@@ -154,7 +154,7 @@ upstream api_backend {
 
 server {
     listen 80;
-    server_name exploop.local;
+    server_name openctem.local;
 
     # WebSocket endpoint
     location /api/v1/ws {
@@ -195,10 +195,10 @@ server {
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name exploop.example.com;
+    server_name openctem.example.com;
 
-    ssl_certificate /etc/ssl/certs/exploop.crt;
-    ssl_certificate_key /etc/ssl/private/exploop.key;
+    ssl_certificate /etc/ssl/certs/openctem.crt;
+    ssl_certificate_key /etc/ssl/private/openctem.key;
 
     # WebSocket over TLS (wss://)
     location /api/v1/ws {
@@ -245,9 +245,9 @@ version: '3.8'
 
 services:
   api:
-    image: exploop/api:latest
+    image: openctem/api:latest
     environment:
-      - DATABASE_URL=postgres://user:pass@db:5432/exploop
+      - DATABASE_URL=postgres://user:pass@db:5432/openctem
       - REDIS_URL=redis://redis:6379
     ports:
       - "8080:8080"
@@ -256,7 +256,7 @@ services:
       - redis
 
   ui:
-    image: exploop/ui:latest
+    image: openctem/ui:latest
     environment:
       - BACKEND_API_URL=http://api:8080
       # Leave empty for same-origin WebSocket
@@ -281,7 +281,7 @@ services:
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=pass
-      - POSTGRES_DB=exploop
+      - POSTGRES_DB=openctem
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -330,7 +330,7 @@ Update CSP to allow WebSocket connections:
     "default-src 'self'",
     // ... other directives
     // Allow WebSocket connections
-    "connect-src 'self' ws://localhost:* wss://localhost:* wss://*.exploop.io",
+    "connect-src 'self' ws://localhost:* wss://localhost:* wss://*.openctem.io",
   ].join('; '),
 }
 ```
@@ -464,8 +464,8 @@ var upgrader = websocket.Upgrader{
     CheckOrigin: func(r *http.Request) bool {
         origin := r.Header.Get("Origin")
         // Allow trusted origins only
-        return origin == "https://app.exploop.io" ||
-               strings.HasSuffix(origin, ".exploop.io")
+        return origin == "https://app.openctem.io" ||
+               strings.HasSuffix(origin, ".openctem.io")
     },
 }
 ```

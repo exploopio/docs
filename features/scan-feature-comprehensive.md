@@ -9,7 +9,7 @@ nav_order: 9
 
 ## Executive Summary
 
-The Scan feature is the core execution engine of Exploop, orchestrating security assessments across assets. This document provides a complete analysis of the scan architecture, flows, use cases, edge cases, and recommendations.
+The Scan feature is the core execution engine of OpenCTEM, orchestrating security assessments across assets. This document provides a complete analysis of the scan architecture, flows, use cases, edge cases, and recommendations.
 
 ---
 
@@ -369,13 +369,13 @@ Flow:
 
 #### UC-6: Platform Agent Utilization
 **Actor:** Small Team (no self-hosted agents)
-**Goal:** Use Exploop's managed cloud agents
+**Goal:** Use OpenCTEM's managed cloud agents
 
 ```
 Flow:
 1. Create scan with agent_preference="platform"
 2. System routes to platform-managed agents
-3. Scan executes in Exploop's cloud
+3. Scan executes in OpenCTEM's cloud
 4. Results returned to tenant's workspace
 ```
 

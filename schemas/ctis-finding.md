@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Finding Schema
-parent: RIS Schema Reference
+title: CTIS Finding Schema
+parent: CTIS Schema Reference
 nav_order: 3
 ---
 
-# RIS Finding Schema
+# CTIS Finding Schema
 
 The Finding schema represents security findings including vulnerabilities, secrets, misconfigurations, compliance issues, and Web3 vulnerabilities.
 
-**Schema Location**: `schemas/ris/v1/finding.json`
+**Schema Location**: `schemas/ctis/v1/finding.json`
 
 ---
 
@@ -66,7 +66,7 @@ The Finding schema represents security findings including vulnerabilities, secre
 | `secret` | [SecretDetails](#secretdetails) | Secret-specific details |
 | `misconfiguration` | [MisconfigurationDetails](#misconfigurationdetails) | Misconfiguration details |
 | `compliance` | [ComplianceDetails](#compliancedetails) | Compliance details |
-| `web3` | [Web3Finding](ris-web3-finding.md) | Web3 vulnerability details |
+| `web3` | [Web3Finding](ctis-web3-finding.md) | Web3 vulnerability details |
 | `data_flow` | [DataFlow](#dataflow) | Taint tracking data flow |
 
 ### Metadata and Lifecycle
@@ -537,5 +537,5 @@ Artifact or evidence attachment (SARIF attachment).
 
 ## Related Schemas
 
-- [Web3 Finding Schema](ris-web3-finding.md) - Smart contract vulnerabilities
+- [Web3 Finding Schema](ctis-web3-finding.md) - Smart contract vulnerabilities
 - [Data Flow Tracking](../features/data-flow-tracking.md) - DataFlow field documentation

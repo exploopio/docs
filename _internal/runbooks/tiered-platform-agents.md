@@ -41,7 +41,7 @@ The Tiered Platform Agent system provides resource isolation and priority-based 
 
 ### Access Requirements
 
-- Database: Read/write access to .exploop` database
+- Database: Read/write access to `openctem` database
 - Admin API: Bearer token with `admin:platform-agents` permission
 - Monitoring: Access to Grafana dashboards
 
@@ -103,7 +103,7 @@ SET tier = 'dedicated', updated_at = NOW()
 WHERE id = '<agent-uuid>';
 
 # Via Admin API
-curl -X PATCH https://api.exploop.io/api/v1/admin/platform-agents/<agent-id> \
+curl -X PATCH https://api.openctem.io/api/v1/admin/platform-agents/<agent-id> \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"tier": "dedicated"}'

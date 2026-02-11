@@ -37,7 +37,7 @@ nav_order: 20
 
 This document describes the implementation of module-based permission filtering for the sidebar navigation. The system ensures that users only see modules they have permission to access, implementing a proper separation between:
 
-1. **Licensing Layer** (Tenant-level): What modules the tenant's subscription plan includes
+1. **Module Layer** (Tenant-level): What modules the tenant's configuration includes
 2. **RBAC Layer** (User-level): What modules the user has permission to access within the tenant
 
 ### 1.2 Key Benefits
@@ -55,7 +55,7 @@ This document describes the implementation of module-based permission filtering 
 
 ### 2.1 Previous Behavior
 
-The API endpoint `GET /api/v1/me/modules` returned all modules enabled for the tenant's subscription plan, regardless of the user's individual permissions.
+The API endpoint `GET /api/v1/me/modules` returned all modules enabled for the tenant's module configuration, regardless of the user's individual permissions.
 
 ```
 Previous Flow:

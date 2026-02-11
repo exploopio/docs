@@ -8,7 +8,7 @@ nav_order: 7
 
 # Monitoring & Observability Guide
 
-Complete guide for monitoring and observability in production Exploop deployments.
+Complete guide for monitoring and observability in production OpenCTEM deployments.
 
 ---
 
@@ -84,12 +84,12 @@ func main() {
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: exploop-api
-  namespace: exploop
+  name: openctem-api
+  namespace: openctem
 spec:
   selector:
     matchLabels:
-      app: exploop-api
+      app: openctem-api
   endpoints:
   - port: metrics
     interval: 30s
@@ -116,16 +116,16 @@ rate(http_requests_total{status=~"5.."}[5m])
 
 ```promql
 # Active findings
-exploop_findings_total{status="open"}
+openctem_findings_total{status="open"}
 
 # Scan queue depth
-exploop_scan_queue_depth
+openctem_scan_queue_depth
 
 # Agent heartbeats
-rate.exploop_agent_heartbeats_total[5m])
+rate.openctem_agent_heartbeats_total[5m])
 
 # Database connections
-exploop_db_connections{state="active"}
+openctem_db_connections{state="active"}
 ```
 
 #### Infrastructure Metrics
@@ -150,19 +150,19 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: 'exploop-api'
+  - job_name: 'openctem-api'
     kubernetes_sd_configs:
       - role: pod
         namespaces:
-          names: .exploop]
+          names: .openctem]
     relabel_configs:
       - source_labels: [__meta_kubernetes_pod_label_app]
-        regex: exploop-api
+        regex: openctem-api
         action: keep
 
-  - job_name: .exploop-ui'
+  - job_name: .openctem-ui'
     static_configs:
-      - targets: [.exploop-ui:3000']
+      - targets: [.openctem-ui:3000']
 
   - job_name: 'postgres'
     static_configs:
@@ -258,17 +258,17 @@ spec:
 
 ```logql
 # All API errors
-{app="exploop-api"} |= "error"
+{app="openctem-api"} |= "error"
 
 # Failed logins
-{app="exploop-api"} |= "login" |= "failed"
+{app="openctem-api"} |= "login" |= "failed"
 
 # Slow queries (>1s)
-{app="exploop-api"} | json | duration > 1s
+{app="openctem-api"} | json | duration > 1s
 
 # Top errors by tenant
 topk(10, sum by (tenant_id) (
-  rate({app="exploop-api"} |= "error" [5m])
+  rate({app="openctem-api"} |= "error" [5m])
 ))
 ```
 
@@ -290,7 +290,7 @@ func InitTracing() {
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
         trace.WithResource(resource.NewWithAttributes(
-            semconv.ServiceNameKey.String("exploop-api"),
+            semconv.ServiceNameKey.String("openctem-api"),
         )),
     )
     otel.SetTracerProvider(tp)
@@ -337,7 +337,7 @@ spec:
 ```yaml
 # alerts.yaml
 groups:
-  - name:.exploop_api
+  - name:.openctem_api
     interval: 30s
     rules:
       # High error rate
@@ -353,7 +353,7 @@ groups:
 
       # API down
       - alert: APIDown
-        expr: up{job="exploop-api"} == 0
+        expr: up{job="openctem-api"} == 0
         for: 1m
         labels:
           severity: critical
@@ -375,8 +375,8 @@ groups:
       # Database connection pool exhausted
       - alert: DBConnectionPoolExhausted
         expr: |
-         .exploop_db_connections{state="in_use"} 
-          /.exploop_db_connections_max > 0.9
+         .openctem_db_connections{state="in_use"} 
+          /.openctem_db_connections_max > 0.9
         for: 5m
         labels:
           severity: warning
@@ -508,10 +508,10 @@ histogram_quantile(0.95,
 
 ```promql
 # Total findings by severity
-sum by (severity) .exploop_findings_total{status="open"})
+sum by (severity) .openctem_findings_total{status="open"})
 
 # Scan completion rate
-rate.exploop_scans_total{status="completed"}[1h])
+rate.openctem_scans_total{status="completed"}[1h])
 ```
 
 ---

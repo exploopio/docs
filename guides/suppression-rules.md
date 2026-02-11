@@ -14,7 +14,7 @@ Platform-controlled rules to suppress false positives and auto-resolve fixed vul
 
 ## Overview
 
-Rediver provides two key features for managing finding lifecycle:
+OpenCTEM provides two key features for managing finding lifecycle:
 
 1. **Suppression Rules**: Mark findings as false positives, accepted risks, or "won't fix" centrally
 2. **Auto-Resolve**: Automatically close findings when they're fixed in code
@@ -31,7 +31,7 @@ Traditional approaches like `.semgrepignore` files or `// nosemgrep` comments ha
 | `// nosemgrep` comments | No audit trail, no expiration, scattered across codebase |
 | Tool-specific ignore files | Inconsistent across tools, hard to manage at scale |
 
-**Rediver's approach**: All suppressions are managed through the platform with:
+**OpenCTEM's approach**: All suppressions are managed through the platform with:
 - **Centralized control**: Security team owns suppression rules
 - **Full audit trail**: Who, when, why for every change
 - **Expiration and review**: Rules can expire, forcing periodic review
@@ -342,7 +342,7 @@ Scans complete: 42 findings
 You can test suppression matching without the platform:
 
 ```go
-import "github.com/exploopio/agent/internal/gate"
+import "github.com/openctemio/agent/internal/gate"
 
 rules := []client.SuppressionRule{
     {RuleID: "sql-injection", ToolName: "semgrep"},
@@ -459,9 +459,9 @@ ORDER BY created_at DESC;
 
 ## Industry Comparison
 
-How Rediver compares to other platforms:
+How OpenCTEM compares to other platforms:
 
-| Feature | Rediver | SonarQube | Semgrep | GitHub GHAS | DefectDojo |
+| Feature | OpenCTEM | SonarQube | Semgrep | GitHub GHAS | DefectDojo |
 |---------|---------|-----------|---------|-------------|------------|
 | Auto-resolve when fixed | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-reopen when reappears | ✅ | ✅ | ✅ | Manual | Configurable |
@@ -477,7 +477,7 @@ How Rediver compares to other platforms:
 - **Semgrep**: Uses platform triage, in-code suppression optional
 - **GitHub**: SARIF-based suppression sync available
 - **DefectDojo**: Most configurable, supports cross-scanner deduplication
-- **Rediver**: Disables in-code suppression by default for maximum governance
+- **OpenCTEM**: Disables in-code suppression by default for maximum governance
 
 ---
 
@@ -502,7 +502,7 @@ For each suppression, create an equivalent platform rule:
 
 ```bash
 # Convert .semgrepignore entry to API call
-curl -X POST https://api.exploop.io/api/v1/suppressions \
+curl -X POST https://api.openctem.io/api/v1/suppressions \
   -H "Authorization: Bearer $API_KEY" \
   -d '{
     "path_pattern": "tests/fixtures/**",

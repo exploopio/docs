@@ -7,7 +7,7 @@ nav_order: 3
 
 # Platform Agents Implementation Plan
 
-> Hybrid Agent Architecture for Rediver SaaS Platform
+> Hybrid Agent Architecture for OpenCTEM SaaS Platform
 
 **Status:** Draft v3.2 (Complete Platform Agent Architecture)
 **Created:** 2025-01-25
@@ -43,10 +43,10 @@ nav_order: 3
 
 ### 1.1 Problem Statement
 
-Rediver currently only supports **Tenant Agents** - agents deployed and managed by tenants themselves. This creates barriers for:
+OpenCTEM currently only supports **Tenant Agents** - agents deployed and managed by tenants themselves. This creates barriers for:
 - **Free/Small tenants**: No infrastructure to deploy agents
 - **Quick evaluation**: Want to try the platform without setup
-- **Managed service**: Some tenants want Rediver to fully manage
+- **Managed service**: Some tenants want OpenCTEM to fully manage
 
 ### 1.2 Solution: Hybrid Agent Model with Auto-allocation
 
@@ -58,8 +58,8 @@ Rediver currently only supports **Tenant Agents** - agents deployed and managed 
 │  ┌──────────────────────┐      ┌──────────────────────┐            │
 │  │   TENANT AGENTS      │      │   PLATFORM AGENTS    │            │
 │  ├──────────────────────┤      ├──────────────────────┤            │
-│  │ • Tenant deploys     │      │ • Rediver deploys    │            │
-│  │ • Tenant manages     │      │ • Rediver manages    │            │
+│  │ • Tenant deploys     │      │ • OpenCTEM deploys    │            │
+│  │ • Tenant manages     │      │ • OpenCTEM manages    │            │
 │  │ • Full control       │      │ • AUTO-ALLOCATED     │            │
 │  │ • Count toward limit │      │ • Concurrent job limit│            │
 │  │ • 1 agent = 1 tenant │      │ • 1 agent = N tenant │            │
@@ -122,7 +122,7 @@ Rediver currently only supports **Tenant Agents** - agents deployed and managed 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              REDIVER PLATFORM                                │
+│                              OPENCTEM PLATFORM                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌─────────────────┐         ┌─────────────────┐         ┌───────────────┐ │
@@ -150,7 +150,7 @@ Rediver currently only supports **Tenant Agents** - agents deployed and managed 
 │           ▼                                                      ▼         │
 │  ┌─────────────────────┐                          ┌─────────────────────┐ │
 │  │   TENANT AGENTS     │                          │  PLATFORM AGENTS    │ │
-│  │   (Customer infra)  │                          │  (Rediver infra)    │ │
+│  │   (Customer infra)  │                          │  (OpenCTEM infra)    │ │
 │  │                     │                          │                     │ │
 │  │  ┌───┐ ┌───┐ ┌───┐ │                          │  ┌───┐ ┌───┐ ┌───┐ │ │
 │  │  │ A │ │ B │ │ C │ │                          │  │ 1 │ │ 2 │ │ 3 │ │ │
@@ -165,13 +165,13 @@ Rediver currently only supports **Tenant Agents** - agents deployed and managed 
 
 | Aspect | Tenant Agent | Platform Agent |
 |--------|--------------|----------------|
-| **Deployment** | Customer infrastructure | Rediver infrastructure |
-| **Management** | Customer responsibility | Rediver operations team |
+| **Deployment** | Customer infrastructure | OpenCTEM infrastructure |
+| **Management** | Customer responsibility | OpenCTEM operations team |
 | **API Key Prefix** | `rda_` | `rda_p_` |
 | **Authentication** | API Key → tenant_id | API Key + Command Token → tenant_id |
 | **Multi-tenant** | No (1:1) | Yes (1:N) |
 | **Data isolation** | By agent ownership | By command token |
-| **Scaling** | Customer scales | Rediver scales |
+| **Scaling** | Customer scales | OpenCTEM scales |
 | **Cost** | Customer bears | Included in plan |
 | **SLA** | N/A | Platform SLA |
 | **Selection** | Tenant selects specific agent | **Platform auto-selects** |
@@ -365,7 +365,7 @@ Command Token Format: rct_<random_bytes_base64>
 Example: rct_7Hj9kL2mNpQrStUvWxYz1234567890abcdefghij
 
 Components:
-├── Prefix: "rct_" (Rediver Command Token)
+├── Prefix: "rct_" (OpenCTEM Command Token)
 ├── Random: 32 bytes (256 bits) base64-encoded
 └── Total length: ~48 characters
 
@@ -440,7 +440,7 @@ CREATE INDEX idx_agents_tenant_non_platform ON agents(tenant_id)
 WHERE is_platform_agent = FALSE;
 
 COMMENT ON COLUMN agents.is_platform_agent IS
-'True for Rediver-managed platform agents, false for tenant-owned agents';
+'True for OpenCTEM-managed platform agents, false for tenant-owned agents';
 
 -- -----------------------------------------------------------------------------
 -- 2. Create system tenant for platform agents
@@ -458,8 +458,8 @@ INSERT INTO tenants (
     updated_at
 ) VALUES (
     '00000000-0000-0000-0000-000000000001',
-    'Exploop Platform',
-    .exploop-platform',
+    'OpenCTEM Platform',
+    .openctem-platform',
     (SELECT id FROM plans WHERE slug = 'enterprise'),
     '{"is_system_tenant": true}'::jsonb,
     NOW(),
@@ -721,14 +721,14 @@ type Agent struct {
     StatusMessage string
 
     // Platform agent flag
-    // Platform agents are managed by Rediver and serve multiple tenants.
+    // Platform agents are managed by OpenCTEM and serve multiple tenants.
     // They require command tokens for authentication during ingest.
     IsPlatformAgent bool
 
     // ... rest of fields unchanged
 }
 
-// IsPlatform returns true if this is a Rediver-managed platform agent.
+// IsPlatform returns true if this is a OpenCTEM-managed platform agent.
 func (a *Agent) IsPlatform() bool {
     return a.IsPlatformAgent
 }
@@ -1160,8 +1160,8 @@ Request:
 {
   "command_id": "cmd-uuid",
   "status": "completed",
-  "findings": [ /* RIS format findings */ ],
-  "assets": [ /* RIS format assets */ ],
+  "findings": [ /* CTIS format findings */ ],
+  "assets": [ /* CTIS format assets */ ],
   "metadata": {
     "duration_ms": 45000,
     "tool_version": "2.9.1"
@@ -2610,14 +2610,14 @@ func (s *AgentJoinService) JoinWithBootstrapToken(
 
 ### 11.1 CLI Overview
 
-The `exploop-admin` CLI provides administrative commands for platform management, similar to `kubectl` or `kubeadm`:
+The `openctem-admin` CLI provides administrative commands for platform management, similar to `kubectl` or `kubeadm`:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         ADMIN CLI COMMANDS                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  exploop-admin                                                               │
+│  openctem-admin                                                               │
 │  ├── token                    # Bootstrap token management                  │
 │  │   ├── create              # Create new bootstrap token                   │
 │  │   ├── list                # List all tokens                              │
@@ -2654,7 +2654,7 @@ The `exploop-admin` CLI provides administrative commands for platform management
 # =============================================================================
 
 # Basic token (24h, single-use)
-$ exploop-admin token create
+$ openctem-admin token create
 ✓ Bootstrap token created
 
 Token:        rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef
@@ -2663,11 +2663,11 @@ Expires:      2024-01-26 10:00:00 UTC (in 24 hours)
 Max Uses:     1
 
 Join command:
-  exploop-agent join --token=rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef \
-                     --server=https://api.exploop.io
+  openctem-agent join --token=rbt_7Hj9kL2mNpQrStUvWxYz1234567890abcdef \
+                     --server=https://api.openctem.io
 
 # Token with custom options
-$ exploop-admin token create \
+$ openctem-admin token create \
     --description "US East scanners" \
     --expires 48h \
     --max-uses 5 \
@@ -2685,27 +2685,27 @@ Required:     capabilities=[sast,sca,secrets] tools=[semgrep,trivy,gitleaks]
 Region:       us-east-1
 
 Join command:
-  exploop-agent join --token=rbt_AbCdEfGhIjKlMnOpQrStUvWx1234567890 \
-                     --server=https://api.exploop.io
+  openctem-agent join --token=rbt_AbCdEfGhIjKlMnOpQrStUvWx1234567890 \
+                     --server=https://api.openctem.io
 
 # Print only the join command (for scripting)
-$ exploop-admin token create --print-join-command
-exploop-agent join --token=rbt_XyZ123... --server=https://api.exploop.io
+$ openctem-admin token create --print-join-command
+openctem-agent join --token=rbt_XyZ123... --server=https://api.openctem.io
 
 # Output as JSON
-$ exploop-admin token create --output json
+$ openctem-admin token create --output json
 {
   "token": "rbt_...",
   "token_id": "...",
   "expires_at": "2024-01-26T10:00:00Z",
-  "join_command": "exploop-agent join --token=... --server=..."
+  "join_command": "openctem-agent join --token=... --server=..."
 }
 
 # =============================================================================
 # LIST TOKENS
 # =============================================================================
 
-$ exploop-admin token list
+$ openctem-admin token list
 
 ID                                    PREFIX        STATUS    USES    EXPIRES              DESCRIPTION
 ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -2715,13 +2715,13 @@ c3d4e5f6-a7b8-9012-cdef-123456789012  rbt_XyZa...   used      1/1     2024-01-25
 d4e5f6a7-b8c9-0123-def0-234567890123  rbt_QwEr...   revoked   0/1     2024-01-28 10:00     Revoked: security
 
 # Filter by status
-$ exploop-admin token list --status active
+$ openctem-admin token list --status active
 
 # =============================================================================
 # GET TOKEN DETAILS
 # =============================================================================
 
-$ exploop-admin token get a1b2c3d4-e5f6-7890-abcd-ef1234567890
+$ openctem-admin token get a1b2c3d4-e5f6-7890-abcd-ef1234567890
 
 Token ID:              a1b2c3d4-e5f6-7890-abcd-ef1234567890
 Prefix:                rbt_7Hj9...
@@ -2740,25 +2740,25 @@ Used By Agents:        (none)
 # REVOKE TOKEN
 # =============================================================================
 
-$ exploop-admin token revoke a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+$ openctem-admin token revoke a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
     --reason "No longer needed"
 
 ✓ Token revoked
 
 # Force revoke without confirmation
-$ exploop-admin token revoke <id> --force
+$ openctem-admin token revoke <id> --force
 
 # =============================================================================
 # CLEANUP EXPIRED TOKENS
 # =============================================================================
 
-$ exploop-admin token cleanup
+$ openctem-admin token cleanup
 
 Found 15 expired tokens
 ✓ Deleted 15 expired tokens
 
 # Dry run
-$ exploop-admin token cleanup --dry-run
+$ openctem-admin token cleanup --dry-run
 Would delete 15 expired tokens (dry run)
 ```
 
@@ -2769,7 +2769,7 @@ Would delete 15 expired tokens (dry run)
 # LIST AGENTS
 # =============================================================================
 
-$ exploop-admin agent list
+$ openctem-admin agent list
 
 ID          NAME                  STATUS    HEALTH    JOBS    REGION       LAST SEEN
 ─────────────────────────────────────────────────────────────────────────────────────
@@ -2781,14 +2781,14 @@ jkl012...   scanner-ap-01         disabled  offline   0/5     ap-south-1   2 hou
 Total: 4 agents (2 online, 2 offline)
 
 # Filter
-$ exploop-admin agent list --status active --health online
-$ exploop-admin agent list --region us-east-1
+$ openctem-admin agent list --status active --health online
+$ openctem-admin agent list --region us-east-1
 
 # =============================================================================
 # GET AGENT DETAILS
 # =============================================================================
 
-$ exploop-admin agent get abc123
+$ openctem-admin agent get abc123
 
 Agent ID:              abc123...
 Name:                  scanner-us-east-01
@@ -2824,17 +2824,17 @@ Statistics:
 # DISABLE/ENABLE AGENT
 # =============================================================================
 
-$ exploop-admin agent disable abc123 --reason "Maintenance"
+$ openctem-admin agent disable abc123 --reason "Maintenance"
 ✓ Agent abc123 disabled
 
-$ exploop-admin agent enable abc123
+$ openctem-admin agent enable abc123
 ✓ Agent abc123 enabled
 
 # =============================================================================
 # ROTATE API KEY
 # =============================================================================
 
-$ exploop-admin agent rotate-key abc123
+$ openctem-admin agent rotate-key abc123
 
 ⚠ This will invalidate the current API key immediately.
   The agent will need to be reconfigured with the new key.
@@ -2847,13 +2847,13 @@ New API Key:     rda_p_NewKeyHere123456789...
 Agent must be reconfigured with this key.
 
 # Force without confirmation
-$ exploop-admin agent rotate-key abc123 --force
+$ openctem-admin agent rotate-key abc123 --force
 
 # =============================================================================
 # DELETE AGENT
 # =============================================================================
 
-$ exploop-admin agent delete abc123
+$ openctem-admin agent delete abc123
 
 ⚠ This will permanently delete the agent.
   Agent ID: abc123
@@ -2865,10 +2865,10 @@ Continue? [y/N] y
 ✓ Agent deleted
 
 # Cannot delete agent with active jobs
-$ exploop-admin agent delete def456
+$ openctem-admin agent delete def456
 ✗ Error: Agent has 5 active jobs. Wait for jobs to complete or use --force.
 
-$ exploop-admin agent delete def456 --force
+$ openctem-admin agent delete def456 --force
 ⚠ Force deleting agent with active jobs. Jobs will be returned to queue.
 ✓ Agent deleted, 5 jobs returned to queue
 ```
@@ -2880,7 +2880,7 @@ $ exploop-admin agent delete def456 --force
 # QUEUE STATUS
 # =============================================================================
 
-$ exploop-admin queue status
+$ openctem-admin queue status
 
 Platform Agent Queue Status
 ═══════════════════════════════════════════════════════════════════
@@ -2907,7 +2907,7 @@ By Priority:
 # LIST QUEUED JOBS
 # =============================================================================
 
-$ exploop-admin queue list
+$ openctem-admin queue list
 
 ID          TENANT              TOOL      PRIORITY   QUEUED              WAIT TIME
 ────────────────────────────────────────────────────────────────────────────────────
@@ -2916,14 +2916,14 @@ cmd456...   Beta Inc            trivy     150        2024-01-25 09:55    10m
 cmd789...   Startup LLC         semgrep   75         2024-01-25 09:30    35m
 
 # Filter by tool, tenant, or priority
-$ exploop-admin queue list --tool nuclei
-$ exploop-admin queue list --min-wait 30m
+$ openctem-admin queue list --tool nuclei
+$ openctem-admin queue list --min-wait 30m
 
 # =============================================================================
 # FLUSH STUCK JOBS
 # =============================================================================
 
-$ exploop-admin queue flush --stuck-for 2h
+$ openctem-admin queue flush --stuck-for 2h
 
 Found 5 jobs stuck for more than 2 hours:
   cmd111... - dispatched 3h ago, agent offline
@@ -2943,52 +2943,52 @@ Return to queue? [y/N] y
 # =============================================================================
 
 # Set API server
-$ exploop-admin config set-server https://api.exploop.io
+$ openctem-admin config set-server https://api.openctem.io
 ✓ Server URL saved
 
 # Set admin token (interactive)
-$ exploop-admin config set-token
+$ openctem-admin config set-token
 Enter admin API token: ********
 ✓ Token saved
 
 # Set admin token (non-interactive)
-$ exploop-admin config set-token --token "rat_admin_token_here"
+$ openctem-admin config set-token --token "rat_admin_token_here"
 ✓ Token saved
 
 # Or use environment variables
-$ export REDIVER_ADMIN_SERVER=https://api.exploop.io
-$ export REDIVER_ADMIN_TOKEN=rat_admin_token_here
+$ export OPENCTEM_ADMIN_SERVER=https://api.openctem.io
+$ export OPENCTEM_ADMIN_TOKEN=rat_admin_token_here
 
 # Show current config
-$ exploop-admin config show
-Server:     https://api.exploop.io
+$ openctem-admin config show
+Server:     https://api.openctem.io
 Token:      rat_abc... (configured)
-Config Dir: ~/.config/exploop-admin/
+Config Dir: ~/.config/openctem-admin/
 
-# Config file location: ~/.config/exploop-admin/config.yaml
+# Config file location: ~/.config/openctem-admin/config.yaml
 # config.yaml:
-# server: https://api.exploop.io
+# server: https://api.openctem.io
 # token: rat_admin_token_here
 ```
 
 ### 11.6 CLI Implementation Structure
 
 ```go
-// cmd/exploop-admin/main.go
+// cmd/openctem-admin/main.go
 package main
 
 import (
     "github.com/spf13/cobra"
-    "github.com/exploopio/admin-cli/cmd/token"
-    "github.com/exploopio/admin-cli/cmd/agent"
-    "github.com/exploopio/admin-cli/cmd/queue"
-    "github.com/exploopio/admin-cli/cmd/config"
+    "github.com/openctemio/admin-cli/cmd/token"
+    "github.com/openctemio/admin-cli/cmd/agent"
+    "github.com/openctemio/admin-cli/cmd/queue"
+    "github.com/openctemio/admin-cli/cmd/config"
 )
 
 func main() {
     rootCmd := &cobra.Command{
-        Use:   "exploop-admin",
-        Short: "Exploop Platform Administration CLI",
+        Use:   "openctem-admin",
+        Short: "OpenCTEM Platform Administration CLI",
     }
 
     rootCmd.AddCommand(
@@ -3007,7 +3007,7 @@ func main() {
     }
 }
 
-// cmd/exploop-admin/cmd/token/create.go
+// cmd/openctem-admin/cmd/token/create.go
 package token
 
 func NewCreateCmd() *cobra.Command {
@@ -3061,22 +3061,22 @@ func runCreate(cmd *cobra.Command, args []string) error {
 # Installation options:
 
 # 1. Binary download
-$ curl -LO https://github.com/exploopio/exploop-admin/releases/latest/download/exploop-admin-linux-amd64
-$ chmod +x exploop-admin-linux-amd64
-$ sudo mv exploop-admin-linux-amd64 /usr/local/bin/exploop-admin
+$ curl -LO https://github.com/openctemio/openctem-admin/releases/latest/download/openctem-admin-linux-amd64
+$ chmod +x openctem-admin-linux-amd64
+$ sudo mv openctem-admin-linux-amd64 /usr/local/bin/openctem-admin
 
 # 2. Homebrew (macOS/Linux)
-$ brew install exploopio/tap/exploop-admin
+$ brew install openctemio/tap/openctem-admin
 
 # 3. Go install
-$ go install github.com/exploopio/exploop-admin@latest
+$ go install github.com/openctemio/openctem-admin@latest
 
 # 4. Docker
-$ docker run --rm -it exploopio/admin-cli token create
+$ docker run --rm -it openctemio/admin-cli token create
 
 # Verify installation
-$ exploop-admin version
-exploop-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
+$ openctem-admin version
+openctem-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
 ```
 
 ---
@@ -3276,7 +3276,7 @@ exploop-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
 │                                                                              │
 │  ┌─────────────────────────────────────────────────────────────────────────┐│
 │  │ ◉ Use Platform Agent                                    [RECOMMENDED]   ││
-│  │   Managed by Rediver • Auto-selected • No setup required                ││
+│  │   Managed by OpenCTEM • Auto-selected • No setup required                ││
 │  │   Available slots: 1/3                                                  ││
 │  └─────────────────────────────────────────────────────────────────────────┘│
 │                                                                              │
@@ -3321,7 +3321,7 @@ exploop-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
 │  Region: us-east-1                                                           │
 │  Started: 2024-01-25 10:30:00                                               │
 │                                                                              │
-│  Note: Platform agents are managed by Rediver. Agent details are            │
+│  Note: Platform agents are managed by OpenCTEM. Agent details are            │
 │        not exposed for security and operational reasons.                     │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -3341,7 +3341,7 @@ exploop-admin version 1.0.0 (commit: abc123, built: 2024-01-25)
 │  │  Your current plan does not include access to platform agents.          ││
 │  │                                                                         ││
 │  │  Platform agents allow you to run scans without deploying your own     ││
-│  │  infrastructure. They are managed by Rediver and automatically         ││
+│  │  infrastructure. They are managed by OpenCTEM and automatically         ││
 │  │  selected for optimal performance.                                      ││
 │  │                                                                         ││
 │  │  Benefits:                                                              ││
@@ -3856,7 +3856,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 | Term | Definition |
 |------|------------|
 | **Tenant Agent** | Agent deployed and managed by a tenant |
-| **Platform Agent** | Agent deployed and managed by Rediver (auto-allocated) |
+| **Platform Agent** | Agent deployed and managed by OpenCTEM (auto-allocated) |
 | **Command Token** | Short-lived token embedded in command for platform agent auth |
 | **Auto-allocation** | Platform automatically selects best agent for each job |
 | **Global Queue** | Centralized job queue; agents pull work from this queue |
@@ -3870,7 +3870,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 | **Dispatch** | Assigning a queued job to a specific agent |
 | **Bootstrap Token** | Short-lived, limited-use token for platform agent self-registration (v3.2) |
 | **Agent Join** | Process where a platform agent registers itself using a bootstrap token (v3.2) |
-| **exploop-admin** | CLI tool for platform administrators to manage tokens, agents, and queues (v3.2) |
+| **openctem-admin** | CLI tool for platform administrators to manage tokens, agents, and queues (v3.2) |
 | **Heartbeat TTL** | Redis key with automatic expiry (30s) for agent liveness detection (v3.2) |
 | **Job Dispatch Lock** | Redis SETNX lock preventing multiple agents from claiming same job (v3.2) |
 
@@ -3904,7 +3904,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 | 2.0 | 2025-01-25 | Embedded token in commands table, multi-use tokens |
 | 3.0 | 2025-01-25 | Auto-allocation model: removed explicit assignment, added concurrent limits |
 | 3.1 | 2025-01-25 | **Queue Management**: global queue, priority scheduling, fair queuing with age bonus, failure recovery |
-| 3.2 | 2025-01-25 | **Agent State & Join**: Redis state management, Bootstrap Token join mechanism, Admin CLI (exploop-admin) |
+| 3.2 | 2025-01-25 | **Agent State & Join**: Redis state management, Bootstrap Token join mechanism, Admin CLI (openctem-admin) |
 
 ### E. References
 
@@ -4049,7 +4049,7 @@ Admin creates token → Agent uses token → API validates → Agent gets API ke
 - [ ] **Task #21**: Update ScanHandler for platform agent selection
   - Add use_platform_agent option, queue position response
 
-- [ ] **Task #22**: Create Admin CLI (exploop-admin)
+- [ ] **Task #22**: Create Admin CLI (openctem-admin)
   - token create/list/revoke, agent list/disable/enable, queue status
 
 ### Phase 7: UI Implementation (5 tasks)

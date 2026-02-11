@@ -2,12 +2,12 @@
 
 ## Overview
 
-Implementation of the Platform Agents feature for Rediver SaaS platform. Platform agents are Rediver-managed, shared agents that can be used by any tenant (with access control), providing a shared scanning infrastructure for tenants who don't want to manage their own agents.
+Implementation of the Platform Agents feature for OpenCTEM SaaS platform. Platform agents are OpenCTEM-managed, shared agents that can be used by any tenant (with access control), providing a shared scanning infrastructure for tenants who don't want to manage their own agents.
 
 ## Problem
 
-Rediver needs to support:
-1. **Platform Agents**: Shared agents managed by Rediver that can be used by multiple tenants
+OpenCTEM needs to support:
+1. **Platform Agents**: Shared agents managed by OpenCTEM that can be used by multiple tenants
 2. **Job Queue Management**: Fair queuing with weighted priorities to ensure tenants get fair access
 3. **Bootstrap Tokens**: kubeadm-style tokens for agent self-registration
 4. **Load Balancing**: Distribute jobs across agents based on load and capabilities
@@ -80,15 +80,15 @@ Rediver needs to support:
   - Added security validation unit tests
 
 - [x] **Phase 9: Admin CLI (kubectl-style)** - Completed 2026-01-26
-  - `cmd/exploop-admin/main.go` - CLI entry point
-  - `cmd/exploop-admin/cmd/root.go` - Root command with global flags
-  - `cmd/exploop-admin/cmd/config.go` - Config/context management
-  - `cmd/exploop-admin/cmd/client.go` - API client for admin endpoints
-  - `cmd/exploop-admin/cmd/get.go` - Get agents/jobs/tokens/admins
-  - `cmd/exploop-admin/cmd/describe.go` - Describe agent/job/token
-  - `cmd/exploop-admin/cmd/create.go` - Create agent/token/admin
-  - `cmd/exploop-admin/cmd/delete.go` - Delete agent/token
-  - `cmd/exploop-admin/cmd/operations.go` - drain/uncordon/revoke/cluster-info
+  - `cmd/openctem-admin/main.go` - CLI entry point
+  - `cmd/openctem-admin/cmd/root.go` - Root command with global flags
+  - `cmd/openctem-admin/cmd/config.go` - Config/context management
+  - `cmd/openctem-admin/cmd/client.go` - API client for admin endpoints
+  - `cmd/openctem-admin/cmd/get.go` - Get agents/jobs/tokens/admins
+  - `cmd/openctem-admin/cmd/describe.go` - Describe agent/job/token
+  - `cmd/openctem-admin/cmd/create.go` - Create agent/token/admin
+  - `cmd/openctem-admin/cmd/delete.go` - Delete agent/token
+  - `cmd/openctem-admin/cmd/operations.go` - drain/uncordon/revoke/cluster-info
   - `cmd/bootstrap-admin/main.go` - Bootstrap first admin user during deployment
 
 - [ ] **Phase 10: Integration Testing** - Pending
@@ -153,10 +153,10 @@ Rediver needs to support:
 - `api/internal/infra/http/middleware/metrics.go` - Security Prometheus metrics
 - `api/internal/infra/redis/job_notifier.go` - Redis Pub/Sub for job notifications
 - `api/tests/unit/security_validation_test.go` - Security validation tests
-- `api/cmd/exploop-admin/` - Admin CLI (kubectl-style):
+- `api/cmd/openctem-admin/` - Admin CLI (kubectl-style):
   - `main.go` - CLI entry point
   - `cmd/root.go` - Root command, global flags, version
-  - `cmd/config.go` - Config/context management (~/.exploop/config.yaml)
+  - `cmd/config.go` - Config/context management (~/.openctem/config.yaml)
   - `cmd/client.go` - HTTP client for admin API
   - `cmd/get.go` - Get commands for agents/jobs/tokens/admins
   - `cmd/describe.go` - Describe commands for detailed view

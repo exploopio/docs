@@ -46,7 +46,7 @@ Agent (Trivy)
     │
     ▼
 ┌─────────────────┐
-│ EIS Report      │
+│ CTIS Report      │
 │ {               │
 │   dependencies: │
 │   [{            │

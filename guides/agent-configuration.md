@@ -6,7 +6,7 @@ nav_order: 14
 ---
 # Agent Configuration Guide
 
-Configure the Rediver Agent for your security scanning needs.
+Configure the OpenCTEM Agent for your security scanning needs.
 
 ---
 
@@ -20,7 +20,7 @@ cp agent.yaml.template agent.yaml
 2. Update with your settings:
 ```yaml
 server:
-  base_url: "https://api.exploop.io"
+  base_url: "https://api.openctem.io"
   api_key: "your-api-key"
 ```
 
@@ -40,7 +40,7 @@ agent:
   name: "My Scanner"
 
 server:
-  base_url: "https://api.exploop.io"
+  base_url: "https://api.openctem.io"
   api_key: "your-api-key"
 
 scanners:
@@ -61,7 +61,7 @@ agent:
 
 # Platform Connection
 server:
-  base_url: "https://api.exploop.io"
+  base_url: "https://api.openctem.io"
   api_key: "your-api-key"
   worker_id: ""  # Auto-generated if empty
   timeout: 30s
@@ -111,7 +111,7 @@ advanced:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `name` | string | `""` | Display name in Rediver UI |
+| `name` | string | `""` | Display name in OpenCTEM UI |
 | `enable_commands` | bool | `true` | Accept remote commands |
 | `command_poll_interval` | duration | `30s` | Poll interval for commands |
 | `heartbeat_interval` | duration | `1m` | Heartbeat frequency |
@@ -121,7 +121,7 @@ advanced:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `base_url` | string | required | Rediver API URL |
+| `base_url` | string | required | OpenCTEM API URL |
 | `api_key` | string | required | API authentication key |
 | `worker_id` | string | auto | Unique worker identifier |
 | `timeout` | duration | `30s` | Request timeout |
@@ -263,15 +263,15 @@ agent -config agent.yaml -daemon -verbose
 docker run --rm \
   -v $(pwd):/scan \
   -v $(pwd)/agent.yaml:/config/agent.yaml \
-  exploopio/agent:latest \
+  openctemio/agent:latest \
   -config /config/agent.yaml -target /scan
 
 # With environment variables
 docker run --rm \
   -v $(pwd):/scan \
-  -e API_URL=https://api.exploop.io \
+  -e API_URL=https://api.openctem.io \
   -e API_KEY=your-key \
-  exploopio/agent:latest \
+  openctemio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push
 ```
 
@@ -355,7 +355,7 @@ platform:
 - **Lease expiry handling**: Jobs auto-cancel when lease expires
 - **Template security**: Path traversal prevention, size limits, hash verification
 
-See [SDK Security Guide](https://github.com/exploopio/sdk#security) for detailed information.
+See [SDK Security Guide](https://github.com/openctemio/sdk#security) for detailed information.
 
 ---
 
@@ -365,6 +365,6 @@ See [SDK Security Guide](https://github.com/exploopio/sdk#security) for detailed
 - [Data Flow Analysis Guide](data-flow-analysis.md) - Using attack path information
 - [Docker Deployment Guide](./docker-deployment.md)
 - [SDK Development Guide](./sdk-development.md)
-- [SDK Security Guide](https://github.com/exploopio/sdk#security)
+- [SDK Security Guide](https://github.com/openctemio/sdk#security)
 - [Agent Key Management](../architecture/agent-key-management.md)
-- [CI/CD Examples](https://github.com/exploopio/sdk/tree/main/examples/ci-cd)
+- [CI/CD Examples](https://github.com/openctemio/sdk/tree/main/examples/ci-cd)

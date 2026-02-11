@@ -40,7 +40,7 @@ This guide walks you through a **complete security scan workflow** from creating
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 **Default credentials:**
-- Email: `admin@exploop.io`
+- Email: `admin@openctem.io`
 - Password: `Admin123!`
 
 ### 1.2 Add a Repository
@@ -99,7 +99,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://localhost:8080 \
   -e API_KEY=your-api-key-here \
-  exploopio/agent:latest \
+  openctemio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 ```
 
@@ -144,18 +144,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run Rediver Scan
-        uses: docker://exploopio/agent:ci
+      - name: Run OpenCTEM Scan
+        uses: docker://openctemio/agent:ci
         env:
-          API_URL: ${{ secrets.EXPLOOP_API_URL }}
-          API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
+          API_URL: ${{ secrets.OPENCTEM_API_URL }}
+          API_KEY: ${{ secrets.OPENCTEM_API_KEY }}
         with:
           args: -tools semgrep,gitleaks,trivy -target . -push -comments
 ```
 
 **Required Secrets:**
-- `EXPLOOP_API_URL` - Your API endpoint
-- `EXPLOOP_API_KEY` - Agent API key from Step 2
+- `OPENCTEM_API_URL` - Your API endpoint
+- `OPENCTEM_API_KEY` - Agent API key from Step 2
 
 ---
 
@@ -239,11 +239,11 @@ agent -tools semgrep,gitleaks,trivy -target . -push
 └──────────────────────────────────────────────────────────────┘
                            ↓
 ┌──────────────────────────────────────────────────────────────┐
-│ 2. Parser (RIS Conversion)                                     │
+│ 2. Parser (CTIS Conversion)                                     │
 ├──────────────────────────────────────────────────────────────┤
-│ • Semgrep JSON → RIS Report                                   │
-│ • Gitleaks JSON → RIS Report                                  │
-│ • Trivy JSON → RIS Report                                     │
+│ • Semgrep JSON → CTIS Report                                   │
+│ • Gitleaks JSON → CTIS Report                                  │
+│ • Trivy JSON → CTIS Report                                     │
 │ • Generate fingerprints for deduplication                     │
 └──────────────────────────────────────────────────────────────┘
                            ↓
@@ -303,7 +303,7 @@ agent:
   heartbeat_interval: 1m
 
 server:
-  base_url: https://api.exploop.io
+  base_url: https://api.openctem.io
   api_key: your-api-key
 
 scanners:
@@ -343,7 +343,7 @@ jobs:
           repository: myorg/${{ matrix.repo }}
 
       - name: Scan
-        uses: docker://exploopio/agent:ci
+        uses: docker://openctemio/agent:ci
         # ... (scan steps)
 ```
 
@@ -358,21 +358,21 @@ Build a custom scanner with the SDK:
 package main
 
 import (
-    "github.com/exploopio/sdk/pkg/client"
-    "github.com/exploopio/sdk/pkg/core"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/client"
+    "github.com/openctemio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
     // Run your custom scanner
     results := runMyScanner("./src")
 
-    // Convert to RIS
-    report := convertToRIS(results)
+    // Convert to CTIS
+    report := convertToCTIS(results)
 
     // Push to platform
     apiClient := client.New(&client.Config{
-        BaseURL: "https://api.exploop.io",
+        BaseURL: "https://api.openctem.io",
         APIKey:  os.Getenv("API_KEY"),
     })
 
@@ -380,7 +380,7 @@ func main() {
 }
 ```
 
-See [SDK Documentation](https://github.com/exploopio/sdk#readme) for details.
+See [SDK Documentation](https://github.com/openctemio/sdk#readme) for details.
 
 ---
 
@@ -434,9 +434,9 @@ docker run --network=host ...
 ## Next Steps
 
 - **[Production Deployment](../operations/PRODUCTION_DEPLOYMENT.md)** - Deploy to Kubernetes/Cloud
-- **[Agent Configuration](https://github.com/exploopio/agent#configuration)** - Advanced agent.yaml options
+- **[Agent Configuration](https://github.com/openctemio/agent#configuration)** - Advanced agent.yaml options
 - **[API Reference](../backend/api-reference.md)** - Full API documentation
-- **[SDK Guide](https://github.com/exploopio/sdk#readme)** - Build custom tools
+- **[SDK Guide](https://github.com/openctemio/sdk#readme)** - Build custom tools
 
 ---
 

@@ -53,8 +53,8 @@ const (
 Finding type is inferred during ingestion:
 
 ```go
-func inferFindingType(source FindingSource, risFinding *ris.Finding) FindingType {
-    // Explicit type in RIS takes precedence
+func inferFindingType(source FindingSource, risFinding *ctis.Finding) FindingType {
+    // Explicit type in CTIS takes precedence
     if risFinding.Type != "" {
         return mapRISType(risFinding.Type)
     }
@@ -430,7 +430,7 @@ if !IsValidLocationType(locationType) {
 
 ## Best Practices
 
-1. **Set explicit type in RIS reports** - Avoids inference ambiguity
+1. **Set explicit type in CTIS reports** - Avoids inference ambiguity
 2. **Include specialized fields** - Enables efficient filtering and aggregation
 3. **Preserve data flows** - Critical for understanding vulnerability context
 4. **Use partial fingerprints** - Store all algorithm versions for migration

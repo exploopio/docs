@@ -7,21 +7,21 @@ nav_order: 3
 
 # Permission System - Complete Guide
 
-Comprehensive guide to the 3-layer access control system in Rediver.
+Comprehensive guide to the 3-layer access control system in OpenCTEM.
 
 ---
 
 ## Overview
 
-Rediver implements a **3-Layer Access Control** architecture:
+OpenCTEM implements a **3-Layer Access Control** architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    LAYER 1: LICENSING (Tenant)                   │
+│                    LAYER 1: MODULES (Tenant)                     │
 ├─────────────────────────────────────────────────────────────────┤
-│  Tenant → Plan → Modules                                        │
+│  Tenant → Enabled Modules                                        │
 │  "What modules can this tenant access?"                         │
-│  Determined by: Subscription plan (Free, Pro, Business, etc.)   │
+│  Determined by: Tenant module configuration                      │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -43,39 +43,26 @@ Rediver implements a **3-Layer Access Control** architecture:
 
 ---
 
-## Layer 1: Licensing (Tenant Level)
+## Layer 1: Module Access (Tenant Level)
 
-### Subscription Plans
+### Module Configuration
 
-Each tenant has a subscription plan that determines which modules are available:
+Each tenant has a set of enabled modules that determines feature access:
 
-| Plan | Modules | Limits |
-|------|---------|--------|
-| **Free** | Core (Dashboard, Assets, Teams) | 50 assets, 2 members |
-| **Pro** | Core + Security (Findings, Scans, Reports) | 500 assets, 10 members |
-| **Business** | Core + Security + Compliance + Platform | 2,000 assets, 25 members |
-| **Enterprise** | All modules | Unlimited |
-
-### Licensing Service
+### Module Service
 
 ```go
 // Check if tenant has access to a module
-hasModule, err := licensingService.CheckModuleAccess(ctx, tenantID, "findings")
+hasModule, err := moduleService.CheckModuleAccess(ctx, tenantID, "findings")
 
 // Get tenant's enabled modules
-modules, err := licensingService.GetTenantModules(ctx, tenantID)
-
-// Check module limits
-withinLimit, limit, err := licensingService.CheckModuleLimit(ctx, tenantID, "assets", "max_items", currentCount)
+modules, err := moduleService.GetTenantModules(ctx, tenantID)
 ```
 
 ### API Endpoints
 
 ```
-GET /api/v1/plans              # List public plans
-GET /api/v1/plans/{id}         # Get plan details
 GET /api/v1/me/modules         # Get tenant's enabled modules
-GET /api/v1/me/subscription    # Get tenant's subscription
 ```
 
 ---
@@ -395,11 +382,11 @@ middleware.RequireAdmin()
 ```go
 // 3-Layer check in service
 func (s *AuthService) CheckPermission(ctx context.Context, userID, tenantID, permission string) error {
-    // Layer 1: Check tenant's plan includes the module
+    // Layer 1: Check tenant has the module enabled
     moduleSlug := extractModuleFromPermission(permission)
-    hasModule, err := s.licensingService.CheckModuleAccess(ctx, tenantID, moduleSlug)
+    hasModule, err := s.moduleService.CheckModuleAccess(ctx, tenantID, moduleSlug)
     if err != nil || !hasModule {
-        return ErrModuleNotInPlan
+        return ErrModuleNotEnabled
     }
 
     // Layer 2: Check user has permission via RBAC
@@ -605,7 +592,6 @@ Start with minimal permissions and add as needed.
 
 - [Roles and Permissions Guide](./roles-and-permissions.md)
 - [Group-Based Access Control](./group-based-access-control.md)
-- [Plans & Licensing](../operations/plans-licensing.md)
 - [Authentication Guide](./authentication.md)
 
 ---

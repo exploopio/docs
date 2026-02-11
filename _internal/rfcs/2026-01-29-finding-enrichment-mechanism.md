@@ -282,7 +282,7 @@ func (p *FindingProcessor) ProcessBatch(...) error {
 ### 5.1 Report-Level Enrichment Mode
 
 ```go
-// RIS Report Metadata
+// CTIS Report Metadata
 type ReportMetadata struct {
     // ...existing fields...
 
@@ -311,12 +311,12 @@ INSERT INTO tenant_settings (tenant_id, key, value) VALUES
 ```go
 func TestMultiToolEnrichment(t *testing.T) {
     // Scan 1: Slither finds reentrancy
-    report1 := ris.Report{
-        Tool: &ris.Tool{Name: "slither"},
-        Findings: []ris.Finding{{
+    report1 := ctis.Report{
+        Tool: &ctis.Tool{Name: "slither"},
+        Findings: []ctis.Finding{{
             Title: "Reentrancy",
             Severity: "high",
-            Web3: &ris.Web3VulnerabilityDetails{
+            Web3: &ctis.Web3VulnerabilityDetails{
                 Chain: "ethereum",
                 SWCID: "SWC-107",
             },
@@ -326,12 +326,12 @@ func TestMultiToolEnrichment(t *testing.T) {
     assert.Equal(t, 1, result1.FindingsCreated)
 
     // Scan 2: Mythril adds bytecode analysis
-    report2 := ris.Report{
-        Tool: &ris.Tool{Name: "mythril"},
-        Findings: []ris.Finding{{
+    report2 := ctis.Report{
+        Tool: &ctis.Tool{Name: "mythril"},
+        Findings: []ctis.Finding{{
             Title: "Reentrancy",  // Same finding
             Severity: "high",
-            Web3: &ris.Web3VulnerabilityDetails{
+            Web3: &ctis.Web3VulnerabilityDetails{
                 Chain: "ethereum",           // Same
                 SWCID: "SWC-107",            // Same
                 BytecodeOffset: 0x1234,      // NEW
@@ -360,8 +360,8 @@ func TestProtectedStatusPreserved(t *testing.T) {
     markAsFalsePositive(findingID)
 
     // New scan tries to update severity
-    report := ris.Report{
-        Findings: []ris.Finding{{
+    report := ctis.Report{
+        Findings: []ctis.Finding{{
             Severity: "critical",  // Higher severity
         }},
     }
@@ -402,11 +402,11 @@ func TestCVSSMaxValue(t *testing.T) {
 ```go
 func TestSecretVerificationEnrichment(t *testing.T) {
     // Scan 1: gitleaks detects secret
-    report1 := ris.Report{
-        Tool: &ris.Tool{Name: "gitleaks"},
-        Findings: []ris.Finding{{
+    report1 := ctis.Report{
+        Tool: &ctis.Tool{Name: "gitleaks"},
+        Findings: []ctis.Finding{{
             Title: "AWS Key Detected",
-            Secret: &ris.SecretDetails{
+            Secret: &ctis.SecretDetails{
                 SecretType: "aws_key",
                 Service: "aws",
                 MaskedValue: "AKIA****XXXX",
@@ -416,11 +416,11 @@ func TestSecretVerificationEnrichment(t *testing.T) {
     ingest(report1)
 
     // Scan 2: Secret verifier checks validity
-    report2 := ris.Report{
-        Tool: &ris.Tool{Name: "secret-verifier"},
-        Findings: []ris.Finding{{
+    report2 := ctis.Report{
+        Tool: &ctis.Tool{Name: "secret-verifier"},
+        Findings: []ctis.Finding{{
             Title: "AWS Key Detected",
-            Secret: &ris.SecretDetails{
+            Secret: &ctis.SecretDetails{
                 SecretType: "aws_key",
                 Valid: boolPtr(true),
                 VerifiedAt: timePtr(time.Now()),

@@ -7,7 +7,7 @@ nav_order: 6
 
 # Component Interactions
 
-This document provides a comprehensive overview of how the major components in the Exploop CTEM Platform interact with each other.
+This document provides a comprehensive overview of how the major components in the OpenCTEM CTEM Platform interact with each other.
 
 ---
 
@@ -345,7 +345,7 @@ Executes scans and commands.
 │  ┌────────────────────────────────┐    ┌────────────────────────────────┐   │
 │  │        TENANT AGENT            │    │       PLATFORM AGENT           │   │
 │  │                                │    │                                │   │
-│  │  - Deployed by customer        │    │  - Managed by Rediver          │   │
+│  │  - Deployed by customer        │    │  - Managed by OpenCTEM          │   │
 │  │  - Customer network access     │    │  - Shared infrastructure       │   │
 │  │  - Full control                │    │  - Multi-tenant isolation      │   │
 │  │  - tenant_id = UUID            │    │  - tenant_id = NULL            │   │

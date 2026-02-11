@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-This document outlines the implementation plan for a **persistent retry queue** in the Exploop SDK. The goal is to ensure that scan data is never lost due to temporary network failures or server unavailability.
+This document outlines the implementation plan for a **persistent retry queue** in the OpenCTEM SDK. The goal is to ensure that scan data is never lost due to temporary network failures or server unavailability.
 
 ---
 
@@ -35,7 +35,7 @@ This document outlines the implementation plan for a **persistent retry queue** 
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
 │  ┌──────────────┐     ┌──────────────┐     ┌──────────────────────────┐│
-│  │   Scanner    │────▶│    Client    │────▶│   Rediver Backend        ││
+│  │   Scanner    │────▶│    Client    │────▶│   OpenCTEM Backend        ││
 │  │   /Agent     │     │  PushFindings│     │   /api/v1/agent/ingest   ││
 │  └──────────────┘     └──────┬───────┘     └──────────────────────────┘│
 │                              │                                          │
@@ -89,14 +89,14 @@ package retry
 
 import (
     "time"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // QueueItem represents an item in the retry queue.
 type QueueItem struct {
     ID          string       `json:"id"`           // Unique identifier
     Type        ItemType     `json:"type"`         // findings, assets, heartbeat
-    Report      *ris.Report  `json:"report"`       // The data to push
+    Report      *ctis.Report  `json:"report"`       // The data to push
     Fingerprint string       `json:"fingerprint"`  // For deduplication
 
     // Retry tracking
@@ -201,7 +201,7 @@ type FileRetryQueue struct {
 
 // FileQueueConfig configures the file-based queue.
 type FileQueueConfig struct {
-    Dir     string // Directory path (default: ~/.exploop/retry-queue)
+    Dir     string // Directory path (default: ~/.openctem/retry-queue)
     Verbose bool   // Verbose logging
 }
 
@@ -209,7 +209,7 @@ type FileQueueConfig struct {
 func NewFileRetryQueue(cfg *FileQueueConfig) (*FileRetryQueue, error) {
     if cfg.Dir == "" {
         home, _ := os.UserHomeDir()
-        cfg.Dir = filepath.Join(home, ".exploop", "retry-queue")
+        cfg.Dir = filepath.Join(home, ".openctem", "retry-queue")
     }
 
     // Ensure directory exists
@@ -239,7 +239,7 @@ import (
     "sync"
     "time"
 
-    "github.com/exploopio/sdk/pkg/core"
+    "github.com/openctemio/sdk/pkg/core"
 )
 
 // RetryWorker processes the retry queue in the background.
@@ -321,7 +321,7 @@ type Config struct {
 }
 
 // PushFindings with retry queue support
-func (c *Client) PushFindings(ctx context.Context, report *ris.Report) (*core.PushResult, error) {
+func (c *Client) PushFindings(ctx context.Context, report *ctis.Report) (*core.PushResult, error) {
     result, err := c.pushFindingsInternal(ctx, report)
 
     if err != nil && c.retryQueue != nil {
@@ -338,10 +338,10 @@ func (c *Client) PushFindings(ctx context.Context, report *ris.Report) (*core.Pu
         if queueErr := c.retryQueue.Enqueue(ctx, item); queueErr != nil {
             // Log but don't fail - original error is more important
             if c.verbose {
-                fmt.Printf(".exploop] Failed to queue for retry: %v\n", queueErr)
+                fmt.Printf(".openctem] Failed to queue for retry: %v\n", queueErr)
             }
         } else if c.verbose {
-            fmt.Printf(".exploop] Queued for retry: %s\n", item.ID)
+            fmt.Printf(".openctem] Queued for retry: %s\n", item.ID)
         }
     }
 
@@ -363,14 +363,14 @@ agent:
   scan_interval: 1h
   verbose: true
 
-exploop:
+openctem:
   base_url: ${API_URL}
   api_key: ${API_KEY}
   worker_id: ${WORKER_ID}
 
   # Retry queue configuration
   enable_retry_queue: true
-  retry_queue_dir: /var/lib/exploop/retry-queue  # Default: ~/.exploop/retry-queue
+  retry_queue_dir: /var/lib/openctem/retry-queue  # Default: ~/.openctem/retry-queue
   retry_interval: 5m       # How often to process queue
   retry_max_attempts: 10   # Max retries per item
   retry_ttl: 168h          # 7 days - items older than this are deleted
@@ -387,7 +387,7 @@ scanners:
 export ENABLE_RETRY_QUEUE=true
 
 # Custom queue directory
-export RETRY_QUEUE_DIR=/var/lib/exploop/retry-queue
+export RETRY_QUEUE_DIR=/var/lib/openctem/retry-queue
 
 # Retry settings
 export RETRY_INTERVAL=5m

@@ -6,13 +6,13 @@ nav_order: 9
 ---
 # Building Ingestion Tools
 
-Guide for developers who want to build custom collectors, scanners, or integrations to push data into Rediver.
+Guide for developers who want to build custom collectors, scanners, or integrations to push data into OpenCTEM.
 
 ---
 
 ## Overview
 
-Rediver supports multiple data sources through a flexible ingestion system:
+OpenCTEM supports multiple data sources through a flexible ingestion system:
 
 | Source Type | Direction | Description | Examples |
 |-------------|-----------|-------------|----------|
@@ -30,7 +30,7 @@ This guide focuses on building **PUSH-based tools** (collectors and scanners).
 ### 1. Register Your Data Source
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/sources \
+curl -X POST https://api.openctem.io/api/v1/sources \
   -H "Authorization: Bearer $ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -45,18 +45,18 @@ Response:
 ```json
 {
   "id": "src_abc123",
-  "api_key": "rs_live_xxxxxxxxxxxxxxxxxxxx",
-  "api_key_prefix": "rs_live_xxxx"
+  "api_key": "oc_live_xxxxxxxxxxxxxxxxxxxx",
+  "api_key_prefix": "oc_live_xxxx"
 }
 ```
 
 > **Important:** Save the `api_key` immediately - it's only shown once!
 
-### 2. Push Data Using RIS Format
+### 2. Push Data Using CTIS Format
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
-  -H "Authorization: Bearer rs_live_xxxxxxxxxxxxxxxxxxxx" \
+curl -X POST https://api.openctem.io/api/v1/agent/ingest/ctis \
+  -H "Authorization: Bearer oc_live_xxxxxxxxxxxxxxxxxxxx" \
   -H "Content-Type: application/json" \
   -d '{"report": ...}'
 ```
@@ -64,16 +64,16 @@ curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
 **Available Ingestion Endpoints:**
 | Endpoint | Format | Description |
 |----------|--------|-------------|
-| `/api/v1/agent/ingest/ris` | RIS | Native format (recommended) |
+| `/api/v1/agent/ingest/ctis` | CTIS | Native format (recommended) |
 | `/api/v1/agent/ingest/sarif` | SARIF 2.1.0 | Industry standard format |
 | `/api/v1/agent/ingest/recon` | Recon | Discovery/reconnaissance data |
 | `/api/v1/agent/ingest/check` | - | Pre-flight fingerprint check |
 
 ---
 
-## RIS (Rediver Ingest Schema)
+## CTIS (CTEM Ingest Schema)
 
-RIS is the standard JSON format for pushing data to Rediver. All collectors and scanners should output data in this format.
+CTIS is the standard JSON format for pushing data to OpenCTEM. All collectors and scanners should output data in this format.
 
 ### Schema Structure
 
@@ -381,7 +381,7 @@ Track why a finding was suppressed:
 
 ### SARIF (Static Analysis Results Interchange Format)
 
-RIS can convert SARIF output from popular tools:
+CTIS can convert SARIF output from popular tools:
 
 **Supported SAST Tools:**
 - Semgrep
@@ -416,11 +416,11 @@ RIS can convert SARIF output from popular tools:
 
 ### Direct SARIF Ingestion (Recommended)
 
-Rediver supports direct SARIF 2.1.0 ingestion - no conversion needed:
+OpenCTEM supports direct SARIF 2.1.0 ingestion - no conversion needed:
 
 ```bash
-# Push SARIF directly to Rediver
-curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
+# Push SARIF directly to OpenCTEM
+curl -X POST https://api.openctem.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -490,7 +490,7 @@ Standard SARIF 2.1.0 format supported:
 
 ### SARIF Level to Severity Mapping
 
-| SARIF Level | RIS Severity |
+| SARIF Level | CTIS Severity |
 |-------------|--------------|
 | `error` | `high` |
 | `warning` | `medium` |
@@ -504,8 +504,8 @@ Standard SARIF 2.1.0 format supported:
 # Run Semgrep with SARIF output
 semgrep --config auto --sarif -o results.sarif .
 
-# Push to Rediver
-curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
+# Push to OpenCTEM
+curl -X POST https://api.openctem.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -516,8 +516,8 @@ curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
 # Run CodeQL with SARIF output
 codeql database analyze /path/to/db --format=sarif-latest --output=results.sarif
 
-# Push to Rediver
-curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
+# Push to OpenCTEM
+curl -X POST https://api.openctem.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -528,8 +528,8 @@ curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
 # Run Trivy with SARIF output
 trivy fs --format sarif --output results.sarif .
 
-# Push to Rediver
-curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
+# Push to OpenCTEM
+curl -X POST https://api.openctem.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -540,8 +540,8 @@ curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
 # Run Gitleaks with SARIF output
 gitleaks detect --report-format sarif --report-path results.sarif
 
-# Push to Rediver
-curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
+# Push to OpenCTEM
+curl -X POST https://api.openctem.io/api/v1/ingest/sarif \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"sarif\": $(cat results.sarif)}"
@@ -570,28 +570,28 @@ curl -X POST https://api.exploop.io/api/v1/ingest/sarif \
 | `asset_value` | Default asset value if not resolved | - |
 | `workspace_id` | Target workspace | Required |
 
-### Converting SARIF to RIS (Alternative)
+### Converting SARIF to CTIS (Alternative)
 
 If you prefer programmatic conversion:
 
 ```go
 import (
-    "github.com/exploopio/api/pkg/parsers/ris"
-    "github.com/exploopio/api/pkg/parsers/sarif"
+    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk/pkg/ctis/sarif"
 )
 
 // Parse SARIF
 sarifParser := sarif.NewParser(nil)
 sarifLog, err := sarifParser.ParseFile("semgrep-results.sarif")
 
-// Convert to RIS
-risReport := ris.FromSARIF(sarifLog, &ris.SARIFConvertOptions{
+// Convert to CTIS
+ctisReport := ctis.FromSARIF(sarifLog, &ctis.SARIFConvertOptions{
     AssetValue:   "github.com/org/repo",
-    AssetType:    ris.AssetTypeRepository,
+    AssetType:    ctis.AssetTypeRepository,
     IncludeAsset: true,
 })
 
-// Send to Rediver
+// Send to OpenCTEM
 // ... POST to /api/v1/ingest/findings
 ```
 
@@ -599,30 +599,30 @@ risReport := ris.FromSARIF(sarifLog, &ris.SARIFConvertOptions{
 
 ## Building with Go
 
-### Using the RIS Package
+### Using the CTIS Package
 
 ```go
 package main
 
 import (
-    "github.com/exploopio/api/pkg/parsers/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
     // Build a report programmatically
-    report := ris.NewReportBuilder().
+    report := ctis.NewReportBuilder().
         WithTool("my-scanner", "1.0.0").
         WithToolCapabilities("vulnerability", "web3").
         WithMetadata("scan-001", "scanner", "job-123").
         AddAsset(
-            ris.NewAssetBuilder(ris.AssetTypeSmartContract, "0x1234...abcd").
+            ctis.NewAssetBuilder(ctis.AssetTypeSmartContract, "0x1234...abcd").
                 WithName("MyToken").
-                WithCriticality(ris.CriticalityCritical).
+                WithCriticality(ctis.CriticalityCritical).
                 WithProperty("chain_id", 1).
                 Build(),
         ).
         AddFinding(
-            ris.NewFindingBuilder(ris.FindingTypeWeb3, "Reentrancy Vulnerability", ris.SeverityCritical).
+            ctis.NewFindingBuilder(ctis.FindingTypeWeb3, "Reentrancy Vulnerability", ctis.SeverityCritical).
                 WithRuleID("SWC-107").
                 WithDescription("External call before state update").
                 WithLocation("contracts/Token.sol", 45, 50).
@@ -634,7 +634,7 @@ func main() {
     // Serialize to JSON
     data, _ := json.Marshal(report)
 
-    // Send to Rediver API
+    // Send to OpenCTEM API
     // ...
 }
 ```
@@ -645,21 +645,21 @@ func main() {
 package main
 
 import (
-    "github.com/exploopio/api/pkg/parsers/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
-func buildWeb3Finding() ris.Finding {
-    return ris.NewFindingBuilder(
-        ris.FindingTypeWeb3,
+func buildWeb3Finding() ctis.Finding {
+    return ctis.NewFindingBuilder(
+        ctis.FindingTypeWeb3,
         "Flash Loan Attack Vector",
-        ris.SeverityCritical,
+        ctis.SeverityCritical,
     ).
     WithRuleID("DEFI-001").
     WithDescription("Protocol is vulnerable to flash loan price manipulation").
     WithLocation("contracts/Lending.sol", 120, 145).
     WithConfidence(90).
     WithProperty("web3", map[string]any{
-        "vulnerability_class": string(ris.Web3VulnFlashLoan),
+        "vulnerability_class": string(ctis.Web3VulnFlashLoan),
         "contract_address":    "0x1234...abcd",
         "chain_id":            1,
         "chain":               "ethereum",
@@ -696,8 +696,8 @@ import json
 import requests
 from datetime import datetime
 
-def create_ris_report(findings):
-    """Create a RIS report from findings."""
+def create_ctis_report(findings):
+    """Create a CTIS report from findings."""
     return {
         "version": "1.0",
         "metadata": {
@@ -713,10 +713,10 @@ def create_ris_report(findings):
         "findings": findings
     }
 
-def push_to.exploop(report, api_key):
-    """Push RIS report to Rediver."""
+def push_to.openctem(report, api_key):
+    """Push CTIS report to OpenCTEM."""
     response = requests.post(
-        "https://api.exploop.io/api/v1/ingest/findings",
+        "https://api.openctem.io/api/v1/ingest/findings",
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
@@ -741,8 +741,8 @@ finding = {
     }
 }
 
-report = create_ris_report([finding])
-result = push_to.exploop(report, "rs_live_xxxx")
+report = create_ctis_report([finding])
+result = push_to.openctem(report, "oc_live_xxxx")
 print(result)
 ```
 
@@ -762,8 +762,8 @@ def run_slither(contract_path):
     )
     return json.loads(result.stdout)
 
-def convert_slither_to_ris(slither_output, contract_address, chain_id=1):
-    """Convert Slither output to RIS format."""
+def convert_slither_to_ctis(slither_output, contract_address, chain_id=1):
+    """Convert Slither output to CTIS format."""
     findings = []
 
     for detector in slither_output.get("results", {}).get("detectors", []):
@@ -804,7 +804,7 @@ def convert_slither_to_ris(slither_output, contract_address, chain_id=1):
     }
 
 def map_slither_impact(impact):
-    """Map Slither impact to RIS severity."""
+    """Map Slither impact to CTIS severity."""
     mapping = {
         "High": "critical",
         "Medium": "high",
@@ -814,7 +814,7 @@ def map_slither_impact(impact):
     return mapping.get(impact, "medium")
 
 def map_slither_confidence(confidence):
-    """Map Slither confidence to RIS confidence."""
+    """Map Slither confidence to CTIS confidence."""
     mapping = {"High": 95, "Medium": 70, "Low": 40}
     return mapping.get(confidence, 70)
 
@@ -854,15 +854,15 @@ Response:
 ```json
 {
   "id": "agt_abc123",
-  "api_key": "rs_live_xxxxxxxxxxxxxxxxxxxx",
-  "api_key_prefix": "rs_live_xxxx"
+  "api_key": "oc_live_xxxxxxxxxxxxxxxxxxxx",
+  "api_key_prefix": "oc_live_xxxx"
 }
 ```
 
-### Ingest RIS Report (Primary)
+### Ingest CTIS Report (Primary)
 
 ```
-POST /api/v1/agent/ingest/ris
+POST /api/v1/agent/ingest/ctis
 Authorization: Bearer <agent_api_key>
 Content-Type: application/json
 
@@ -976,7 +976,7 @@ import threading
 def heartbeat_loop(api_key, interval=60):
     while True:
         requests.post(
-            "https://api.exploop.io/api/v1/ingest/heartbeat",
+            "https://api.openctem.io/api/v1/ingest/heartbeat",
             headers={"Authorization": f"Bearer {api_key}"},
             json={"status": "active"}
         )
@@ -1023,7 +1023,7 @@ Link findings to specific assets:
 
 ## Example: Complete Web3 Scanner
 
-See the full example at: [github.com/exploopio/examples/web3-scanner](https://github.com/exploopio/examples)
+See the full example at: [github.com/openctemio/examples/web3-scanner](https://github.com/openctemio/examples)
 
 ```go
 package main
@@ -1036,7 +1036,7 @@ import (
     "os"
     "os/exec"
 
-    "github.com/exploopio/api/pkg/parsers/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
@@ -1048,13 +1048,13 @@ func main() {
     // Run Slither
     slitherOutput := runSlither(contractPath)
 
-    // Build RIS report
-    report := ris.NewReportBuilder().
+    // Build CTIS report
+    report := ctis.NewReportBuilder().
         WithTool("web3-scanner", "1.0.0").
         WithToolCapabilities("web3").
         AddAsset(
-            ris.NewAssetBuilder(ris.AssetTypeSmartContract, contractAddress).
-                WithCriticality(ris.CriticalityCritical).
+            ctis.NewAssetBuilder(ctis.AssetTypeSmartContract, contractAddress).
+                WithCriticality(ctis.CriticalityCritical).
                 WithProperty("chain_id", chainID).
                 Build(),
         ).
@@ -1066,15 +1066,15 @@ func main() {
         report.Findings = append(report.Findings, finding)
     }
 
-    // Push to Rediver
-    pushToRediver(report, apiKey)
+    // Push to OpenCTEM
+    pushToOpenCTEM(report, apiKey)
 }
 
-func pushToRediver(report *ris.Report, apiKey string) error {
+func pushToOpenCTEM(report *ctis.Report, apiKey string) error {
     data, _ := json.Marshal(report)
 
     req, _ := http.NewRequest("POST",
-        "https://api.exploop.io/api/v1/ingest/findings",
+        "https://api.openctem.io/api/v1/ingest/findings",
         bytes.NewBuffer(data))
     req.Header.Set("Authorization", "Bearer "+apiKey)
     req.Header.Set("Content-Type", "application/json")

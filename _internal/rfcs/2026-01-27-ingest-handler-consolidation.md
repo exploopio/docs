@@ -13,10 +13,10 @@
 ~~Hiện tại hệ thống có **3 format ingestion khác nhau** với 2 handler riêng biệt, gây ra code duplication và maintenance burden.~~
 
 **IMPLEMENTED:** Hệ thống đã được consolidate thành công:
-- ✅ Unified `ingest.Service` thay thế `IngestService` và `RISIngestService`
-- ✅ Unified `IngestHandler` thay thế `IngestHandler` và `RISIngestHandler`
+- ✅ Unified `ingest.Service` thay thế `IngestService` và `CTISIngestService`
+- ✅ Unified `IngestHandler` thay thế `IngestHandler` và `CTISIngestHandler`
 - ✅ Legacy endpoint đã bị xóa hoàn toàn (không còn backward compatibility)
-- ✅ 3 format được support: RIS (native), SARIF, Recon
+- ✅ 3 format được support: CTIS (native), SARIF, Recon
 - ✅ Package structure: `api/internal/app/ingest/`
 
 ---
@@ -28,19 +28,19 @@
 | Handler | File | Methods | Format |
 |---------|------|---------|--------|
 | `IngestHandler` | `ingest_handler.go` | `Ingest()`, `IngestSARIF()`, `CheckFingerprints()`, `Heartbeat()` | Legacy custom |
-| `RISIngestHandler` | `ris_ingest_handler.go` | `IngestRIS()`, `IngestReconReport()` | RIS (Rediver Interchange Schema) |
+| `CTISIngestHandler` | `ctis_ingest_handler.go` | `IngestCTIS()`, `IngestReconReport()` | CTIS (CTEM Ingest Schema) |
 
 ### Services Hiện Tại
 
 | Service | File | Purpose |
 |---------|------|---------|
 | `IngestService` | `ingest_service.go` | Legacy format processing |
-| `RISIngestService` | `ris_ingest_service.go` | RIS format processing |
+| `CTISIngestService` | `ctis_ingest_service.go` | CTIS format processing |
 
 ### Endpoints Hiện Tại (After Implementation)
 
 ```
-/api/v1/agent/ingest/ris    → IngestHandler.IngestRIS()      [PRIMARY]
+/api/v1/agent/ingest/ctis    → IngestHandler.IngestCTIS()      [PRIMARY]
 /api/v1/agent/ingest/sarif  → IngestHandler.IngestSARIF()    [SARIF]
 /api/v1/agent/ingest/recon  → IngestHandler.IngestReconReport()
 /api/v1/agent/ingest/check  → IngestHandler.CheckFingerprints()
@@ -67,7 +67,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                     UnifiedIngestHandler                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  /api/v1/agent/ingest/ris      → IngestRIS()      [PRIMARY]     │
+│  /api/v1/agent/ingest/ctis      → IngestCTIS()      [PRIMARY]     │
 │  /api/v1/agent/ingest/recon    → IngestRecon()                  │
 │  /api/v1/agent/ingest/sarif    → IngestSARIF()                  │
 │  /api/v1/agent/ingest/check    → CheckFingerprints()            │
@@ -79,9 +79,9 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                     UnifiedIngestService                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  IngestRIS()           - Primary ingestion method                │
-│  IngestSARIF()         - SARIF → RIS conversion → IngestRIS()   │
-│  IngestLegacy()        - Legacy → RIS conversion → IngestRIS()  │
+│  IngestCTIS()           - Primary ingestion method                │
+│  IngestSARIF()         - SARIF → CTIS conversion → IngestCTIS()   │
+│  IngestLegacy()        - Legacy → CTIS conversion → IngestCTIS()  │
 │  CheckFingerprints()   - Deduplication check                    │
 │  UpdateHeartbeat()     - Agent health                           │
 └─────────────────────────────────────────────────────────────────┘
@@ -91,11 +91,11 @@
 
 | Endpoint | Status | Action |
 |----------|:------:|--------|
-| `/api/v1/agent/ingest/ris` | PRIMARY | Promoted as the standard |
+| `/api/v1/agent/ingest/ctis` | PRIMARY | Promoted as the standard |
 | `/api/v1/agent/ingest/recon` | KEEP | Convenience wrapper |
 | `/api/v1/agent/ingest/sarif` | KEEP | Industry standard support |
 | `/api/v1/agent/ingest/check` | KEEP | Deduplication essential |
-| `/api/v1/agent/ingest` | DEPRECATED | Convert to RIS internally |
+| `/api/v1/agent/ingest` | DEPRECATED | Convert to CTIS internally |
 | `/api/v1/agent/heartbeat` | KEEP | Essential for agent health |
 
 ---
@@ -113,17 +113,17 @@
 package app
 
 import (
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
-// LegacyToRISConverter converts legacy IngestInput to RIS Report
-type LegacyToRISConverter struct{}
+// LegacyToCTISConverter converts legacy IngestInput to CTIS Report
+type LegacyToCTISConverter struct{}
 
-// Convert transforms legacy format to RIS format
-func (c *LegacyToRISConverter) Convert(input IngestInput) (*ris.Report, error) {
-    report := &ris.Report{
+// Convert transforms legacy format to CTIS format
+func (c *LegacyToCTISConverter) Convert(input IngestInput) (*ctis.Report, error) {
+    report := &ctis.Report{
         Version: input.Version,
-        Metadata: ris.ReportMetadata{
+        Metadata: ctis.ReportMetadata{
             ID:          input.Metadata.ScanID,
             SourceType:  "scanner",
             SourceTool:  input.Metadata.ToolName,
@@ -148,9 +148,9 @@ func (c *LegacyToRISConverter) Convert(input IngestInput) (*ris.Report, error) {
     return report, nil
 }
 
-// convertTarget converts IngestTarget to RIS Asset
-func (c *LegacyToRISConverter) convertTarget(target IngestTarget, index int) ris.Asset {
-    return ris.Asset{
+// convertTarget converts IngestTarget to CTIS Asset
+func (c *LegacyToCTISConverter) convertTarget(target IngestTarget, index int) ctis.Asset {
+    return ctis.Asset{
         ID:          target.Identifier,
         Type:        c.mapAssetType(target.Type),
         Identifier:  target.Identifier,
@@ -160,9 +160,9 @@ func (c *LegacyToRISConverter) convertTarget(target IngestTarget, index int) ris
     }
 }
 
-// convertFinding converts IngestFinding to RIS Finding
-func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
-    finding := ris.Finding{
+// convertFinding converts IngestFinding to CTIS Finding
+func (c *LegacyToCTISConverter) convertFinding(f IngestFinding) ctis.Finding {
+    finding := ctis.Finding{
         ID:          f.Fingerprint,
         RuleID:      f.RuleID,
         Title:       f.Title,
@@ -173,7 +173,7 @@ func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
 
     // Map code location
     if f.FilePath != "" {
-        finding.Location = &ris.Location{
+        finding.Location = &ctis.Location{
             File:        f.FilePath,
             StartLine:   f.StartLine,
             EndLine:     f.EndLine,
@@ -185,13 +185,13 @@ func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
 
     // Map CVE/CWE
     if f.CVEID != "" {
-        finding.Identifiers = append(finding.Identifiers, ris.Identifier{
+        finding.Identifiers = append(finding.Identifiers, ctis.Identifier{
             Type:  "cve",
             Value: f.CVEID,
         })
     }
     for _, cwe := range f.CWEIDs {
-        finding.Identifiers = append(finding.Identifiers, ris.Identifier{
+        finding.Identifiers = append(finding.Identifiers, ctis.Identifier{
             Type:  "cwe",
             Value: cwe,
         })
@@ -199,7 +199,7 @@ func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
 
     // Map CVSS
     if f.CVSSScore != nil {
-        finding.CVSS = &ris.CVSS{
+        finding.CVSS = &ctis.CVSS{
             Score:  *f.CVSSScore,
             Vector: f.CVSSVector,
             Source: f.CVSSSource,
@@ -208,7 +208,7 @@ func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
 
     // Map remediation
     if f.Recommendation != "" {
-        finding.Remediation = &ris.Remediation{
+        finding.Remediation = &ctis.Remediation{
             Recommendation: f.Recommendation,
             References:     f.References,
         }
@@ -217,8 +217,8 @@ func (c *LegacyToRISConverter) convertFinding(f IngestFinding) ris.Finding {
     return finding
 }
 
-// mapAssetType maps legacy type to RIS asset type
-func (c *LegacyToRISConverter) mapAssetType(legacyType string) string {
+// mapAssetType maps legacy type to CTIS asset type
+func (c *LegacyToCTISConverter) mapAssetType(legacyType string) string {
     typeMap := map[string]string{
         "repository": "repository",
         "web":        "web_application",
@@ -242,17 +242,17 @@ func (c *LegacyToRISConverter) mapAssetType(legacyType string) string {
 package app
 
 import (
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
-// SARIFToRISConverter converts SARIF to RIS format
-type SARIFToRISConverter struct{}
+// SARIFToCTISConverter converts SARIF to CTIS format
+type SARIFToCTISConverter struct{}
 
-// Convert transforms SARIF log to RIS Report
-func (c *SARIFToRISConverter) Convert(sarif *SARIFLog, opts SARIFProcessorOptions) (*ris.Report, error) {
-    report := &ris.Report{
+// Convert transforms SARIF log to CTIS Report
+func (c *SARIFToCTISConverter) Convert(sarif *SARIFLog, opts SARIFProcessorOptions) (*ctis.Report, error) {
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.ReportMetadata{
+        Metadata: ctis.ReportMetadata{
             SourceType: "sarif",
         },
     }
@@ -281,9 +281,9 @@ func (c *SARIFToRISConverter) Convert(sarif *SARIFLog, opts SARIFProcessorOption
     return report, nil
 }
 
-// convertResult converts SARIF Result to RIS Finding
-func (c *SARIFToRISConverter) convertResult(r SARIFResult, driver SARIFToolDriver) ris.Finding {
-    finding := ris.Finding{
+// convertResult converts SARIF Result to CTIS Finding
+func (c *SARIFToCTISConverter) convertResult(r SARIFResult, driver SARIFToolDriver) ctis.Finding {
+    finding := ctis.Finding{
         RuleID:      r.RuleID,
         Title:       r.Message.Text,
         Description: r.Message.Text,
@@ -306,7 +306,7 @@ func (c *SARIFToRISConverter) convertResult(r SARIFResult, driver SARIFToolDrive
     // Map locations
     if len(r.Locations) > 0 {
         loc := r.Locations[0]
-        finding.Location = &ris.Location{
+        finding.Location = &ctis.Location{
             File:      loc.PhysicalLocation.ArtifactLocation.URI,
             StartLine: loc.PhysicalLocation.Region.StartLine,
             EndLine:   loc.PhysicalLocation.Region.EndLine,
@@ -316,8 +316,8 @@ func (c *SARIFToRISConverter) convertResult(r SARIFResult, driver SARIFToolDrive
     return finding
 }
 
-// mapLevel maps SARIF level to RIS severity
-func (c *SARIFToRISConverter) mapLevel(level string) string {
+// mapLevel maps SARIF level to CTIS severity
+func (c *SARIFToCTISConverter) mapLevel(level string) string {
     switch level {
     case "error":
         return "high"
@@ -330,9 +330,9 @@ func (c *SARIFToRISConverter) mapLevel(level string) string {
     }
 }
 
-// convertArtifact converts SARIF Artifact to RIS Asset
-func (c *SARIFToRISConverter) convertArtifact(a SARIFArtifact) ris.Asset {
-    return ris.Asset{
+// convertArtifact converts SARIF Artifact to CTIS Asset
+func (c *SARIFToCTISConverter) convertArtifact(a SARIFArtifact) ctis.Asset {
+    return ctis.Asset{
         Type:       "file",
         Identifier: a.Location.URI,
         Name:       a.Location.URI,
@@ -344,8 +344,8 @@ func (c *SARIFToRISConverter) convertArtifact(a SARIFArtifact) ris.Asset {
 
 | File | Purpose |
 |------|---------|
-| `api/internal/app/ingest_converter.go` | Legacy → RIS converter |
-| `api/internal/app/sarif_converter.go` | SARIF → RIS converter |
+| `api/internal/app/ingest_converter.go` | Legacy → CTIS converter |
+| `api/internal/app/sarif_converter.go` | SARIF → CTIS converter |
 | `api/internal/app/ingest_converter_test.go` | Converter unit tests |
 | `api/internal/app/sarif_converter_test.go` | SARIF converter tests |
 
@@ -354,40 +354,40 @@ func (c *SARIFToRISConverter) convertArtifact(a SARIFArtifact) ris.Asset {
 ### Phase 2: Service Consolidation (Week 2)
 **Goal:** Merge services, keep backward compatibility
 
-#### 2.1 Update RISIngestService
+#### 2.1 Update CTISIngestService
 
 ```go
-// api/internal/app/ris_ingest_service.go - ADDITIONS
+// api/internal/app/ctis_ingest_service.go - ADDITIONS
 
-// IngestLegacy processes legacy format by converting to RIS
-func (s *RISIngestService) IngestLegacy(ctx context.Context, agt *agent.Agent, input IngestInput) (*RISIngestOutput, error) {
-    // Convert legacy to RIS
-    converter := &LegacyToRISConverter{}
+// IngestLegacy processes legacy format by converting to CTIS
+func (s *CTISIngestService) IngestLegacy(ctx context.Context, agt *agent.Agent, input IngestInput) (*CTISIngestOutput, error) {
+    // Convert legacy to CTIS
+    converter := &LegacyToCTISConverter{}
     report, err := converter.Convert(input)
     if err != nil {
         return nil, shared.NewDomainError("CONVERSION_ERROR", "failed to convert legacy format: "+err.Error(), nil)
     }
 
-    // Process as RIS
-    return s.IngestRIS(ctx, agt, RISIngestInput{Report: report})
+    // Process as CTIS
+    return s.IngestCTIS(ctx, agt, CTISIngestInput{Report: report})
 }
 
-// IngestSARIFReport processes SARIF format by converting to RIS
-func (s *RISIngestService) IngestSARIFReport(ctx context.Context, agt *agent.Agent, sarif *SARIFLog, opts SARIFProcessorOptions) (*RISIngestOutput, error) {
-    // Convert SARIF to RIS
-    converter := &SARIFToRISConverter{}
+// IngestSARIFReport processes SARIF format by converting to CTIS
+func (s *CTISIngestService) IngestSARIFReport(ctx context.Context, agt *agent.Agent, sarif *SARIFLog, opts SARIFProcessorOptions) (*CTISIngestOutput, error) {
+    // Convert SARIF to CTIS
+    converter := &SARIFToCTISConverter{}
     report, err := converter.Convert(sarif, opts)
     if err != nil {
         return nil, shared.NewDomainError("CONVERSION_ERROR", "failed to convert SARIF format: "+err.Error(), nil)
     }
 
-    // Process as RIS
-    return s.IngestRIS(ctx, agt, RISIngestInput{Report: report})
+    // Process as CTIS
+    return s.IngestCTIS(ctx, agt, CTISIngestInput{Report: report})
 }
 
 // CheckFingerprints checks fingerprint existence for deduplication
 // Moved from IngestService to unified service
-func (s *RISIngestService) CheckFingerprints(ctx context.Context, agt *agent.Agent, input CheckFingerprintsInput) (*CheckFingerprintsOutput, error) {
+func (s *CTISIngestService) CheckFingerprints(ctx context.Context, agt *agent.Agent, input CheckFingerprintsInput) (*CheckFingerprintsOutput, error) {
     // Validate agent context
     if err := s.validateAgent(agt); err != nil {
         return nil, err
@@ -440,22 +440,22 @@ import (
     "net/http"
     "strings"
 
-    "github.com/exploopio/api/internal/app"
-    "github.com/exploopio/api/pkg/apierror"
-    "github.com/exploopio/api/pkg/logger"
+    "github.com/openctemio/api/internal/app"
+    "github.com/openctemio/api/pkg/apierror"
+    "github.com/openctemio/api/pkg/logger"
 )
 
 // UnifiedIngestHandler handles all ingestion HTTP requests.
-// This handler consolidates IngestHandler and RISIngestHandler.
+// This handler consolidates IngestHandler and CTISIngestHandler.
 type UnifiedIngestHandler struct {
-    ingestService *app.RISIngestService  // Unified service
+    ingestService *app.CTISIngestService  // Unified service
     agentService  *app.AgentService
     logger        *logger.Logger
 }
 
 // NewUnifiedIngestHandler creates a new unified ingest handler.
 func NewUnifiedIngestHandler(
-    ingestSvc *app.RISIngestService,
+    ingestSvc *app.CTISIngestService,
     agentSvc *app.AgentService,
     log *logger.Logger,
 ) *UnifiedIngestHandler {
@@ -466,8 +466,8 @@ func NewUnifiedIngestHandler(
     }
 }
 
-// IngestRIS handles POST /api/v1/agent/ingest/ris [PRIMARY]
-func (h *UnifiedIngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request) {
+// IngestCTIS handles POST /api/v1/agent/ingest/ctis [PRIMARY]
+func (h *UnifiedIngestHandler) IngestCTIS(w http.ResponseWriter, r *http.Request) {
     agt := AgentFromContext(r.Context())
     if agt == nil {
         apierror.Unauthorized("Agent authentication required").WriteJSON(w)
@@ -475,14 +475,14 @@ func (h *UnifiedIngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request)
     }
 
     var req struct {
-        Report ris.Report `json:"report"`
+        Report ctis.Report `json:"report"`
     }
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
         apierror.BadRequest("Invalid JSON request body").WriteJSON(w)
         return
     }
 
-    output, err := h.ingestService.IngestRIS(r.Context(), agt, app.RISIngestInput{
+    output, err := h.ingestService.IngestCTIS(r.Context(), agt, app.CTISIngestInput{
         Report: &req.Report,
     })
     if err != nil {
@@ -494,7 +494,7 @@ func (h *UnifiedIngestHandler) IngestRIS(w http.ResponseWriter, r *http.Request)
 }
 
 // IngestLegacy handles POST /api/v1/agent/ingest [DEPRECATED]
-// This endpoint is deprecated. Use /api/v1/agent/ingest/ris instead.
+// This endpoint is deprecated. Use /api/v1/agent/ingest/ctis instead.
 func (h *UnifiedIngestHandler) IngestLegacy(w http.ResponseWriter, r *http.Request) {
     agt := AgentFromContext(r.Context())
     if agt == nil {
@@ -506,12 +506,12 @@ func (h *UnifiedIngestHandler) IngestLegacy(w http.ResponseWriter, r *http.Reque
     h.logger.Warn("deprecated endpoint called",
         "endpoint", "/api/v1/agent/ingest",
         "agent_id", agt.ID.String(),
-        "recommendation", "migrate to /api/v1/agent/ingest/ris",
+        "recommendation", "migrate to /api/v1/agent/ingest/ctis",
     )
 
     // Add deprecation header
     w.Header().Set("Deprecation", "true")
-    w.Header().Set("X-Deprecation-Notice", "This endpoint is deprecated. Use /api/v1/agent/ingest/ris instead.")
+    w.Header().Set("X-Deprecation-Notice", "This endpoint is deprecated. Use /api/v1/agent/ingest/ctis instead.")
 
     var req app.IngestInput
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -562,8 +562,8 @@ func (h *UnifiedIngestHandler) IngestSARIF(w http.ResponseWriter, r *http.Reques
 
 // IngestRecon handles POST /api/v1/agent/ingest/recon
 func (h *UnifiedIngestHandler) IngestRecon(w http.ResponseWriter, r *http.Request) {
-    // Delegate to existing RIS handler logic
-    // (reuse buildReconToRISInput from ris_ingest_handler.go)
+    // Delegate to existing CTIS handler logic
+    // (reuse buildReconToCTISInput from ctis_ingest_handler.go)
 }
 
 // CheckFingerprints handles POST /api/v1/agent/ingest/check
@@ -647,7 +647,7 @@ func (h *UnifiedIngestHandler) handleError(w http.ResponseWriter, err error, age
     // Error handling logic...
 }
 
-func (h *UnifiedIngestHandler) writeResponse(w http.ResponseWriter, output *app.RISIngestOutput) {
+func (h *UnifiedIngestHandler) writeResponse(w http.ResponseWriter, output *app.CTISIngestOutput) {
     w.Header().Set("Content-Type", "application/json")
     w.WriteHeader(http.StatusCreated)
     json.NewEncoder(w).Encode(output)
@@ -668,7 +668,7 @@ func registerAgentRoutes(
     router Router,
     unifiedHandler *handler.UnifiedIngestHandler,  // NEW: unified handler
     // ingestHandler *handler.IngestHandler,        // DEPRECATED
-    // risIngestHandler *handler.RISIngestHandler,  // DEPRECATED
+    // risIngestHandler *handler.CTISIngestHandler,  // DEPRECATED
     commandHandler *handler.CommandHandler,
     scanSessionHandler *handler.ScanSessionHandler,
     licensingService *app.LicensingService,
@@ -679,13 +679,13 @@ func registerAgentRoutes(
         // Heartbeat - NO module gating
         r.POST("/heartbeat", unifiedHandler.Heartbeat)
 
-        // Primary RIS ingestion
-        r.POST("/ingest/ris", unifiedHandler.IngestRIS, scansModuleMiddleware)
+        // Primary CTIS ingestion
+        r.POST("/ingest/ctis", unifiedHandler.IngestCTIS, scansModuleMiddleware)
         r.POST("/ingest/recon", unifiedHandler.IngestRecon, scansModuleMiddleware)
         r.POST("/ingest/sarif", unifiedHandler.IngestSARIF, scansModuleMiddleware)
         r.POST("/ingest/check", unifiedHandler.CheckFingerprints, scansModuleMiddleware)
 
-        // DEPRECATED: Legacy endpoint (redirects to RIS internally)
+        // DEPRECATED: Legacy endpoint (redirects to CTIS internally)
         r.POST("/ingest", unifiedHandler.IngestLegacy, scansModuleMiddleware)
 
         // Commands...
@@ -700,7 +700,7 @@ func registerAgentRoutes(
 
 func setupHandlers(deps *Dependencies) *Handlers {
     // Create unified ingest service
-    unifiedIngestService := app.NewRISIngestService(
+    unifiedIngestService := app.NewCTISIngestService(
         deps.AssetRepo,
         deps.FindingRepo,
         deps.ComponentRepo,
@@ -718,7 +718,7 @@ func setupHandlers(deps *Dependencies) *Handlers {
     return &Handlers{
         UnifiedIngest: unifiedIngestHandler,
         // IngestHandler: nil,      // DEPRECATED
-        // RISIngestHandler: nil,   // DEPRECATED
+        // CTISIngestHandler: nil,   // DEPRECATED
         // ...
     }
 }
@@ -734,24 +734,24 @@ func setupHandlers(deps *Dependencies) *Handlers {
 | File | Reason |
 |------|--------|
 | `api/internal/infra/http/handler/ingest_handler.go` | Replaced by unified handler |
-| `api/internal/infra/http/handler/ris_ingest_handler.go` | Merged into unified handler |
-| `api/internal/app/ingest_service.go` | Merged into RIS ingest service |
+| `api/internal/infra/http/handler/ctis_ingest_handler.go` | Merged into unified handler |
+| `api/internal/app/ingest_service.go` | Merged into CTIS ingest service |
 
 #### 4.2 Files to Rename/Update
 
 | Old Name | New Name |
 |----------|----------|
-| `ris_ingest_service.go` | `ingest_service.go` (or keep as is) |
-| `ris_ingest_handler.go` | `ingest_handler.go` (becomes unified) |
+| `ctis_ingest_service.go` | `ingest_service.go` (or keep as is) |
+| `ctis_ingest_handler.go` | `ingest_handler.go` (becomes unified) |
 
 #### 4.3 SDK Updates
 
 ```go
 // sdk/pkg/client/ingest.go - UPDATE
 
-// IngestReport sends a RIS report to the server (primary method)
-func (c *Client) IngestReport(ctx context.Context, report *ris.Report) (*IngestResult, error) {
-    return c.post(ctx, "/api/v1/agent/ingest/ris", report)
+// IngestReport sends a CTIS report to the server (primary method)
+func (c *Client) IngestReport(ctx context.Context, report *ctis.Report) (*IngestResult, error) {
+    return c.post(ctx, "/api/v1/agent/ingest/ctis", report)
 }
 
 // IngestLegacy sends legacy format (deprecated, use IngestReport)
@@ -785,16 +785,16 @@ client.Ingest(ctx, IngestInput{
 })
 ```
 
-**After (RIS):**
+**After (CTIS):**
 ```go
-client.IngestReport(ctx, &ris.Report{
+client.IngestReport(ctx, &ctis.Report{
     Version: "1.0",
-    Metadata: ris.ReportMetadata{
+    Metadata: ctis.ReportMetadata{
         SourceType: "scanner",
         SourceTool: "semgrep",
         ID:         "scan-123",
     },
-    Findings: []ris.Finding{...},
+    Findings: []ctis.Finding{...},
 })
 ```
 
@@ -812,14 +812,14 @@ client.IngestReport(ctx, &ris.Report{
 
 ### Unit Tests
 
-1. `ingest_converter_test.go` - Test legacy → RIS conversion
-2. `sarif_converter_test.go` - Test SARIF → RIS conversion
+1. `ingest_converter_test.go` - Test legacy → CTIS conversion
+2. `sarif_converter_test.go` - Test SARIF → CTIS conversion
 3. `unified_ingest_handler_test.go` - Test all endpoints
 
 ### Integration Tests
 
 1. Test legacy endpoint still works (backward compatibility)
-2. Test RIS endpoint with all asset/finding types
+2. Test CTIS endpoint with all asset/finding types
 3. Test SARIF endpoint with various SARIF versions
 4. Test deprecation headers are returned
 
@@ -861,9 +861,9 @@ client.IngestReport(ctx, &ris.Report{
 - [ ] Review and test converters
 
 ### Week 2: Service Consolidation
-- [ ] Add `IngestLegacy()` to RISIngestService
-- [ ] Add `IngestSARIFReport()` to RISIngestService
-- [ ] Move `CheckFingerprints()` to RISIngestService
+- [ ] Add `IngestLegacy()` to CTISIngestService
+- [ ] Add `IngestSARIFReport()` to CTISIngestService
+- [ ] Move `CheckFingerprints()` to CTISIngestService
 - [ ] Write service integration tests
 
 ### Week 3: Route Migration
@@ -890,14 +890,14 @@ client.IngestReport(ctx, &ris.Report{
 - `api/internal/infra/http/handler/unified_ingest_handler.go`
 
 ### Modified Files
-- `api/internal/app/ris_ingest_service.go` - Add legacy/SARIF methods
+- `api/internal/app/ctis_ingest_service.go` - Add legacy/SARIF methods
 - `api/internal/infra/http/routes/scanning.go` - Update route registration
 - `api/cmd/server/handlers.go` - Update DI setup
 
 ### Deprecated/To Delete (after migration period)
 - `api/internal/app/ingest_service.go`
 - `api/internal/infra/http/handler/ingest_handler.go`
-- `api/internal/infra/http/handler/ris_ingest_handler.go`
+- `api/internal/infra/http/handler/ctis_ingest_handler.go`
 
 ---
 

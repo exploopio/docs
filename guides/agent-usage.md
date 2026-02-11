@@ -6,9 +6,9 @@ nav_order: 12
 ---
 {% raw %}
 
-# Rediver Agent Usage Guide
+# OpenCTEM Agent Usage Guide
 
-The Rediver Agent is a modular security scanning tool that integrates with the Rediver platform. It supports multiple executor types for different security domains.
+The OpenCTEM Agent is a modular security scanning tool that integrates with the OpenCTEM platform. It supports multiple executor types for different security domains.
 
 ---
 
@@ -50,13 +50,13 @@ The agent uses a **modular executor architecture**:
 ### Option 1: Go Install
 
 ```bash
-go install github.com/exploopio/agent@latest
+go install github.com/openctemio/agent@latest
 ```
 
 ### Option 2: Build from Source
 
 ```bash
-git clone https://github.com/exploopio/agent.git
+git clone https://github.com/openctemio/agent.git
 cd agent
 
 # Standard build (CLI-only tools)
@@ -76,19 +76,19 @@ go build -tags "platform,hybrid" -o agent ./agent/
 
 ```bash
 # Pull from Docker Hub
-docker pull exploopio/agent:latest
+docker pull openctemio/agent:latest
 
 # Available variants
-docker pull exploopio/agent:full    # All tools included (~1GB)
-docker pull exploopio/agent:slim    # Agent only (~20MB)
-docker pull exploopio/agent:ci      # CI/CD optimized (~1.2GB)
+docker pull openctemio/agent:full    # All tools included (~1GB)
+docker pull openctemio/agent:slim    # Agent only (~20MB)
+docker pull openctemio/agent:ci      # CI/CD optimized (~1.2GB)
 ```
 
 ---
 
 ## Quick Start
 
-### 1. Create an Agent in Rediver UI
+### 1. Create an Agent in OpenCTEM UI
 
 1. Navigate to **Scoping > Agents**
 2. Click **+ Add Agent**
@@ -99,7 +99,7 @@ docker pull exploopio/agent:ci      # CI/CD optimized (~1.2GB)
 
 ```bash
 # Set credentials
-export API_URL=https://api.exploop.io
+export API_URL=https://api.openctem.io
 export API_KEY=rdw_your_api_key_here
 
 # Run a scan and push results
@@ -117,7 +117,7 @@ export API_KEY=rdw_your_api_key_here
 | `-tool` | Single tool to run | `-tool semgrep` |
 | `-tools` | Multiple tools (comma-separated) | `-tools semgrep,gitleaks,trivy` |
 | `-target` | Path or URL to scan | `-target ./src` |
-| `-push` | Push results to Rediver | `-push` |
+| `-push` | Push results to OpenCTEM | `-push` |
 | `-verbose` | Enable verbose logging | `-verbose` |
 | `-config` | Path to config file | `-config agent.yaml` |
 
@@ -321,7 +321,7 @@ agent:
 
 # Platform connection
 server:
-  base_url: "https://api.exploop.io"
+  base_url: "https://api.openctem.io"
   api_key: "rdw_your_api_key"
   agent_id: ""  # Auto-generated if empty
   timeout: 30s
@@ -387,7 +387,7 @@ Run a scan and exit:
 ./agent -tool semgrep -target . -output ./results.json
 ```
 
-> **Important**: In one-shot mode, use `-push` to send results to Rediver.
+> **Important**: In one-shot mode, use `-push` to send results to OpenCTEM.
 
 ### Daemon Mode (Continuous)
 
@@ -442,7 +442,7 @@ DAST Workflow (Separate):
 
 ### GitHub Actions
 
-**Option 1: Use Rediver's reusable workflow:**
+**Option 1: Use OpenCTEM's reusable workflow:**
 
 ```yaml
 name: Security Scan
@@ -450,7 +450,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: exploopio/agent/.github/workflows/exploop-security.yml@main
+    uses: openctemio/agent/.github/workflows/openctem-security.yml@main
     with:
       tools: "semgrep,gitleaks,trivy"
       fail_on: "high"
@@ -460,7 +460,7 @@ jobs:
 
   # Or use individual scan types:
   # sast:
-  #   uses: exploopio/agent/.github/workflows/exploop-security.yml@main
+  #   uses: openctemio/agent/.github/workflows/openctem-security.yml@main
   #   with:
   #     scan_type: "sast"
   #     fail_on: "high"
@@ -483,7 +483,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Security Scan
-        uses: exploopio/agent/ci/github@main
+        uses: openctemio/agent/ci/github@main
         with:
           tools: semgrep,gitleaks,trivy
           fail_on: high
@@ -512,7 +512,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Security Scan
-        uses: docker://exploopio/agent:ci
+        uses: docker://openctemio/agent:ci
         with:
           args: >-
             -tools semgrep,gitleaks,trivy
@@ -544,28 +544,28 @@ jobs:
 
 ### GitLab CI
 
-**Option 1: Use Rediver's reusable template:**
+**Option 1: Use OpenCTEM's reusable template:**
 
 ```yaml
 include:
-  - remote: 'https://raw.githubusercontent.com/exploopio/agent/main/ci/gitlab/exploop-security.yml'
+  - remote: 'https://raw.githubusercontent.com/openctemio/agent/main/ci/gitlab/openctem-security.yml'
 
 stages:
   - security
 
 # Full scan (all tools)
 security:
-  extends: .exploop-full-scan
+  extends: .openctem-full-scan
   variables:
     FAIL_ON: "high"
 
 # Or use individual scans in parallel (faster):
 # sast:
-#   extends: .exploop-sast
+#   extends: .openctem-sast
 # secrets:
-#   extends: .exploop-secrets
+#   extends: .openctem-secrets
 # sca:
-#   extends: .exploop-sca
+#   extends: .openctem-sca
 ```
 
 **Option 2: Custom configuration:**
@@ -576,7 +576,7 @@ stages:
 
 security-scan:
   stage: security
-  image: exploopio/agent:ci
+  image: openctemio/agent:ci
   variables:
     GITLAB_TOKEN: $CI_JOB_TOKEN
     API_URL: $API_URL
@@ -612,13 +612,13 @@ security-scan:
 
 ### Understanding GitLab `extends` Keyword
 
-The `extends` keyword in GitLab CI allows you to inherit configuration from a template (hidden job starting with `.`). This is how Rediver templates work:
+The `extends` keyword in GitLab CI allows you to inherit configuration from a template (hidden job starting with `.`). This is how OpenCTEM templates work:
 
 ```yaml
-# Template definition (provided by Rediver)
-.exploop-sast:
+# Template definition (provided by OpenCTEM)
+.openctem-sast:
   stage: security
-  image: exploopio/agent:semgrep
+  image: openctemio/agent:semgrep
   variables:
     PUSH: "true"
     FAIL_ON: "critical"
@@ -627,7 +627,7 @@ The `extends` keyword in GitLab CI allows you to inherit configuration from a te
 
 # Your job extends the template
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
 ```
 
 **Key Points:**
@@ -640,29 +640,29 @@ sast:
 ```yaml
 # Override severity threshold
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
   variables:
     FAIL_ON: "high"          # Override: fail on high+ (not just critical)
     PUSH: "false"            # Override: scan-only mode
 
 # Override rules (only run on specific branches)
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH == "develop"
 
 # Add custom before_script
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
   before_script:
     - echo "Running custom setup..."
     - npm install
 
 # Use different image version
 sast:
-  extends: .exploop-sast
-  image: exploopio/agent:semgrep@sha256:abc123...  # Pin specific version
+  extends: .openctem-sast
+  image: openctemio/agent:semgrep@sha256:abc123...  # Pin specific version
 ```
 
 **Deep Merge Behavior:**
@@ -671,7 +671,7 @@ GitLab performs deep merge for hashes (like `variables`), but replaces arrays (l
 
 ```yaml
 # Parent template
-.exploop-sast:
+.openctem-sast:
   variables:
     PUSH: "true"
     FAIL_ON: "critical"
@@ -679,7 +679,7 @@ GitLab performs deep merge for hashes (like `variables`), but replaces arrays (l
 
 # Your job
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
   variables:
     FAIL_ON: "high"    # Override this one
     # PUSH and VERBOSE are inherited from template
@@ -687,29 +687,29 @@ sast:
 
 ### Reusable CI Templates
 
-Rediver provides pre-built templates for quick integration:
+OpenCTEM provides pre-built templates for quick integration:
 
 | Platform | Template Location | Description |
 |----------|-------------------|-------------|
-| GitHub Actions | `exploopio/agent/.github/workflows/exploop-security.yml` | Single job workflow |
-| GitHub Actions | `exploopio/agent/.github/workflows/parallel-security.yml` | **Parallel jobs (fastest)** |
-| GitHub Actions | `exploopio/agent/ci/github/action.yml` | Composite action |
-| GitLab CI | `ci/gitlab/exploop-security.yml` | Include templates |
+| GitHub Actions | `openctemio/agent/.github/workflows/openctem-security.yml` | Single job workflow |
+| GitHub Actions | `openctemio/agent/.github/workflows/parallel-security.yml` | **Parallel jobs (fastest)** |
+| GitHub Actions | `openctemio/agent/ci/github/action.yml` | Composite action |
+| GitLab CI | `ci/gitlab/openctem-security.yml` | Include templates |
 | GitLab CI | `ci/gitlab/parallel-security.yml` | **Parallel jobs (fastest)** |
 
 **Available GitLab Templates:**
 
 | Template | Image | Description |
 |----------|-------|-------------|
-| `.exploop-sast` | `exploopio/agent:semgrep` | SAST scanning with Semgrep |
-| `.exploop-sca` | `exploopio/agent:trivy` | SCA with fresh Trivy DB |
-| `.exploop-sca-fast` | `exploopio/agent:trivy-ci` | SCA with pre-loaded DB (faster) |
-| `.exploop-secrets` | `exploopio/agent:gitleaks` | Secret detection |
-| `.exploop-iac` | `exploopio/agent:trivy` | IaC misconfiguration |
-| `.exploop-container` | `exploopio/agent:trivy` | Container image scanning |
-| `.exploop-full-scan` | `exploopio/agent:ci` | All CI tools in one job |
+| `.openctem-sast` | `openctemio/agent:semgrep` | SAST scanning with Semgrep |
+| `.openctem-sca` | `openctemio/agent:trivy` | SCA with fresh Trivy DB |
+| `.openctem-sca-fast` | `openctemio/agent:trivy-ci` | SCA with pre-loaded DB (faster) |
+| `.openctem-secrets` | `openctemio/agent:gitleaks` | Secret detection |
+| `.openctem-iac` | `openctemio/agent:trivy` | IaC misconfiguration |
+| `.openctem-container` | `openctemio/agent:trivy` | Container image scanning |
+| `.openctem-full-scan` | `openctemio/agent:ci` | All CI tools in one job |
 
-> **Note about DAST**: `.exploop-dast` uses a separate `dast` stage (not `security`) and runs manually after deployment. DAST scans require a running application.
+> **Note about DAST**: `.openctem-dast` uses a separate `dast` stage (not `security`) and runs manually after deployment. DAST scans require a running application.
 
 ### CI Features
 
@@ -718,7 +718,7 @@ Rediver provides pre-built templates for quick integration:
 | Auto CI detection | `-auto-ci` | Detects GitHub/GitLab automatically |
 | Inline comments | `-comments` | Posts findings as PR/MR comments (max 10 by default) |
 | Security gate | `-fail-on` | Fail pipeline on severity threshold |
-| Push to platform | `-push` | Sends results to Rediver |
+| Push to platform | `-push` | Sends results to OpenCTEM |
 | SARIF output | `-output-format sarif` | Generates SARIF 2.1.0 for security dashboards |
 | JSON output | `-output-format json` | Machine-readable JSON output |
 | Diff-based scan | Automatic | Only scans changed files in PR/MR |
@@ -729,7 +729,7 @@ Both GitHub Actions and GitLab CI templates support these configuration variable
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PUSH` | `"true"` | Push results to Rediver platform. Set `"false"` for testing or scan-only mode |
+| `PUSH` | `"true"` | Push results to OpenCTEM platform. Set `"false"` for testing or scan-only mode |
 | `COMMENTS` | `"true"` | Post findings as PR/MR comments |
 | `FAIL_ON` | `"critical"` | Security gate threshold (critical, high, medium, low) |
 | `VERBOSE` | `"false"` | Enable verbose output for debugging |
@@ -743,13 +743,13 @@ Both GitHub Actions and GitLab CI templates support these configuration variable
 ```yaml
 # GitLab
 sast:
-  extends: .exploop-sast
+  extends: .openctem-sast
   variables:
     PUSH: "false"      # Disable push for testing
     FAIL_ON: "high"    # Still enforce security gate
 
 # GitHub Actions
-- uses: exploopio/agent/.github/workflows/exploop-security.yml@main
+- uses: openctemio/agent/.github/workflows/openctem-security.yml@main
   with:
     push: false        # Disable push for testing
     fail_on: "high"
@@ -786,7 +786,7 @@ on: [push, pull_request]
 
 jobs:
   security:
-    uses: exploopio/agent/.github/workflows/parallel-security.yml@main
+    uses: openctemio/agent/.github/workflows/parallel-security.yml@main
     with:
       fail_on: "high"
     secrets:
@@ -798,7 +798,7 @@ jobs:
 
 ```yaml
 include:
-  - remote: 'https://raw.githubusercontent.com/exploopio/agent/main/ci/gitlab/parallel-security.yml'
+  - remote: 'https://raw.githubusercontent.com/openctemio/agent/main/ci/gitlab/parallel-security.yml'
 
 stages:
   - security
@@ -806,7 +806,7 @@ stages:
 variables:
   FAIL_ON: "high"
 
-# Jobs.exploop-sast,.exploop-secrets,.exploop-sca run automatically in parallel
+# Jobs.openctem-sast,.openctem-secrets,.openctem-sca run automatically in parallel
 ```
 
 **GitHub Actions - Parallel (Custom):**
@@ -818,7 +818,7 @@ on: [push, pull_request]
 jobs:
   sast:
     runs-on: ubuntu-latest
-    container: exploopio/agent:semgrep
+    container: openctemio/agent:semgrep
     steps:
       - uses: actions/checkout@v4
       - run: agent -tool semgrep -target . -push -auto-ci -comments -fail-on high
@@ -829,7 +829,7 @@ jobs:
 
   secrets:
     runs-on: ubuntu-latest
-    container: exploopio/agent:gitleaks
+    container: openctemio/agent:gitleaks
     steps:
       - uses: actions/checkout@v4
       - run: agent -tool gitleaks -target . -push -auto-ci -comments -fail-on critical
@@ -840,7 +840,7 @@ jobs:
 
   sca:
     runs-on: ubuntu-latest
-    container: exploopio/agent:trivy
+    container: openctemio/agent:trivy
     steps:
       - uses: actions/checkout@v4
       - run: agent -tool trivy -target . -push -auto-ci -fail-on critical
@@ -851,7 +851,7 @@ jobs:
   # DAST runs separately after deployment (not in PR checks)
   dast:
     runs-on: ubuntu-latest
-    container: exploopio/agent:nuclei
+    container: openctemio/agent:nuclei
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - run: agent -tool nuclei -target https://staging.example.com -push
@@ -868,7 +868,7 @@ stages:
 
 sast:
   stage: security
-  image: exploopio/agent:semgrep
+  image: openctemio/agent:semgrep
   script:
     - agent -tool semgrep -target . -push -auto-ci -comments -fail-on high
   rules:
@@ -876,7 +876,7 @@ sast:
 
 secrets:
   stage: security
-  image: exploopio/agent:gitleaks
+  image: openctemio/agent:gitleaks
   script:
     - agent -tool gitleaks -target . -push -auto-ci -comments
   rules:
@@ -884,7 +884,7 @@ secrets:
 
 sca:
   stage: security
-  image: exploopio/agent:trivy
+  image: openctemio/agent:trivy
   script:
     - agent -tool trivy -target . -push -auto-ci -fail-on critical
   rules:
@@ -901,27 +901,27 @@ sca:
 
 | Image | Size | Tools | Use Case |
 |-------|------|-------|----------|
-| `exploopio/agent:ci` | ~600MB | semgrep + gitleaks + trivy | Full CI pipeline (recommended) |
-| `exploopio/agent:ci-cached` | ~700MB | + preloaded Trivy DB | Faster CI (rebuild weekly) |
-| `exploopio/agent:semgrep` | ~400MB | Semgrep only | SAST scanning |
-| `exploopio/agent:gitleaks` | ~50MB | Gitleaks only | Secrets detection |
-| `exploopio/agent:trivy` | ~100MB | Trivy only | SCA/IaC/Container |
-| `exploopio/agent:trivy-ci` | ~500MB | Trivy + preloaded DB | Fast SCA (no DB download) |
+| `openctemio/agent:ci` | ~600MB | semgrep + gitleaks + trivy | Full CI pipeline (recommended) |
+| `openctemio/agent:ci-cached` | ~700MB | + preloaded Trivy DB | Faster CI (rebuild weekly) |
+| `openctemio/agent:semgrep` | ~400MB | Semgrep only | SAST scanning |
+| `openctemio/agent:gitleaks` | ~50MB | Gitleaks only | Secrets detection |
+| `openctemio/agent:trivy` | ~100MB | Trivy only | SCA/IaC/Container |
+| `openctemio/agent:trivy-ci` | ~500MB | Trivy + preloaded DB | Fast SCA (no DB download) |
 
 **DAST Image (separate from CI, runs after deployment):**
 
 | Image | Size | Tools | Use Case |
 |-------|------|-------|----------|
-| `exploopio/agent:nuclei` | ~100MB | Nuclei only | DAST against staging/production |
+| `openctemio/agent:nuclei` | ~100MB | Nuclei only | DAST against staging/production |
 
 **Development & Platform Images:**
 
 | Image | Size | Tools | Use Case |
 |-------|------|-------|----------|
-| `exploopio/agent:slim` | ~20MB | Agent only (distroless) | Custom tool integration |
-| `exploopio/agent:full` | ~800MB | All tools including Nuclei | Local development |
-| `exploopio/agent:platform` | ~800MB | All tools + platform mode | Platform-managed agents |
-| `exploopio/agent:latest` | ~800MB | Alias for `full` | Default |
+| `openctemio/agent:slim` | ~20MB | Agent only (distroless) | Custom tool integration |
+| `openctemio/agent:full` | ~800MB | All tools including Nuclei | Local development |
+| `openctemio/agent:platform` | ~800MB | All tools + platform mode | Platform-managed agents |
+| `openctemio/agent:latest` | ~800MB | Alias for `full` | Default |
 
 > **Note**: CI images do NOT include Nuclei because DAST requires a running application and should run in a separate stage after deployment, not during PR checks.
 
@@ -931,16 +931,16 @@ Per-tool images use separate Dockerfiles for better maintainability:
 
 ```bash
 # Build per-tool images (from separate Dockerfiles)
-docker build -f Dockerfile.semgrep -t exploopio/agent:semgrep .
-docker build -f Dockerfile.gitleaks -t exploopio/agent:gitleaks .
-docker build -f Dockerfile.trivy -t exploopio/agent:trivy .
-docker build -f Dockerfile.trivy --target trivy-ci -t exploopio/agent:trivy-ci .
-docker build -f Dockerfile.nuclei -t exploopio/agent:nuclei .
+docker build -f Dockerfile.semgrep -t openctemio/agent:semgrep .
+docker build -f Dockerfile.gitleaks -t openctemio/agent:gitleaks .
+docker build -f Dockerfile.trivy -t openctemio/agent:trivy .
+docker build -f Dockerfile.trivy --target trivy-ci -t openctemio/agent:trivy-ci .
+docker build -f Dockerfile.nuclei -t openctemio/agent:nuclei .
 
 # Build combined images (from main Dockerfile)
-docker build --target slim -t exploopio/agent:slim .
-docker build --target full -t exploopio/agent:latest .
-docker build --target ci -t exploopio/agent:ci .
+docker build --target slim -t openctemio/agent:slim .
+docker build --target full -t openctemio/agent:latest .
+docker build --target ci -t openctemio/agent:ci .
 ```
 
 **Dockerfile structure:**
@@ -957,7 +957,7 @@ docker build --target ci -t exploopio/agent:ci .
 ### Basic Scan
 
 ```bash
-docker run --rm -v $(pwd):/scan exploopio/agent:latest \
+docker run --rm -v $(pwd):/scan openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy \
     -target /scan \
     -verbose
@@ -967,19 +967,19 @@ docker run --rm -v $(pwd):/scan exploopio/agent:latest \
 
 ```bash
 # SAST with Semgrep
-docker run --rm -v $(pwd):/scan exploopio/agent:semgrep \
+docker run --rm -v $(pwd):/scan openctemio/agent:semgrep \
     -tool semgrep -target /scan -verbose
 
 # Secrets with Gitleaks
-docker run --rm -v $(pwd):/scan exploopio/agent:gitleaks \
+docker run --rm -v $(pwd):/scan openctemio/agent:gitleaks \
     -tool gitleaks -target /scan -verbose
 
 # SCA with Trivy (pre-loaded DB for speed)
-docker run --rm -v $(pwd):/scan exploopio/agent:trivy-ci \
+docker run --rm -v $(pwd):/scan openctemio/agent:trivy-ci \
     -tool trivy -target /scan -verbose
 
 # DAST with Nuclei
-docker run --rm exploopio/agent:nuclei \
+docker run --rm openctemio/agent:nuclei \
     -tool nuclei -target https://example.com -verbose
 ```
 
@@ -988,9 +988,9 @@ docker run --rm exploopio/agent:nuclei \
 ```bash
 docker run --rm \
     -v $(pwd):/scan \
-    -e API_URL=https://api.exploop.io \
+    -e API_URL=https://api.openctem.io \
     -e API_KEY=rdw_your_api_key \
-    exploopio/agent:latest \
+    openctemio/agent:latest \
     -tools semgrep,gitleaks,trivy \
     -target /scan \
     -push
@@ -1002,7 +1002,7 @@ docker run --rm \
 version: '3.8'
 services:
   agent:
-    image: exploopio/agent:latest
+    image: openctemio/agent:latest
     volumes:
       - ./:/scan:ro
       - ./agent.yaml:/app/agent.yaml
@@ -1017,19 +1017,19 @@ services:
 
 ### Systemd
 
-Create `/etc/systemd/system/exploop-agent.service`:
+Create `/etc/systemd/system/openctem-agent.service`:
 
 ```ini
 [Unit]
-Description=Rediver Security Scanner Agent
+Description=OpenCTEM Security Scanner Agent
 After=network.target
 
 [Service]
 Type=simple
-User.exploop
-Group.exploop
-WorkingDirectory=/opt.exploop
-ExecStart=/opt/exploop/agent -daemon -config /opt/exploop/agent.yaml
+User.openctem
+Group.openctem
+WorkingDirectory=/opt.openctem
+ExecStart=/opt/openctem/agent -daemon -config /opt/openctem/agent.yaml
 Restart=always
 RestartSec=10
 Environment=API_KEY=rdw_your_api_key
@@ -1042,15 +1042,15 @@ Enable and start:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable exploop-agent
-sudo systemctl start exploop-agent
+sudo systemctl enable openctem-agent
+sudo systemctl start openctem-agent
 ```
 
 ### Check Service Status
 
 ```bash
-sudo systemctl status exploop-agent
-journalctl -u exploop-agent -f
+sudo systemctl status openctem-agent
+journalctl -u openctem-agent -f
 ```
 
 ---
@@ -1092,7 +1092,7 @@ Agents become inactive if no heartbeat is received for 5 minutes.
 Other causes:
 - Check for "Pushed: X created" in output
 - Verify API connection with `-verbose`
-- Ensure asset exists in Rediver
+- Ensure asset exists in OpenCTEM
 
 ### Tool Not Found
 
@@ -1124,12 +1124,12 @@ Each scanner tool has different update mechanisms for rules/databases:
 **Trivy**: DB auto-updates. For faster CI with preloaded DB:
 ```bash
 # Use trivy-ci image (rebuild weekly to keep DB fresh)
-docker pull exploopio/agent:trivy-ci
+docker pull openctemio/agent:trivy-ci
 ```
 
 **Gitleaks**: Pull latest image to get new detection rules:
 ```bash
-docker pull exploopio/agent:gitleaks
+docker pull openctemio/agent:gitleaks
 ```
 
 **Nuclei**: Templates auto-update, or force update:
@@ -1201,14 +1201,14 @@ go build -tags "platform,hybrid" -o agent ./agent/
 
 ## Platform Agent Mode
 
-Platform mode enables the agent to be managed by the Rediver platform, receiving jobs remotely and reporting results automatically.
+Platform mode enables the agent to be managed by the OpenCTEM platform, receiving jobs remotely and reporting results automatically.
 
 ### Registration with Bootstrap Token
 
 ```bash
 # First-time registration
 ./agent -platform \
-  -api-url https://api.exploop.io \
+  -api-url https://api.openctem.io \
   -bootstrap-token abc123.xxxxxxxx \
   -region us-east-1 \
   -enable-recon \
@@ -1216,7 +1216,7 @@ Platform mode enables the agent to be managed by the Rediver platform, receiving
 
 # Subsequent runs (uses stored credentials)
 ./agent -platform \
-  -api-url https://api.exploop.io \
+  -api-url https://api.openctem.io \
   -region us-east-1
 ```
 
@@ -1225,8 +1225,8 @@ Platform mode enables the agent to be managed by the Rediver platform, receiving
 ```yaml
 # platform-agent.yaml
 platform:
-  api_url: https://api.exploop.io
-  credentials_file: ~/.exploop/agent-credentials.json
+  api_url: https://api.openctem.io
+  credentials_file: ~/.openctem/agent-credentials.json
   region: us-east-1
   max_concurrent: 5
 
@@ -1318,9 +1318,9 @@ Scans for vulnerabilities across different security domains.
 
 ---
 
-## RIS Output Format
+## CTIS Output Format
 
-All executors output findings in **RIS (Rediver Interchange Schema)** format:
+All executors output findings in **CTIS (CTEM Ingest Schema)** format:
 
 ```json
 {
@@ -1360,9 +1360,9 @@ For custom integrations, you can use the SDK scanners directly instead of the ag
 ```go
 import (
     "context"
-    "github.com/exploopio/sdk/pkg/scanners/recon/subfinder"
-    "github.com/exploopio/sdk/pkg/scanners/semgrep"
-    "github.com/exploopio/sdk/pkg/enrichers/epss"
+    "github.com/openctemio/sdk/pkg/scanners/recon/subfinder"
+    "github.com/openctemio/sdk/pkg/scanners/semgrep"
+    "github.com/openctemio/sdk/pkg/enrichers/epss"
 )
 
 func main() {
@@ -1389,7 +1389,7 @@ See the [SDK Development Guide](sdk-development.md) for detailed SDK usage.
 
 ## Next Steps
 
-- **[Running Agents](running-agents.md)** - Create agents in Rediver UI
+- **[Running Agents](running-agents.md)** - Create agents in OpenCTEM UI
 - **[SDK Quick Start](sdk-quick-start.md)** - Use SDK directly
 - **[SDK Development](sdk-development.md)** - Build custom scanners and collectors
 - **[Custom Tools Development](custom-tools-development.md)** - Build your own tools

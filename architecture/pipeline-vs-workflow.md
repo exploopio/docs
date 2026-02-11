@@ -9,7 +9,7 @@ nav_order: 6
 
 > **Last Updated**: January 31, 2026
 
-This document explains the fundamental differences between **Pipelines** and **Workflows** in the Exploop platform. While they may seem similar, they serve distinctly different purposes and are complementary components of the security automation architecture.
+This document explains the fundamental differences between **Pipelines** and **Workflows** in the OpenCTEM platform. While they may seem similar, they serve distinctly different purposes and are complementary components of the security automation architecture.
 
 ---
 

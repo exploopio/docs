@@ -2,8 +2,8 @@
 
 ## 1. Current State Assessment
 
-### 1.1 EIS Schema (Input Layer)
-**File**: `api/pkg/parsers/ris/types.go`
+### 1.1 CTIS Schema (Input Layer)
+**File**: `sdk/pkg/ctis/types.go`
 
 ```go
 type DataFlow struct {
@@ -136,9 +136,9 @@ type FindingFlowLocation struct {
 
 ## 2. Gap Analysis
 
-### 2.1 EIS → Database Mapping Gaps
+### 2.1 CTIS → Database Mapping Gaps
 
-| EIS DataFlow Field | Database Column | Status |
+| CTIS DataFlow Field | Database Column | Status |
 |--------------------|-----------------|--------|
 | `Sources[]` | `location_type='source'` | ✅ Có thể lưu |
 | `Intermediates[]` | `location_type='intermediate'` | ✅ Có thể lưu |
@@ -153,7 +153,7 @@ type FindingFlowLocation struct {
 | `CallPath` | ❌ **MISSING** | ⚠️ Need to add |
 | `Summary` | `message` | ✅ Current mapping |
 
-| EIS DataFlowLocation Field | Database Column | Status |
+| CTIS DataFlowLocation Field | Database Column | Status |
 |---------------------------|-----------------|--------|
 | `Path` | `file_path` | ✅ |
 | `Line`, `EndLine` | `start_line`, `end_line` | ✅ |
@@ -287,20 +287,20 @@ type FindingFlowLocation struct {
 }
 ```
 
-### 4.3 EIS → Domain Converter
+### 4.3 CTIS → Domain Converter
 
 ```go
 // api/internal/app/ingest/dataflow_converter.go
 
 func ConvertEISDataFlowToFindingDataFlows(
     findingID shared.ID,
-    risDataFlow *ris.DataFlow,
+    risDataFlow *ctis.DataFlow,
 ) ([]*vulnerability.FindingDataFlow, []*vulnerability.FindingFlowLocation, error) {
     if risDataFlow == nil {
         return nil, nil, nil
     }
 
-    // Create single FindingDataFlow from EIS DataFlow
+    // Create single FindingDataFlow from CTIS DataFlow
     flow, err := vulnerability.NewFindingDataFlow(findingID, 0, risDataFlow.Summary, "essential")
     if err != nil {
         return nil, nil, err
@@ -353,7 +353,7 @@ func convertEISLocationToDomain(
     dataFlowID shared.ID,
     stepIndex int,
     locType string,
-    risLoc ris.DataFlowLocation,
+    risLoc ctis.DataFlowLocation,
 ) *vulnerability.FindingFlowLocation {
     loc, _ := vulnerability.NewFindingFlowLocation(dataFlowID, stepIndex, locType)
 
@@ -393,7 +393,7 @@ func convertEISLocationToDomain(
 
 ## 5. Tool Compatibility Matrix
 
-| Tool | Output Format | EIS Mapping | DB Storage |
+| Tool | Output Format | CTIS Mapping | DB Storage |
 |------|--------------|-------------|------------|
 | **Semgrep OSS** | SARIF | `codeFlows` → `DataFlow` | ✅ Full |
 | **Semgrep Pro** | SARIF + Extended | Full taint info | ✅ Full |

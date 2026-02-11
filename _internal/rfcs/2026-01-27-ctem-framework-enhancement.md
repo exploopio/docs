@@ -30,7 +30,7 @@
 | `api/internal/domain/vulnerability/finding.go` | ✅ | Added exposure vector, remediation context |
 | `api/internal/domain/vulnerability/value_objects.go` | ✅ | Added ExposureVector, RemediationType, FixComplexity |
 | `api/internal/infra/postgres/asset_repository.go` | ✅ | Updated for new CTEM fields |
-| `sdk/pkg/ris/types.go` | ✅ | Added ServiceInfo, FindingExposure, RemediationContext |
+| `sdk/pkg/ctis/types.go` | ✅ | Added ServiceInfo, FindingExposure, RemediationContext |
 
 ### Architecture Decision: Extension Pattern ✅
 
@@ -105,7 +105,7 @@ api/internal/domain/asset/
 ### Architecture Issue ⚠️ Ingest Handler Duplication
 **Problem:** Two separate ingest handlers exist with overlapping functionality:
 - `IngestHandler` (legacy format)
-- `RISIngestHandler` (RIS format)
+- `CTISIngestHandler` (CTIS format)
 
 **Solution:** See [Ingest Handler Consolidation Plan](./2026-01-27-ingest-handler-consolidation.md)
 
@@ -145,7 +145,7 @@ Security review identified and addressed the following concerns:
 
 ## Summary
 
-Based on the analysis of Gartner's CTEM (Continuous Threat Exposure Management) framework, this document identifies key gaps and proposes an implementation plan to upgrade the Rediver platform into a complete CTEM solution.
+Based on the analysis of Gartner's CTEM (Continuous Threat Exposure Management) framework, this document identifies key gaps and proposes an implementation plan to upgrade the OpenCTEM platform into a complete CTEM solution.
 
 ---
 
@@ -413,7 +413,7 @@ package service
 
 import (
     "time"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // Service represents a network service running on an asset
@@ -582,7 +582,7 @@ package asset
 
 import (
     "time"
-    "github.com/exploopio/api/internal/domain/shared"
+    "github.com/openctemio/api/internal/domain/shared"
 )
 
 // AssetStateChange represents a tracked change in asset state
@@ -661,10 +661,10 @@ CREATE INDEX idx_asset_state_appeared ON asset_state_history(tenant_id, changed_
     WHERE change_type IN ('appeared', 'disappeared', 'recovered');
 ```
 
-### 0.5 RIS Schema Updates
+### 0.5 CTIS Schema Updates
 
 ```go
-// sdk/pkg/ris/types.go - ADDITIONS
+// sdk/pkg/ctis/types.go - ADDITIONS
 
 // ExposureInfo represents exposure context for findings
 type ExposureInfo struct {
@@ -743,9 +743,9 @@ type Asset struct {
 | `api/migrations/000XXX_finding_ctem_fields.up.sql` | CREATE | Finding schema enhancements |
 | `api/migrations/000XXX_services.up.sql` | CREATE | Services table |
 | `api/migrations/000XXX_asset_state_history.up.sql` | CREATE | State history table |
-| `sdk/pkg/ris/types.go` | MODIFY | Add CTEM fields to RIS schema |
-| `schemas/ris/v1/finding.json` | MODIFY | Update JSON schema |
-| `schemas/ris/v1/asset.json` | MODIFY | Update JSON schema |
+| `sdk/pkg/ctis/types.go` | MODIFY | Add CTEM fields to CTIS schema |
+| `schemas/ctis/v1/finding.json` | MODIFY | Update JSON schema |
+| `schemas/ctis/v1/asset.json` | MODIFY | Update JSON schema |
 
 ### 0.7 API Endpoint Additions
 
@@ -766,7 +766,7 @@ type Asset struct {
 ## Phase 1: Attack Path Modeling
 
 ### Problem Statement
-Currently, Rediver tracks findings/vulnerabilities independently, without the ability to model attack chains and lateral movement paths.
+Currently, OpenCTEM tracks findings/vulnerabilities independently, without the ability to model attack chains and lateral movement paths.
 
 ### Solution: AttackPath Entity
 
@@ -1584,21 +1584,21 @@ type JiraIssueInput struct {
 
 ---
 
-## Phase 5: RIS Schema Extensions
+## Phase 5: CTIS Schema Extensions
 
-### New RIS Types for CTEM
+### New CTIS Types for CTEM
 
 ```go
-// sdk/pkg/ris/types.go additions
+// sdk/pkg/ctis/types.go additions
 
-// AttackPathRIS represents attack path in RIS format
-type AttackPathRIS struct {
+// AttackPathCTIS represents attack path in CTIS format
+type AttackPathCTIS struct {
     ID          string            `json:"id,omitempty"`
     Name        string            `json:"name"`
     Description string            `json:"description,omitempty"`
 
-    Nodes       []AttackNodeRIS   `json:"nodes"`
-    Edges       []AttackEdgeRIS   `json:"edges"`
+    Nodes       []AttackNodeCTIS   `json:"nodes"`
+    Edges       []AttackEdgeCTIS   `json:"edges"`
 
     RiskScore   float64           `json:"risk_score,omitempty"`
     Techniques  []string          `json:"techniques,omitempty"` // MITRE ATT&CK
@@ -1606,8 +1606,8 @@ type AttackPathRIS struct {
     Metadata    map[string]any    `json:"metadata,omitempty"`
 }
 
-// ValidationResultRIS for BAS/pentest results
-type ValidationResultRIS struct {
+// ValidationResultCTIS for BAS/pentest results
+type ValidationResultCTIS struct {
     ID              string          `json:"id,omitempty"`
     Type            string          `json:"type"` // bas, pentest, control_test
 
@@ -1687,9 +1687,9 @@ Q3 2026
 - `api/migrations/000XXX_services.down.sql` - CREATE
 - `api/migrations/000XXX_asset_state_history.up.sql` - CREATE
 - `api/migrations/000XXX_asset_state_history.down.sql` - CREATE
-- `sdk/pkg/ris/types.go` - MODIFY (add CTEM fields)
-- `schemas/ris/v1/finding.json` - MODIFY
-- `schemas/ris/v1/asset.json` - MODIFY
+- `sdk/pkg/ctis/types.go` - MODIFY (add CTEM fields)
+- `schemas/ctis/v1/finding.json` - MODIFY
+- `schemas/ctis/v1/asset.json` - MODIFY
 
 ### Phase 1: Attack Path
 - `api/internal/domain/attackpath/entity.go`

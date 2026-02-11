@@ -222,7 +222,7 @@ Offline fallback:
 
 ## Data Model
 
-### Existing RIS Schema (sdk/pkg/ris/types.go)
+### Existing CTIS Schema (sdk/pkg/ctis/types.go)
 
 ```go
 // Finding status types
@@ -383,7 +383,7 @@ func (c *Client) CreateSuppressionRequest(ctx context.Context, req SuppressionRe
 // CheckWithSuppressions evaluates reports against threshold,
 // filtering out platform-approved suppressions.
 func CheckWithSuppressions(
-    reports []*ris.Report,
+    reports []*ctis.Report,
     threshold string,
     maxBlocked int,
     suppressions []client.SuppressionRule,
@@ -392,7 +392,7 @@ func CheckWithSuppressions(
 }
 
 // isSuppressed checks if a finding matches any suppression rule
-func isSuppressed(f ris.Finding, toolName string, rules []SuppressionRule) bool {
+func isSuppressed(f ctis.Finding, toolName string, rules []SuppressionRule) bool {
     for _, rule := range rules {
         if matchesRule(f, toolName, rule) {
             return true
@@ -402,7 +402,7 @@ func isSuppressed(f ris.Finding, toolName string, rules []SuppressionRule) bool 
 }
 
 // matchesRule checks if a finding matches a specific rule
-func matchesRule(f ris.Finding, toolName string, rule SuppressionRule) bool {
+func matchesRule(f ctis.Finding, toolName string, rule SuppressionRule) bool {
     // Check tool name
     if rule.ToolName != "" && !strings.EqualFold(rule.ToolName, toolName) {
         return false
@@ -664,6 +664,6 @@ All suppression actions are logged:
 
 ## References
 
-- [RIS Types](../sdk/pkg/ris/types.go) - Existing suppression schema
+- [CTIS Types](../sdk/pkg/ctis/types.go) - Existing suppression schema
 - [Security Gate](../agent/internal/gate/security.go) - Gate implementation
 - [Agent Main](../agent/main.go) - Agent entry point

@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-The Rediver UI has **58 placeholder pages** (38% of 151 total) using the `ComingSoonPage` component. This document provides a phased implementation plan organized by CTEM framework priorities.
+The OpenCTEM UI has **58 placeholder pages** (38% of 151 total) using the `ComingSoonPage` component. This document provides a phased implementation plan organized by CTEM framework priorities.
 
 ---
 

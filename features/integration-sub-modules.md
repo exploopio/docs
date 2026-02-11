@@ -32,15 +32,14 @@ The sub-module pattern was first implemented for asset types (see [Asset Sub-Mod
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    PLAN LEVEL (plan_modules)                     │
+│                  TENANT LEVEL (tenant_modules)                    │
 │                                                                  │
-│  Plan "free"     → NO integrations module                       │
-│  Plan "team"     → integrations + integrations.scm (3 max)      │
-│  Plan "business" → integrations + all sub-modules               │
-│  Plan "enterprise" → integrations + all sub-modules (unlimited) │
+│  Tenant A → NO integrations module                               │
+│  Tenant B → integrations + integrations.scm (3 max)             │
+│  Tenant C → integrations + all sub-modules                       │
 └─────────────────────────────────────────────────────────────────┘
                               │
-                              ▼ Inheritance + plan_modules
+                              ▼ Inheritance + tenant_modules
 ┌─────────────────────────────────────────────────────────────────┐
 │                 MODULE LEVEL (modules table)                     │
 │                                                                  │
@@ -73,17 +72,6 @@ The sub-module pattern was first implemented for asset types (see [Asset Sub-Mod
 > - **ID**: `{parent}.{child}` (e.g., `integrations.scm`)
 > - **Slug**: `{parent}-{child}` (e.g., `integrations-scm`)
 
-### Plan Limits
-
-Each plan can have different limits for sub-modules:
-
-| Plan | SCM Connections | Notification Channels | Webhooks | API Keys |
-|------|-----------------|----------------------|----------|----------|
-| Free | - | - | - | - |
-| Team | 3 | 5 | - | 3 |
-| Business | 10 | 20 | 10 | 10 |
-| Enterprise | Unlimited | Unlimited | Unlimited | Unlimited |
-
 ## Implementation
 
 ### Database Migration
@@ -108,16 +96,14 @@ VALUES
   ('integrations.siem', 'integrations-siem', 'SIEM/SOAR', ...)
 ON CONFLICT (id) DO UPDATE SET ...;
 
--- Add sub-modules to plan_modules for each plan
-INSERT INTO plan_modules (plan_id, module_id, limits)
-SELECT p.id, 'integrations.scm', '{"max_connections": 3}'::jsonb
-FROM plans p WHERE p.slug = 'team';
--- ... etc for other plans
+-- Enable sub-modules for tenants
+INSERT INTO tenant_modules (tenant_id, module_id, limits)
+VALUES ($1, 'integrations.scm', '{"max_connections": 3}'::jsonb);
 ```
 
 ### Backend Constants
 
-**File**: `api/internal/domain/licensing/module.go`
+**File**: `api/internal/domain/module/module.go`
 
 ```go
 // Integration sub-module IDs (children of ModuleIntegrations)
@@ -206,7 +192,7 @@ useTenantModules() → GET /api/v1/me/modules
     │
     ▼
 Backend checks:
-  1. Tenant's plan has 'integrations' module? (plan_modules)
+  1. Tenant has 'integrations' module enabled? (tenant_modules)
   2. Get sub-modules where parent_module_id = 'integrations'
   3. Filter by user's RBAC permissions
     │
@@ -249,21 +235,20 @@ WHERE parent_module_id = 'integrations'
 ORDER BY display_order;
 ```
 
-### Add sub-module to a specific plan
+### Enable sub-module for a tenant
 
 ```sql
-INSERT INTO plan_modules (plan_id, module_id, limits)
-SELECT p.id, 'integrations.pipelines', '{"max_pipelines": 5}'::jsonb
-FROM plans p WHERE p.slug = 'business'
-ON CONFLICT (plan_id, module_id) DO UPDATE SET limits = EXCLUDED.limits;
+INSERT INTO tenant_modules (tenant_id, module_id, limits)
+VALUES ($1, 'integrations.pipelines', '{"max_pipelines": 5}'::jsonb)
+ON CONFLICT (tenant_id, module_id) DO UPDATE SET limits = EXCLUDED.limits;
 ```
 
-### Remove sub-module from a plan
+### Disable sub-module for a tenant
 
 ```sql
-DELETE FROM plan_modules
+DELETE FROM tenant_modules
 WHERE module_id = 'integrations.scm'
-AND plan_id = (SELECT id FROM plans WHERE slug = 'free');
+AND tenant_id = $1;
 ```
 
 ## Permissions
@@ -347,7 +332,7 @@ type CachedTenantModules struct {
 When a tenant's plan changes:
 
 ```go
-// In LicensingService.UpdateTenantPlan()
+// In ModuleService.UpdateTenantModules()
 if s.moduleCacheInvalid != nil {
     if err := s.moduleCacheInvalid.Invalidate(ctx, tenantID); err != nil {
         // Log error but don't fail - cache will self-heal via TTL
@@ -378,8 +363,8 @@ CREATE INDEX idx_modules_parent_active_order
 -- Event types batch lookup
 CREATE INDEX idx_module_event_types_module_id ON module_event_types(module_id);
 
--- Plan modules lookup
-CREATE INDEX idx_plan_modules_plan_module ON plan_modules(plan_id, module_id);
+-- Tenant modules lookup
+CREATE INDEX idx_tenant_modules_tenant_module ON tenant_modules(tenant_id, module_id);
 ```
 
 ## Security Considerations
@@ -420,7 +405,6 @@ eventTypesMap, err := s.repo.GetEventTypesForModulesBatch(ctx, moduleIDs)
 ## Related Documentation
 
 - [Asset Sub-Modules](./asset-sub-modules.md) - Original sub-module implementation
-- [Plans & Licensing](../operations/plans-licensing.md) - How plans work
 - [Roles & Permissions](../guides/roles-and-permissions.md) - RBAC system
 
 ---

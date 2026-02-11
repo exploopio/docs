@@ -6,7 +6,7 @@ nav_order: 10
 
 # Ingest API Reference
 
-API endpoints để nhập dữ liệu security (assets, findings) vào hệ thống Rediver.
+API endpoints để nhập dữ liệu security (assets, findings) vào hệ thống OpenCTEM.
 
 **Base URL**: `/api/v1`
 
@@ -20,7 +20,7 @@ API endpoints để nhập dữ liệu security (assets, findings) vào hệ th�
 
 | Endpoint | Method | Mô tả |
 |----------|--------|-------|
-| [`/agent/ingest/ris`](#1-ingest-ris) | POST | Nhập báo cáo RIS (định dạng chuẩn) |
+| [`/agent/ingest/ctis`](#1-ingest-ctis) | POST | Nhập báo cáo CTIS (định dạng chuẩn) |
 | [`/agent/ingest/sarif`](#2-ingest-sarif) | POST | Nhập kết quả SARIF 2.1.0 |
 | [`/agent/ingest/recon`](#3-ingest-recon) | POST | Nhập kết quả reconnaissance |
 | [`/agent/ingest/chunk`](#4-ingest-chunk) | POST | Nhập báo cáo lớn theo từng chunk |
@@ -29,12 +29,12 @@ API endpoints để nhập dữ liệu security (assets, findings) vào hệ th�
 
 ---
 
-## 1. Ingest RIS
+## 1. Ingest CTIS
 
-Nhập báo cáo theo định dạng RIS (Rediver Interchange Schema).
+Nhập báo cáo theo định dạng CTIS (CTEM Ingest Schema).
 
 ```
-POST /api/v1/agent/ingest/ris
+POST /api/v1/agent/ingest/ctis
 ```
 
 ### Request Headers
@@ -1483,7 +1483,7 @@ Content-Type: application/json
 
 ### SARIF Mapping Reference
 
-| SARIF Field | RIS Field | Notes |
+| SARIF Field | CTIS Field | Notes |
 |-------------|-----------|-------|
 | `tool.driver.name` | `tool.name` | |
 | `tool.driver.version` | `tool.version` | |
@@ -2211,7 +2211,7 @@ POST /api/v1/ingest/check
 1. Scanner tạo findings với fingerprints
 2. SDK gọi /ingest/check với danh sách fingerprints
 3. SDK loại bỏ findings có fingerprint trong "existing"
-4. SDK gọi /ingest/ris với findings còn lại (chỉ "missing")
+4. SDK gọi /ingest/ctis với findings còn lại (chỉ "missing")
 5. Giảm payload size và processing time
 ```
 
@@ -2371,10 +2371,10 @@ Content-Length: 0
 #### Installation
 
 ```bash
-go get github.com/exploopio/sdk
+go get github.com/openctemio/sdk
 ```
 
-#### Example 1: Basic RIS Ingestion
+#### Example 1: Basic CTIS Ingestion
 
 ```go
 package main
@@ -2385,43 +2385,43 @@ import (
     "log"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
     // Create client
     client := ingest.NewClient(
-        "https://api.exploop.io",
+        "https://api.openctem.io",
         "your-api-key-here",
     )
 
     // Build report
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             ID:           "scan-" + time.Now().Format("20060102-150405"),
             Timestamp:    time.Now(),
             SourceType:   "scanner",
             CoverageType: "full",
-            Branch: &ris.BranchInfo{
+            Branch: &ctis.BranchInfo{
                 Name:            "main",
                 IsDefaultBranch: true,
                 CommitSHA:       "abc123def456",
                 RepositoryURL:   "github.com/myorg/myrepo",
             },
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:    "my-scanner",
             Version: "1.0.0",
         },
-        Findings: []ris.Finding{
+        Findings: []ctis.Finding{
             {
                 Type:     "vulnerability",
                 Title:    "SQL Injection",
                 Severity: "critical",
                 RuleID:   "sql-injection-001",
-                Location: &ris.Location{
+                Location: &ctis.Location{
                     Path:      "handlers/user.go",
                     StartLine: 45,
                 },
@@ -2431,7 +2431,7 @@ func main() {
 
     // Ingest
     ctx := context.Background()
-    result, err := client.IngestRIS(ctx, report)
+    result, err := client.IngestCTIS(ctx, report)
     if err != nil {
         log.Fatalf("Ingestion failed: %v", err)
     }
@@ -2451,21 +2451,21 @@ import (
     "context"
     "log"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    finding := ris.Finding{
+    finding := ctis.Finding{
         Type:       "vulnerability",
         Title:      "SQL Injection in GetUser",
         Severity:   "critical",
         Confidence: 95,
         RuleID:     "go/sql-injection",
         Message:    "User input flows to SQL query without sanitization",
-        Location: &ris.Location{
+        Location: &ctis.Location{
             Path:        "internal/handlers/user.go",
             StartLine:   45,
             EndLine:     45,
@@ -2473,13 +2473,13 @@ func main() {
             EndColumn:   35,
             Snippet:     `db.Query("SELECT * FROM users WHERE name='" + username + "'")`,
         },
-        Vulnerability: &ris.VulnerabilityDetails{
+        Vulnerability: &ctis.VulnerabilityDetails{
             CWEIDs:     []string{"CWE-89"},
             CVSSScore:  9.8,
             CVSSVector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
         },
-        DataFlow: &ris.DataFlow{
-            Sources: []ris.DataFlowLocation{
+        DataFlow: &ctis.DataFlow{
+            Sources: []ctis.DataFlowLocation{
                 {
                     Path:     "internal/handlers/user.go",
                     Line:     25,
@@ -2489,7 +2489,7 @@ func main() {
                     Label:    "username",
                 },
             },
-            Intermediates: []ris.DataFlowLocation{
+            Intermediates: []ctis.DataFlowLocation{
                 {
                     Path:     "internal/handlers/user.go",
                     Line:     40,
@@ -2499,7 +2499,7 @@ func main() {
                     Label:    "query",
                 },
             },
-            Sinks: []ris.DataFlowLocation{
+            Sinks: []ctis.DataFlowLocation{
                 {
                     Path:     "internal/handlers/user.go",
                     Line:     45,
@@ -2524,25 +2524,25 @@ func main() {
         Tags: []string{"sql-injection", "user-input", "database"},
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp:    time.Now(),
             CoverageType: "full",
-            Branch: &ris.BranchInfo{
+            Branch: &ctis.BranchInfo{
                 Name:            "main",
                 IsDefaultBranch: true,
             },
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         "codeql",
             Version:      "2.15.0",
             Capabilities: []string{"sast", "taint_tracking"},
         },
-        Findings: []ris.Finding{finding},
+        Findings: []ctis.Finding{finding},
     }
 
-    result, err := client.IngestRIS(context.Background(), report)
+    result, err := client.IngestCTIS(context.Background(), report)
     if err != nil {
         log.Fatal(err)
     }
@@ -2560,26 +2560,26 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    secrets := []ris.Finding{
+    secrets := []ctis.Finding{
         {
             Type:       "secret",
             Title:      "AWS Access Key exposed",
             Severity:   "critical",
             Confidence: 100,
             RuleID:     "aws-access-key-id",
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      "config/aws.go",
                 StartLine: 15,
                 Snippet:   `AccessKeyID: "AKIA..."`,
             },
-            Secret: &ris.SecretDetails{
+            Secret: &ctis.SecretDetails{
                 Type:               "aws_access_key",
                 Service:            "AWS",
                 MaskedValue:        "AKIA************WXYZ",
@@ -2596,11 +2596,11 @@ func main() {
             Title:    "GitHub Personal Access Token",
             Severity: "high",
             RuleID:   "github-pat",
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      ".env.example",
                 StartLine: 8,
             },
-            Secret: &ris.SecretDetails{
+            Secret: &ctis.SecretDetails{
                 Type:               "github_pat",
                 Service:            "GitHub",
                 MaskedValue:        "ghp_****************************abcd",
@@ -2614,11 +2614,11 @@ func main() {
             Title:    "Private RSA Key",
             Severity: "critical",
             RuleID:   "private-key",
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      "deploy/ssh_key",
                 StartLine: 1,
             },
-            Secret: &ris.SecretDetails{
+            Secret: &ctis.SecretDetails{
                 Type:      "private_key",
                 Service:   "SSH",
                 Algorithm: "RSA",
@@ -2627,12 +2627,12 @@ func main() {
         },
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         "gitleaks",
             Version:      "8.18.0",
             Capabilities: []string{"secret_detection"},
@@ -2640,7 +2640,7 @@ func main() {
         Findings: secrets,
     }
 
-    client.IngestRIS(context.Background(), report)
+    client.IngestCTIS(context.Background(), report)
 }
 ```
 
@@ -2653,24 +2653,24 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         "trivy",
             Version:      "0.50.0",
             Capabilities: []string{"sca", "sbom"},
         },
-        Dependencies: []ris.Dependency{
+        Dependencies: []ctis.Dependency{
             {
                 ID:           "dep-001",
                 Name:         "lodash",
@@ -2692,13 +2692,13 @@ func main() {
                 Path:         "pom.xml",
             },
         },
-        Findings: []ris.Finding{
+        Findings: []ctis.Finding{
             {
                 Type:     "vulnerability",
                 Title:    "CVE-2021-44228: Log4Shell",
                 Severity: "critical",
                 RuleID:   "CVE-2021-44228",
-                Vulnerability: &ris.VulnerabilityDetails{
+                Vulnerability: &ctis.VulnerabilityDetails{
                     CVEID:            "CVE-2021-44228",
                     CWEIDs:           []string{"CWE-502", "CWE-400"},
                     CVSSScore:        10.0,
@@ -2716,7 +2716,7 @@ func main() {
         },
     }
 
-    client.IngestRIS(context.Background(), report)
+    client.IngestCTIS(context.Background(), report)
 }
 ```
 
@@ -2729,27 +2729,27 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    findings := []ris.Finding{
+    findings := []ctis.Finding{
         {
             Type:     "misconfiguration",
             Title:    "S3 bucket has public read access",
             Severity: "high",
             RuleID:   "CKV_AWS_20",
             Message:  "S3 bucket allows public read access via ACL",
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      "terraform/s3.tf",
                 StartLine: 10,
                 EndLine:   15,
                 Snippet:   `resource "aws_s3_bucket" "data" { acl = "public-read" }`,
             },
-            Misconfiguration: &ris.MisconfigurationDetails{
+            Misconfiguration: &ctis.MisconfigurationDetails{
                 PolicyID:        "CKV_AWS_20",
                 PolicyName:      "S3 Bucket Public Read ACL",
                 Framework:       "terraform",
@@ -2760,7 +2760,7 @@ func main() {
                 ActualValue:     "acl = 'public-read'",
                 RemediationCode: `resource "aws_s3_bucket" "data" { acl = "private" }`,
             },
-            Compliance: &ris.ComplianceDetails{
+            Compliance: &ctis.ComplianceDetails{
                 Frameworks: []string{"CIS-AWS-1.4", "SOC2", "PCI-DSS"},
                 Controls:   []string{"CIS-AWS-1.4-2.1.1", "SOC2-CC6.1"},
             },
@@ -2770,11 +2770,11 @@ func main() {
             Title:    "Security group allows unrestricted SSH",
             Severity: "critical",
             RuleID:   "CKV_AWS_24",
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      "terraform/security_groups.tf",
                 StartLine: 20,
             },
-            Misconfiguration: &ris.MisconfigurationDetails{
+            Misconfiguration: &ctis.MisconfigurationDetails{
                 PolicyID:      "CKV_AWS_24",
                 Framework:     "terraform",
                 ResourceType:  "aws_security_group",
@@ -2784,12 +2784,12 @@ func main() {
         },
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         "checkov",
             Version:      "3.0.0",
             Capabilities: []string{"iac", "misconfiguration"},
@@ -2797,7 +2797,7 @@ func main() {
         Findings: findings,
     }
 
-    client.IngestRIS(context.Background(), report)
+    client.IngestCTIS(context.Background(), report)
 }
 ```
 
@@ -2810,28 +2810,28 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    finding := ris.Finding{
+    finding := ctis.Finding{
         Type:     "vulnerability",
         Title:    "Reentrancy vulnerability in withdraw",
         Severity: "critical",
         RuleID:   "SWC-107",
         Message:  "External call before state update",
-        Location: &ris.Location{
+        Location: &ctis.Location{
             Path:      "contracts/Vault.sol",
             StartLine: 45,
             Snippet:   "msg.sender.call{value: amount}(\"\");\nbalances[msg.sender] = 0;",
         },
-        Vulnerability: &ris.VulnerabilityDetails{
+        Vulnerability: &ctis.VulnerabilityDetails{
             CWEIDs: []string{"CWE-841"},
         },
-        Web3: &ris.Web3Details{
+        Web3: &ctis.Web3Details{
             VulnerabilityClass:  "reentrancy",
             SWCID:               "SWC-107",
             ContractAddress:     "0x1234567890abcdef1234567890abcdef12345678",
@@ -2844,14 +2844,14 @@ func main() {
             AffectedValueUSD:    15000000,
             DetectionTool:       "slither",
             DetectionConfidence: "high",
-            Reentrancy: &ris.ReentrancyIssue{
+            Reentrancy: &ctis.ReentrancyIssue{
                 Type:                   "single_function",
                 ExternalCall:           `msg.sender.call{value: amount}("")`,
                 StateModifiedAfterCall: "balances[msg.sender]",
                 EntryPoint:             "withdraw",
                 MaxDepth:               10,
             },
-            POC: &ris.Web3POC{
+            POC: &ctis.Web3POC{
                 Type:            "foundry_test",
                 Code:            "function testReentrancy() public { ... }",
                 ExpectedOutcome: "Drain contract balance",
@@ -2861,20 +2861,20 @@ func main() {
         },
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         "slither",
             Version:      "0.10.0",
             Capabilities: []string{"smart_contract", "solidity"},
         },
-        Findings: []ris.Finding{finding},
+        Findings: []ctis.Finding{finding},
     }
 
-    client.IngestRIS(context.Background(), report)
+    client.IngestCTIS(context.Background(), report)
 }
 ```
 
@@ -2887,14 +2887,14 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    assets := []ris.Asset{
+    assets := []ctis.Asset{
         {
             Type:        "domain",
             Value:       "api.example.com",
@@ -2903,14 +2903,14 @@ func main() {
             Criticality: "critical",
             Environment: "production",
             Tags:        []string{"api", "public-facing"},
-            Technical: &ris.TechnicalDetails{
-                Domain: &ris.DomainDetails{
+            Technical: &ctis.TechnicalDetails{
+                Domain: &ctis.DomainDetails{
                     Registrar:   "Cloudflare",
                     Nameservers: []string{"ns1.cloudflare.com", "ns2.cloudflare.com"},
                     DNSSEC:      true,
                 },
             },
-            Services: []ris.Service{
+            Services: []ctis.Service{
                 {
                     Port:     443,
                     Protocol: "tcp",
@@ -2926,8 +2926,8 @@ func main() {
             Name:        "Web Server 1",
             Status:      "active",
             Criticality: "high",
-            Technical: &ris.TechnicalDetails{
-                IP: &ris.IPDetails{
+            Technical: &ctis.TechnicalDetails{
+                IP: &ctis.IPDetails{
                     Version:       "ipv4",
                     ASN:           13335,
                     ASNOrg:        "Cloudflare Inc",
@@ -2936,7 +2936,7 @@ func main() {
                     CloudProvider: "cloudflare",
                 },
             },
-            Services: []ris.Service{
+            Services: []ctis.Service{
                 {Port: 443, Protocol: "tcp", Service: "https"},
                 {Port: 22, Protocol: "tcp", Service: "ssh", Product: "OpenSSH", Version: "8.9"},
             },
@@ -2946,8 +2946,8 @@ func main() {
             Value:       "github.com/myorg/backend-api",
             Name:        "Backend API Repository",
             Criticality: "critical",
-            Technical: &ris.TechnicalDetails{
-                Repository: &ris.RepositoryDetails{
+            Technical: &ctis.TechnicalDetails{
+                Repository: &ctis.RepositoryDetails{
                     Platform:          "github",
                     Visibility:        "private",
                     DefaultBranch:     "main",
@@ -2961,8 +2961,8 @@ func main() {
             Type:  "certificate",
             Value: "api.example.com:443",
             Name:  "API SSL Certificate",
-            Technical: &ris.TechnicalDetails{
-                Certificate: &ris.CertificateDetails{
+            Technical: &ctis.TechnicalDetails{
+                Certificate: &ctis.CertificateDetails{
                     SubjectCN:          "api.example.com",
                     IssuerOrg:          "Let's Encrypt",
                     NotAfter:           time.Now().AddDate(0, 3, 0),
@@ -2979,8 +2979,8 @@ func main() {
             Value:       "arn:aws:s3:::my-app-data",
             Name:        "Application Data Bucket",
             Criticality: "critical",
-            Technical: &ris.TechnicalDetails{
-                Cloud: &ris.CloudDetails{
+            Technical: &ctis.TechnicalDetails{
+                Cloud: &ctis.CloudDetails{
                     Provider:   "aws",
                     Service:    "s3",
                     Region:     "us-east-1",
@@ -2992,19 +2992,19 @@ func main() {
         },
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:    "asset-discovery",
             Version: "1.0.0",
         },
         Assets: assets,
     }
 
-    client.IngestRIS(context.Background(), report)
+    client.IngestCTIS(context.Background(), report)
 }
 ```
 
@@ -3019,41 +3019,41 @@ import (
     "log"
     "time"
 
-    "github.com/exploopio/sdk/pkg/chunk"
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/chunk"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
     // Generate large report with many findings
-    findings := make([]ris.Finding, 50000)
+    findings := make([]ctis.Finding, 50000)
     for i := range findings {
-        findings[i] = ris.Finding{
+        findings[i] = ctis.Finding{
             Type:     "vulnerability",
             Title:    fmt.Sprintf("Finding %d", i),
             Severity: "medium",
             RuleID:   fmt.Sprintf("rule-%d", i),
-            Location: &ris.Location{
+            Location: &ctis.Location{
                 Path:      fmt.Sprintf("file%d.go", i%100),
                 StartLine: i % 1000,
             },
         }
     }
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             ID:           "large-scan-" + time.Now().Format("20060102-150405"),
             Timestamp:    time.Now(),
             CoverageType: "full",
-            Branch: &ris.BranchInfo{
+            Branch: &ctis.BranchInfo{
                 Name:            "main",
                 IsDefaultBranch: true,
             },
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:    "enterprise-scanner",
             Version: "5.0.0",
         },
@@ -3102,12 +3102,12 @@ import (
     "fmt"
     "log"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 // generateFingerprint creates a fingerprint for a finding
-func generateFingerprint(f ris.Finding) string {
+func generateFingerprint(f ctis.Finding) string {
     h := sha256.New()
     h.Write([]byte(f.RuleID))
     if f.Location != nil {
@@ -3119,22 +3119,22 @@ func generateFingerprint(f ris.Finding) string {
 }
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
     ctx := context.Background()
 
     // Findings from scanner
-    allFindings := []ris.Finding{
+    allFindings := []ctis.Finding{
         {Type: "vulnerability", Title: "SQL Injection", RuleID: "sql-001",
-            Location: &ris.Location{Path: "user.go", StartLine: 45}},
+            Location: &ctis.Location{Path: "user.go", StartLine: 45}},
         {Type: "vulnerability", Title: "XSS", RuleID: "xss-001",
-            Location: &ris.Location{Path: "view.go", StartLine: 100}},
+            Location: &ctis.Location{Path: "view.go", StartLine: 100}},
         {Type: "vulnerability", Title: "SSRF", RuleID: "ssrf-001",
-            Location: &ris.Location{Path: "http.go", StartLine: 200}},
+            Location: &ctis.Location{Path: "http.go", StartLine: 200}},
     }
 
     // Generate fingerprints
     fingerprints := make([]string, len(allFindings))
-    fingerprintMap := make(map[string]ris.Finding)
+    fingerprintMap := make(map[string]ctis.Finding)
     for i, f := range allFindings {
         fp := generateFingerprint(f)
         fingerprints[i] = fp
@@ -3151,7 +3151,7 @@ func main() {
         len(checkResult.Existing), len(checkResult.Missing))
 
     // Only ingest new findings
-    var newFindings []ris.Finding
+    var newFindings []ctis.Finding
     for _, fp := range checkResult.Missing {
         if f, ok := fingerprintMap[fp]; ok {
             f.Fingerprint = fp // Set fingerprint on finding
@@ -3165,13 +3165,13 @@ func main() {
     }
 
     // Ingest only new findings
-    report := &ris.Report{
+    report := &ctis.Report{
         Version:  "1.0",
-        Metadata: ris.Metadata{Timestamp: time.Now()},
+        Metadata: ctis.Metadata{Timestamp: time.Now()},
         Findings: newFindings,
     }
 
-    result, err := client.IngestRIS(ctx, report)
+    result, err := client.IngestCTIS(ctx, report)
     if err != nil {
         log.Fatalf("Ingestion failed: %v", err)
     }
@@ -3191,12 +3191,12 @@ import (
     "os"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
     // Get PR context from CI environment
     prNumber := os.Getenv("PR_NUMBER")
@@ -3206,14 +3206,14 @@ func main() {
     baseCommit := os.Getenv("BASE_COMMIT")
     repoURL := os.Getenv("REPO_URL")
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             ID:           "pr-scan-" + prNumber,
             Timestamp:    time.Now(),
             SourceType:   "scanner",
             CoverageType: "incremental", // Important: incremental for PR scans
-            Branch: &ris.BranchInfo{
+            Branch: &ctis.BranchInfo{
                 Name:            branchName,
                 IsDefaultBranch: false, // PR branch is not default
                 CommitSHA:       commitSHA,
@@ -3223,7 +3223,7 @@ func main() {
                 PullRequestID:   prNumber,
                 PullRequestURL:  repoURL + "/pull/" + prNumber,
             },
-            Scope: &ris.Scope{
+            Scope: &ctis.Scope{
                 Paths: []string{
                     "internal/auth/",
                     "internal/handlers/login.go",
@@ -3233,17 +3233,17 @@ func main() {
                 RemovedLines: 20,
             },
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:    "semgrep",
             Version: "1.50.0",
         },
-        Findings: []ris.Finding{
+        Findings: []ctis.Finding{
             {
                 Type:     "vulnerability",
                 Title:    "Hardcoded JWT secret",
                 Severity: "critical",
                 RuleID:   "go/jwt-hardcoded-secret",
-                Location: &ris.Location{
+                Location: &ctis.Location{
                     Path:      "internal/auth/jwt.go",
                     StartLine: 15,
                     Snippet:   `secret := "super-secret-key-123"`,
@@ -3255,7 +3255,7 @@ func main() {
     // Auto-resolve will NOT trigger because:
     // 1. coverage_type = "incremental"
     // 2. is_default_branch = false
-    result, _ := client.IngestRIS(context.Background(), report)
+    result, _ := client.IngestCTIS(context.Background(), report)
 
     // Post results as PR comment (pseudo-code)
     // github.PostPRComment(prNumber, formatResults(result))
@@ -3271,14 +3271,14 @@ import (
     "context"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    reconInput := &ris.ReconToRISInput{
+    reconInput := &ctis.ReconToCTISInput{
         ScannerName:    "subfinder",
         ScannerVersion: "2.6.3",
         ReconType:      "subdomain",
@@ -3287,7 +3287,7 @@ func main() {
         FinishedAt:     time.Now().Unix(),
         DurationMs:     120000,
 
-        Subdomains: []ris.SubdomainInput{
+        Subdomains: []ctis.SubdomainInput{
             {Host: "www.example.com", Domain: "example.com", Source: "crtsh",
                 IPs: []string{"93.184.216.34"}},
             {Host: "api.example.com", Domain: "example.com", Source: "virustotal",
@@ -3296,14 +3296,14 @@ func main() {
             {Host: "dev.example.com", Domain: "example.com", Source: "github-subdomains"},
         },
 
-        DNSRecords: []ris.DNSRecordInput{
+        DNSRecords: []ctis.DNSRecordInput{
             {Host: "example.com", RecordType: "A", Values: []string{"93.184.216.34"}, TTL: 300},
             {Host: "example.com", RecordType: "MX", Values: []string{"10 mail.example.com"}, TTL: 3600},
             {Host: "example.com", RecordType: "TXT",
                 Values: []string{"v=spf1 include:_spf.google.com ~all"}, TTL: 3600},
         },
 
-        OpenPorts: []ris.OpenPortInput{
+        OpenPorts: []ctis.OpenPortInput{
             {Host: "example.com", IP: "93.184.216.34", Port: 22, Protocol: "tcp",
                 Service: "ssh", Version: "OpenSSH 8.9"},
             {Host: "example.com", IP: "93.184.216.34", Port: 80, Protocol: "tcp",
@@ -3312,7 +3312,7 @@ func main() {
                 Service: "https", Version: "nginx 1.24.0"},
         },
 
-        LiveHosts: []ris.LiveHostInput{
+        LiveHosts: []ctis.LiveHostInput{
             {
                 URL:          "https://example.com",
                 Host:         "example.com",
@@ -3329,7 +3329,7 @@ func main() {
             },
         },
 
-        URLs: []ris.DiscoveredURLInput{
+        URLs: []ctis.DiscoveredURLInput{
             {URL: "https://example.com/", Method: "GET", Source: "crawler", StatusCode: 200},
             {URL: "https://example.com/login", Method: "GET", Source: "crawler", StatusCode: 200},
             {URL: "https://example.com/api/v1/users", Method: "GET", Source: "js-parsing", StatusCode: 401},
@@ -3354,25 +3354,25 @@ import (
     "net/http"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
 )
 
 func main() {
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
 
-    report := &ris.Report{
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp: time.Now(),
         },
-        Findings: []ris.Finding{
+        Findings: []ctis.Finding{
             {Type: "vulnerability", Title: "Test", Severity: "high", RuleID: "test-001"},
         },
     }
 
     ctx := context.Background()
-    result, err := client.IngestRIS(ctx, report)
+    result, err := client.IngestCTIS(ctx, report)
 
     if err != nil {
         // Check error type
@@ -3424,9 +3424,9 @@ import (
     "path/filepath"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
-    "github.com/exploopio/sdk/pkg/ris"
-    "github.com/exploopio/sdk/pkg/scanners/codeql"
+    "github.com/openctemio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ctis"
+    "github.com/openctemio/sdk/pkg/scanners/codeql"
 )
 
 func main() {
@@ -3441,18 +3441,18 @@ func main() {
         log.Fatalf("Scan failed: %v", err)
     }
 
-    // Convert to RIS report
-    report := &ris.Report{
+    // Convert to CTIS report
+    report := &ctis.Report{
         Version: "1.0",
-        Metadata: ris.Metadata{
+        Metadata: ctis.Metadata{
             Timestamp:    time.Now(),
             CoverageType: "full",
-            Branch: &ris.BranchInfo{
+            Branch: &ctis.BranchInfo{
                 Name:            "main",
                 IsDefaultBranch: true,
             },
         },
-        Tool: &ris.Tool{
+        Tool: &ctis.Tool{
             Name:         scanner.Name(),
             Version:      scanner.Version(),
             Capabilities: scanner.Capabilities(),
@@ -3460,9 +3460,9 @@ func main() {
         Findings: scanResult.Findings,
     }
 
-    // Ingest to Rediver
-    client := ingest.NewClient("https://api.exploop.io", "api-key")
-    result, err := client.IngestRIS(ctx, report)
+    // Ingest to OpenCTEM
+    client := ingest.NewClient("https://api.openctem.io", "api-key")
+    result, err := client.IngestCTIS(ctx, report)
     if err != nil {
         log.Fatalf("Ingestion failed: %v", err)
     }
@@ -3483,7 +3483,7 @@ import (
     "runtime"
     "time"
 
-    "github.com/exploopio/sdk/pkg/ingest"
+    "github.com/openctemio/sdk/pkg/ingest"
     "github.com/shirou/gopsutil/v3/cpu"
     "github.com/shirou/gopsutil/v3/mem"
 )
@@ -3499,7 +3499,7 @@ type Agent struct {
 
 func NewAgent(apiKey string) *Agent {
     return &Agent{
-        client:    ingest.NewClient("https://api.exploop.io", apiKey),
+        client:    ingest.NewClient("https://api.openctem.io", apiKey),
         startTime: time.Now(),
         stopCh:    make(chan struct{}),
     }
@@ -3578,7 +3578,7 @@ func (a *Agent) Stop() {
 }
 
 func main() {
-    agent := NewAgent(os.Getenv("EXPLOOP_API_KEY"))
+    agent := NewAgent(os.Getenv("OPENCTEM_API_KEY"))
 
     // Start heartbeat every 30 seconds
     go agent.StartHeartbeat(30 * time.Second)
@@ -3595,17 +3595,17 @@ func main() {
 ### Python SDK (Coming Soon)
 
 ```python
-# Installation: pip install.exploop-sdk
+# Installation: pip install openctem-sdk
 
-from.exploop import Client, RISReport, Finding, Location
+from openctem import Client, CTISReport, Finding, Location
 
 client = Client(
-    base_url="https://api.exploop.io",
+    base_url="https://api.openctem.io",
     api_key="your-api-key"
 )
 
 # Create report
-report = RISReport(
+report = CTISReport(
     version="1.0",
     metadata={
         "timestamp": "2026-01-29T10:00:00Z",
@@ -3639,10 +3639,10 @@ print(f"Created {result.findings_created} findings")
 
 ### cURL Examples
 
-#### Basic RIS Ingestion
+#### Basic CTIS Ingestion
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
+curl -X POST https://api.openctem.io/api/v1/agent/ingest/ctis \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -3672,7 +3672,7 @@ curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
 
 ```bash
 # Compress and send
-cat report.json | gzip | curl -X POST https://api.exploop.io/api/v1/agent/ingest/ris \
+cat report.json | gzip | curl -X POST https://api.openctem.io/api/v1/agent/ingest/ctis \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Content-Encoding: gzip" \
@@ -3682,7 +3682,7 @@ cat report.json | gzip | curl -X POST https://api.exploop.io/api/v1/agent/ingest
 #### SARIF Ingestion
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/agent/ingest/sarif \
+curl -X POST https://api.openctem.io/api/v1/agent/ingest/sarif \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d @codeql-results.sarif
@@ -3691,7 +3691,7 @@ curl -X POST https://api.exploop.io/api/v1/agent/ingest/sarif \
 #### Check Fingerprints
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/ingest/check \
+curl -X POST https://api.openctem.io/api/v1/ingest/check \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"fingerprints": ["fp1", "fp2", "fp3"]}'
@@ -3700,7 +3700,7 @@ curl -X POST https://api.exploop.io/api/v1/ingest/check \
 #### Heartbeat
 
 ```bash
-curl -X POST https://api.exploop.io/api/v1/agent/heartbeat \
+curl -X POST https://api.openctem.io/api/v1/agent/heartbeat \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -3716,8 +3716,8 @@ curl -X POST https://api.exploop.io/api/v1/agent/heartbeat \
 
 ## Related Documentation
 
-- [RIS Schema Reference](../schemas/ris-schema-reference.md)
-- [Finding Schema](../schemas/ris-finding.md)
-- [Asset Schema](../schemas/ris-asset.md)
-- [Web3 Finding Schema](../schemas/ris-web3-finding.md)
+- [CTIS Schema Reference](../schemas/ctis-schema-reference.md)
+- [Finding Schema](../schemas/ctis-finding.md)
+- [Asset Schema](../schemas/ctis-asset.md)
+- [Web3 Finding Schema](../schemas/ctis-web3-finding.md)
 - [Data Flow Tracking](../features/data-flow-tracking.md)

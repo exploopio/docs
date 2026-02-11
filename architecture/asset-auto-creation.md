@@ -13,14 +13,14 @@ This document explains how assets are automatically created during the ingest pr
 
 ## Overview
 
-When agents (CI/CD runners or daemon workers) send scan results to the API, they may not explicitly include an `assets` section in the RIS report. The ingest pipeline automatically creates assets from report metadata to ensure findings always have a target asset.
+When agents (CI/CD runners or daemon workers) send scan results to the API, they may not explicitly include an `assets` section in the CTIS report. The ingest pipeline automatically creates assets from report metadata to ensure findings always have a target asset.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                    ASSET AUTO-CREATION FLOW                                   │
 └─────────────────────────────────────────────────────────────────────────────┘
 
- Agent Scan         RIS Report            API Ingest             Database
+ Agent Scan         CTIS Report            API Ingest             Database
     │                   │                     │                     │
     │  gitleaks scan    │                     │                     │
     ├──────────────────▶│                     │                     │
@@ -49,7 +49,7 @@ Assets are identified by their **canonical name** which includes the provider do
 
 | Provider | Format | Example |
 |----------|--------|---------|
-| GitHub | `github.com/{owner}/{repo}` | `github.com/exploopio/api` |
+| GitHub | `github.com/{owner}/{repo}` | `github.com/openctemio/api` |
 | GitHub Enterprise | `github.mycompany.com/{owner}/{repo}` | `github.mycompany.com/team/project` |
 | GitLab | `gitlab.com/{namespace}/{project}` | `gitlab.com/myorg/myrepo` |
 | GitLab Self-hosted | `gitlab.mycompany.com/{namespace}/{project}` | `gitlab.mycompany.com/team/project` |
@@ -110,13 +110,13 @@ The `AssetProcessor.ProcessBatch()` method handles auto-creation with a **5-leve
 
 ```go
 if report.Metadata.Branch != nil && report.Metadata.Branch.RepositoryURL != "" {
-    return &ris.Asset{
+    return &ctis.Asset{
         ID:          "auto-asset-1",
-        Type:        ris.AssetTypeRepository,
+        Type:        ctis.AssetTypeRepository,
         Value:       report.Metadata.Branch.RepositoryURL,
         Name:        report.Metadata.Branch.RepositoryURL,
-        Criticality: ris.CriticalityHigh,
-        Properties: ris.Properties{
+        Criticality: ctis.CriticalityHigh,
+        Properties: ctis.Properties{
             "auto_created":   true,
             "source":         "branch_info",
             "commit_sha":     report.Metadata.Branch.CommitSHA,
@@ -149,12 +149,12 @@ if len(assetSet) != 1 {
 
 // SECURITY: Sanitize user-provided asset value
 sanitizedValue := sanitizeAssetName(value)
-return &ris.Asset{
+return &ctis.Asset{
     ID:          "auto-asset-1",
     Type:        info.assetType,
     Value:       sanitizedValue,
-    Criticality: ris.CriticalityHigh,
-    Properties: ris.Properties{
+    Criticality: ctis.CriticalityHigh,
+    Properties: ctis.Properties{
         "auto_created":  true,
         "source":        "finding_asset_value",
         "finding_count": info.count,
@@ -166,25 +166,25 @@ return &ris.Asset{
 
 ```go
 if report.Metadata.Scope != nil && report.Metadata.Scope.Name != "" {
-    scopeType := ris.AssetTypeOther
+    scopeType := ctis.AssetTypeOther
     switch report.Metadata.Scope.Type {
     case "repository":
-        scopeType = ris.AssetTypeRepository
+        scopeType = ctis.AssetTypeRepository
     case "domain":
-        scopeType = ris.AssetTypeDomain
+        scopeType = ctis.AssetTypeDomain
     case "ip_address":
-        scopeType = ris.AssetTypeIPAddress
+        scopeType = ctis.AssetTypeIPAddress
     case "container":
-        scopeType = ris.AssetTypeContainer
+        scopeType = ctis.AssetTypeContainer
     case "cloud_account":
-        scopeType = ris.AssetTypeCloudAccount
+        scopeType = ctis.AssetTypeCloudAccount
     }
-    return &ris.Asset{
+    return &ctis.Asset{
         ID:          "auto-asset-1",
         Type:        scopeType,
         Value:       report.Metadata.Scope.Name,
-        Criticality: ris.CriticalityMedium,
-        Properties: ris.Properties{
+        Criticality: ctis.CriticalityMedium,
+        Properties: ctis.Properties{
             "auto_created": true,
             "source":       "scope",
             "scope_type":   report.Metadata.Scope.Type,
@@ -236,12 +236,12 @@ if report.Tool != nil && report.Tool.Name != "" {
         scanID = "unknown"
     }
     assetName := fmt.Sprintf("scan:%s:%s", toolName, scanID)
-    return &ris.Asset{
+    return &ctis.Asset{
         ID:          "auto-asset-1",
-        Type:        ris.AssetTypeOther,
+        Type:        ctis.AssetTypeOther,
         Value:       assetName,
-        Criticality: ris.CriticalityMedium,
-        Properties: ris.Properties{
+        Criticality: ctis.CriticalityMedium,
+        Properties: ctis.Properties{
             "auto_created": true,
             "source":       "tool_fallback",
             "tool_name":    toolName,
@@ -295,12 +295,12 @@ jobs:
           format: json
           report: gitleaks-report.json
 
-      - name: Push to Rediver
+      - name: Push to OpenCTEM
         env:
-          EXPLOOP_API_URL: ${{ secrets.EXPLOOP_API_URL }}
-          EXPLOOP_API_KEY: ${{ secrets.EXPLOOP_API_KEY }}
+          OPENCTEM_API_URL: ${{ secrets.OPENCTEM_API_URL }}
+          OPENCTEM_API_KEY: ${{ secrets.OPENCTEM_API_KEY }}
         run: |
-          exploop-agent push --scanner gitleaks --file gitleaks-report.json
+          openctem-agent push --scanner gitleaks --file gitleaks-report.json
 ```
 
 The agent automatically:

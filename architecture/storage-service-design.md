@@ -38,7 +38,7 @@ nav_order: 25
 
 ### 1.1 Purpose
 
-Unified storage infrastructure for the Rediver platform that supports:
+Unified storage infrastructure for the OpenCTEM platform that supports:
 - Multiple storage providers (platform-managed and tenant-owned)
 - Multi-tenant isolation
 - Plan-based quotas and limits
@@ -166,7 +166,7 @@ Unified storage infrastructure for the Rediver platform that supports:
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           OBJECT STORAGE                                    │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  Bucket:.exploop-storage                                            │   │
+│  │  Bucket:.openctem-storage                                            │   │
 │  │  ├── tenants/                                                       │   │
 │  │  │   ├── {tenant_id}/                                               │   │
 │  │  │   │   ├── avatars/                                               │   │
@@ -349,7 +349,7 @@ CREATE TABLE tenant_storage_configs (
 
     -- ===== Common Settings =====
     cdn_base_url VARCHAR(500),             -- Optional CDN prefix
-    path_prefix VARCHAR(255) DEFAULT '',   -- e.g., "exploop/" or ""
+    path_prefix VARCHAR(255) DEFAULT '',   -- e.g., "openctem/" or ""
 
     -- Which file types use this config
     enabled_for_purposes TEXT[] DEFAULT ARRAY['all'],
@@ -582,49 +582,6 @@ ALTER TABLE plan_limits ADD COLUMN IF NOT EXISTS storage_limits JSONB DEFAULT '{
     }
 }'::jsonb;
 
--- Example plan configurations:
-
--- Free Plan
-UPDATE plan_limits SET storage_limits = '{
-    "total_bytes": 536870912,
-    "total_files": 500,
-    "max_file_size_bytes": 10485760,
-    "allowed_providers": ["default"],
-    "features": {
-        "custom_cdn": false,
-        "byob": false,
-        "versioning": false,
-        "retention_policies": false
-    }
-}'::jsonb WHERE plan_id = 'free';
-
--- Pro Plan
-UPDATE plan_limits SET storage_limits = '{
-    "total_bytes": 10737418240,
-    "total_files": 5000,
-    "max_file_size_bytes": 104857600,
-    "allowed_providers": ["default", "s3"],
-    "features": {
-        "custom_cdn": true,
-        "byob": true,
-        "versioning": true,
-        "retention_policies": true
-    }
-}'::jsonb WHERE plan_id = 'pro';
-
--- Enterprise Plan
-UPDATE plan_limits SET storage_limits = '{
-    "total_bytes": -1,
-    "total_files": -1,
-    "max_file_size_bytes": 536870912,
-    "allowed_providers": ["default", "s3", "azure", "gcs", "local", "custom"],
-    "features": {
-        "custom_cdn": true,
-        "byob": true,
-        "versioning": true,
-        "retention_policies": true
-    }
-}'::jsonb WHERE plan_id = 'enterprise';
 ```
 
 ---
@@ -754,242 +711,7 @@ export function StorageConfigPage() {
 
 ---
 
-## 6. Plan-Based Limits
-
-### 6.1 Limit Definitions
-
-```typescript
-// types/storage-limits.ts
-
-interface StoragePlanLimits {
-  // Total limits
-  total_bytes: number        // -1 = unlimited
-  total_files: number        // -1 = unlimited
-  max_file_size_bytes: number
-
-  // Allowed providers
-  allowed_providers: StorageProvider[]
-
-  // Feature flags
-  features: {
-    custom_cdn: boolean
-    byob: boolean              // Bring Your Own Bucket
-    versioning: boolean
-    retention_policies: boolean
-    encryption_at_rest: boolean
-    audit_logs: boolean
-  }
-
-  // Per-purpose limits
-  per_purpose: {
-    [purpose: string]: {
-      max_bytes: number
-      max_files: number
-      max_file_size_bytes?: number
-      allowed_types?: string[]
-    }
-  }
-}
-```
-
-### 6.2 Plan Comparison
-
-| Feature | Free | Pro | Business | Enterprise |
-|---------|------|-----|----------|------------|
-| **Total Storage** | 500 MB | 10 GB | 100 GB | Unlimited |
-| **Max File Size** | 10 MB | 100 MB | 250 MB | 500 MB |
-| **Total Files** | 500 | 5,000 | 50,000 | Unlimited |
-| **Providers** | Default | Default, S3 | All Cloud | All + Local |
-| **Custom CDN** | ❌ | ✅ | ✅ | ✅ |
-| **BYOB** | ❌ | ✅ | ✅ | ✅ |
-| **Versioning** | ❌ | ✅ | ✅ | ✅ |
-| **Retention Policies** | ❌ | ✅ | ✅ | ✅ |
-| **Audit Logs** | 7 days | 30 days | 1 year | Unlimited |
-
-### 6.3 Quota Enforcement
-
-```go
-// service/quota_manager.go
-
-type QuotaManager struct {
-    repo       StorageRepository
-    planLimits PlanLimitsService
-}
-
-func (q *QuotaManager) CheckUploadAllowed(ctx context.Context, tenantID uuid.UUID, req UploadRequest) error {
-    // Get current usage
-    usage, err := q.repo.GetUsage(ctx, tenantID)
-    if err != nil {
-        return err
-    }
-
-    // Get plan limits
-    limits, err := q.planLimits.GetStorageLimits(ctx, tenantID)
-    if err != nil {
-        return err
-    }
-
-    // Check total storage limit
-    if limits.TotalBytes > 0 && usage.TotalBytes+req.SizeBytes > limits.TotalBytes {
-        return &QuotaExceededError{
-            Type:     "total_storage",
-            Current:  usage.TotalBytes,
-            Limit:    limits.TotalBytes,
-            Required: req.SizeBytes,
-        }
-    }
-
-    // Check total files limit
-    if limits.TotalFiles > 0 && usage.TotalFiles+1 > limits.TotalFiles {
-        return &QuotaExceededError{
-            Type:    "total_files",
-            Current: usage.TotalFiles,
-            Limit:   limits.TotalFiles,
-        }
-    }
-
-    // Check file size limit
-    if req.SizeBytes > limits.MaxFileSizeBytes {
-        return &FileTooLargeError{
-            Size:  req.SizeBytes,
-            Limit: limits.MaxFileSizeBytes,
-        }
-    }
-
-    // Check purpose-specific limits
-    if purposeLimits, ok := limits.PerPurpose[req.Purpose]; ok {
-        purposeUsage := usage.ByPurpose[req.Purpose]
-
-        if purposeLimits.MaxBytes > 0 && purposeUsage.Bytes+req.SizeBytes > purposeLimits.MaxBytes {
-            return &QuotaExceededError{
-                Type:     fmt.Sprintf("%s_storage", req.Purpose),
-                Current:  purposeUsage.Bytes,
-                Limit:    purposeLimits.MaxBytes,
-                Required: req.SizeBytes,
-            }
-        }
-    }
-
-    return nil
-}
-
-func (q *QuotaManager) CheckProviderAllowed(ctx context.Context, tenantID uuid.UUID, provider string) error {
-    limits, err := q.planLimits.GetStorageLimits(ctx, tenantID)
-    if err != nil {
-        return err
-    }
-
-    for _, allowed := range limits.AllowedProviders {
-        if allowed == provider {
-            return nil
-        }
-    }
-
-    return &ProviderNotAllowedError{
-        Provider: provider,
-        Allowed:  limits.AllowedProviders,
-        Upgrade:  q.getUpgradeSuggestion(provider),
-    }
-}
-
-func (q *QuotaManager) CheckFeatureAllowed(ctx context.Context, tenantID uuid.UUID, feature string) error {
-    limits, err := q.planLimits.GetStorageLimits(ctx, tenantID)
-    if err != nil {
-        return err
-    }
-
-    switch feature {
-    case "custom_cdn":
-        if !limits.Features.CustomCDN {
-            return &FeatureNotAllowedError{Feature: feature, RequiredPlan: "pro"}
-        }
-    case "byob":
-        if !limits.Features.BYOB {
-            return &FeatureNotAllowedError{Feature: feature, RequiredPlan: "pro"}
-        }
-    case "versioning":
-        if !limits.Features.Versioning {
-            return &FeatureNotAllowedError{Feature: feature, RequiredPlan: "pro"}
-        }
-    }
-
-    return nil
-}
-```
-
-### 6.4 Usage Tracking
-
-```go
-// service/usage_tracker.go
-
-type UsageTracker struct {
-    repo  StorageRepository
-    cache cache.Cache
-}
-
-// Update usage after successful upload
-func (u *UsageTracker) RecordUpload(ctx context.Context, file *StorageFile) error {
-    // Atomic update in database
-    err := u.repo.IncrementUsage(ctx, file.TenantID, file.Purpose, file.SizeBytes, 1)
-    if err != nil {
-        return err
-    }
-
-    // Invalidate cache
-    u.cache.Delete(ctx, fmt.Sprintf("storage:usage:%s", file.TenantID))
-
-    return nil
-}
-
-// Update usage after deletion
-func (u *UsageTracker) RecordDeletion(ctx context.Context, file *StorageFile) error {
-    err := u.repo.DecrementUsage(ctx, file.TenantID, file.Purpose, file.SizeBytes, 1)
-    if err != nil {
-        return err
-    }
-
-    u.cache.Delete(ctx, fmt.Sprintf("storage:usage:%s", file.TenantID))
-
-    return nil
-}
-
-// Get usage with caching
-func (u *UsageTracker) GetUsage(ctx context.Context, tenantID uuid.UUID) (*StorageUsage, error) {
-    cacheKey := fmt.Sprintf("storage:usage:%s", tenantID)
-
-    // Try cache first
-    if cached, ok := u.cache.Get(ctx, cacheKey); ok {
-        return cached.(*StorageUsage), nil
-    }
-
-    // Fetch from database
-    usage, err := u.repo.GetUsage(ctx, tenantID)
-    if err != nil {
-        return nil, err
-    }
-
-    // Cache for 5 minutes
-    u.cache.Set(ctx, cacheKey, usage, 5*time.Minute)
-
-    return usage, nil
-}
-
-// Recalculate usage from actual files (for reconciliation)
-func (u *UsageTracker) RecalculateUsage(ctx context.Context, tenantID uuid.UUID) error {
-    usage, err := u.repo.CalculateUsageFromFiles(ctx, tenantID)
-    if err != nil {
-        return err
-    }
-
-    usage.LastCalculatedAt = time.Now()
-
-    return u.repo.SaveUsage(ctx, usage)
-}
-```
-
----
-
-## 7. API Design
+## 6. API Design
 
 ### 7.1 Endpoints Overview
 
@@ -1225,7 +947,7 @@ type StorageErrorCode =
 
 ---
 
-## 8. Storage Providers
+## 7. Storage Providers
 
 ### 8.1 Provider Interface
 
@@ -1458,7 +1180,7 @@ func (f *Factory) GetProvider(ctx context.Context, config *StorageConfig) (Provi
 
 ---
 
-## 9. Frontend Implementation
+## 8. Frontend Implementation
 
 ### 9.1 Feature Structure
 
@@ -1754,7 +1476,7 @@ export function StorageConfigForm() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="default">
-                Default (Managed by Rediver)
+                Default (Managed by OpenCTEM)
               </SelectItem>
               <PermissionGate
                 permission="storage:config:write"
@@ -1820,7 +1542,7 @@ export function StorageConfigForm() {
               <div className="space-y-2">
                 <label>Path Prefix (optional)</label>
                 <Input
-                  placeholder="exploop/"
+                  placeholder="openctem/"
                   {...form.register('path_prefix')}
                 />
               </div>
@@ -1930,7 +1652,7 @@ export default function StorageSettingsPage() {
 
 ---
 
-## 10. Security Considerations
+## 9. Security Considerations
 
 ### 10.1 Data Security
 
@@ -1980,7 +1702,7 @@ func (s *StorageConfigService) SaveConfig(ctx context.Context, config *StorageCo
 
 ---
 
-## 11. Implementation Phases
+## 10. Implementation Phases
 
 ### Phase 1: Foundation (Week 1-2)
 
@@ -2068,7 +1790,7 @@ func (s *StorageConfigService) SaveConfig(ctx context.Context, config *StorageCo
 
 ---
 
-## 12. Migration Strategy
+## 11. Migration Strategy
 
 ### 12.1 Avatar Migration
 
@@ -2121,7 +1843,7 @@ Similar process for tenant logos in branding settings.
 
 ---
 
-## 13. Testing Strategy
+## 12. Testing Strategy
 
 ### 13.1 Unit Tests
 
@@ -2247,7 +1969,7 @@ test.describe('Storage', () => {
 
 ---
 
-## 14. Monitoring & Observability
+## 13. Monitoring & Observability
 
 ### 14.1 Metrics
 
@@ -2343,13 +2065,13 @@ Key metrics to display:
 ```bash
 # Default Storage (Platform-managed R2)
 STORAGE_DEFAULT_ENDPOINT=https://xxx.r2.cloudflarestorage.com
-STORAGE_DEFAULT_BUCKET.exploop-storage
+STORAGE_DEFAULT_BUCKET.openctem-storage
 STORAGE_DEFAULT_ACCESS_KEY_ID=xxx
 STORAGE_DEFAULT_SECRET_ACCESS_KEY=xxx
 STORAGE_DEFAULT_REGION=auto
 
 # CDN
-STORAGE_CDN_BASE_URL=https://cdn.exploop.io
+STORAGE_CDN_BASE_URL=https://cdn.openctem.io
 
 # Encryption
 STORAGE_ENCRYPTION_KEY=xxx  # For credential encryption
@@ -2362,7 +2084,6 @@ STORAGE_PRESIGN_TTL_MINUTES=15
 ### B. Related Documentation
 
 - [Permission System](./access-control-flows-and-data.md)
-- [Plan Limits](../operations/plans-licensing.md)
 - [API Guidelines](../backend/api-reference.md)
 
 ---

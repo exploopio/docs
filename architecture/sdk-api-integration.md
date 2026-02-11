@@ -10,7 +10,7 @@ nav_order: 3
 ---
 # SDK & API Integration Architecture
 
-This document describes how the Exploop SDK integrates with the Backend API for multi-tenant security data ingestion.
+This document describes how the OpenCTEM SDK integrates with the Backend API for multi-tenant security data ingestion.
 
 ---
 
@@ -38,7 +38,7 @@ This document describes how the Exploop SDK integrates with the Backend API for 
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                         REDIVER API                                     │
+│                         OPENCTEM API                                     │
 │                                                                         │
 │   ┌─────────────────────────────────────────────────────────────────┐  │
 │   │                    API Gateway / Router                          │  │
@@ -60,7 +60,7 @@ This document describes how the Exploop SDK integrates with the Backend API for 
 │   │  POST /api/v1/ingest/assets                                     │  │
 │   │  POST /api/v1/ingest/heartbeat                                  │  │
 │   │                                                                  │  │
-│   │  - Validate RIS schema                                          │  │
+│   │  - Validate CTIS schema                                          │  │
 │   │  - Deduplicate findings (fingerprint)                           │  │
 │   │  - Associate with tenant + source                               │  │
 │   │  - Store with audit trail                                       │  │
@@ -104,10 +104,10 @@ This document describes how the Exploop SDK integrates with the Backend API for 
 
 ```http
 POST /api/v1/ingest/findings HTTP/1.1
-Host: api.exploop.io
+Host: api.openctem.io
 Content-Type: application/json
 Authorization: Bearer rs_src_xxxxxxxxxxxxxxxxxxxxxxxx
-X-Rediver-Source-ID: src_abc123def456
+X-OpenCTEM-Source-ID: src_abc123def456
 User-Agent: sdk/1.0
 ```
 
@@ -138,7 +138,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
         }
 
         // 4. Validate source ID if provided
-        sourceID := r.Header.Get("X-Rediver-Source-ID")
+        sourceID := r.Header.Get("X-OpenCTEM-Source-ID")
         if sourceID != "" {
             source, err := sourceService.Get(r.Context(), sourceID)
             if err != nil || source.TenantID != keyInfo.TenantID {
@@ -165,7 +165,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 ```go
 client := client.New(&client.Config{
-    BaseURL:  "https://api.exploop.io",
+    BaseURL:  "https://api.openctem.io",
     APIKey:   "rs_src_xxxxxxxxxxxxxxxxxxxxxxxx", // Source API key
     SourceID: "src_abc123def456",                // Registered source ID
     Timeout:  30 * time.Second,
@@ -184,7 +184,7 @@ agent:
   heartbeat_interval: 1m
 
 server:
-  base_url: https://api.exploop.io
+  base_url: https://api.openctem.io
   api_key: ${API_KEY}      # Source API key
   source_id: ${SOURCE_ID}  # Registered source ID
   timeout: 30s
@@ -378,7 +378,7 @@ X-RateLimit-Reset: 1705401600
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | `INVALID_REQUEST` | Malformed JSON or invalid RIS schema |
+| 400 | `INVALID_REQUEST` | Malformed JSON or invalid CTIS schema |
 | 401 | `UNAUTHORIZED` | Missing or invalid API key |
 | 403 | `FORBIDDEN` | Source ID doesn't belong to tenant |
 | 404 | `NOT_FOUND` | Source not found |
@@ -390,7 +390,7 @@ X-RateLimit-Reset: 1705401600
 {
   "error": {
     "code": "INVALID_REQUEST",
-    "message": "Invalid RIS schema: missing required field 'version'",
+    "message": "Invalid CTIS schema: missing required field 'version'",
     "details": {
       "field": "version",
       "reason": "required"
@@ -404,7 +404,7 @@ X-RateLimit-Reset: 1705401600
 ## Best Practices
 
 ### 1. Use Source IDs
-Always register sources and include `X-Rediver-Source-ID` header for audit trail.
+Always register sources and include `X-OpenCTEM-Source-ID` header for audit trail.
 
 ### 2. Include Fingerprints
 Include fingerprints in findings to enable proper deduplication.
@@ -431,7 +431,7 @@ Keep sources "alive" by sending regular heartbeats.
 - [ ] Add API key authentication middleware
 - [ ] Add source validation middleware
 - [ ] Add rate limiting middleware
-- [ ] Add RIS schema validation
+- [ ] Add CTIS schema validation
 - [ ] Add fingerprint-based deduplication
 - [ ] Add finding_data_sources tracking
 
@@ -444,7 +444,7 @@ Keep sources "alive" by sending regular heartbeats.
 - [x] Parser registry with SARIF, JSON parsers
 - [x] API client with retry logic
 - [x] Source ID support
-- [x] RIS types as single source of truth
+- [x] CTIS types as single source of truth
 
 ---
 

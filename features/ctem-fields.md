@@ -9,11 +9,11 @@ nav_order: 7
 
 ## Overview
 
-Rediver implements the **Continuous Threat Exposure Management (CTEM)** framework by extending finding records with specialized fields that enable risk-based prioritization. These fields capture exposure context, remediation difficulty, and business impact beyond traditional CVSS scores.
+OpenCTEM implements the **Continuous Threat Exposure Management (CTEM)** framework by extending finding records with specialized fields that enable risk-based prioritization. These fields capture exposure context, remediation difficulty, and business impact beyond traditional CVSS scores.
 
 ## CTEM Field Categories
 
-Rediver findings include three categories of CTEM-specific fields:
+OpenCTEM findings include three categories of CTEM-specific fields:
 
 | Category | Purpose | Fields |
 |----------|---------|--------|
@@ -192,7 +192,7 @@ List of compliance frameworks potentially affected.
 
 ## CTEM Risk Calculation
 
-Rediver calculates a CTEM risk factor by combining these fields:
+OpenCTEM calculates a CTEM risk factor by combining these fields:
 
 ```
 CTEM Risk Factor = Base × Exposure × Data Risk × Availability × Compliance × Reputation

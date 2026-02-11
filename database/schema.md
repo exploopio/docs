@@ -98,7 +98,7 @@ Fingerprints are stored in `findings.fingerprint` (primary) and `findings.partia
 
 ### Tenant Isolation (Defense in Depth)
 
-Exploop uses a **3-layer defense** approach for tenant data isolation:
+OpenCTEM uses a **3-layer defense** approach for tenant data isolation:
 
 | Layer | Mechanism | Description |
 |-------|-----------|-------------|
@@ -142,7 +142,7 @@ WHERE fl.file_path = $1 AND f.tenant_id = $2;  -- tenant_id is mandatory
 
 ```bash
 # Production: Use non-superuser (RLS enforced)
-DATABASE_URL=postgres://exploop_app:password@db:5432/exploop
+DATABASE_URL=postgres://openctem_app:password@db:5432/openctem
 ```
 
 See: [Tenant Isolation & RLS Architecture](../architecture/tenant-isolation-security.md) for complete documentation.

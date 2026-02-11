@@ -7,7 +7,7 @@ nav_order: 1
 
 # Admin UI User Guide
 
-Complete guide for using the Exploop Platform Admin UI to manage platform agents, jobs, tokens, and administrators.
+Complete guide for using the OpenCTEM Platform Admin UI to manage platform agents, jobs, tokens, and administrators.
 
 ---
 
@@ -50,7 +50,7 @@ The Admin UI is a web-based management console for platform administrators. It p
 
 ### Accessing the Admin UI
 
-1. Navigate to your Admin UI URL (e.g., `https://admin.exploop.io`)
+1. Navigate to your Admin UI URL (e.g., `https://admin.openctem.io`)
 2. Enter your API key on the login page
 3. Click "Sign In"
 
@@ -86,7 +86,7 @@ docker compose exec api ./bootstrap-admin \
 
 ```bash
 # Create admin via CLI (requires existing admin API key)
-exploop-admin create admin --email=you@company.com --role=ops_admin
+openctem-admin create admin --email=you@company.com --role=ops_admin
 ```
 
 **Output:**
@@ -98,7 +98,7 @@ exploop-admin create admin --email=you@company.com --role=ops_admin
   Role:  super_admin
 
 API Key (save this, it won't be shown again):
-  radm_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  oc-admin-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
 ```
 
 > **Important**: API keys are shown only once. Store them securely.
@@ -283,7 +283,7 @@ After creating a token, use it to register a platform agent:
 ```bash
 ./agent -platform \
   -bootstrap-token=<full-token> \
-  -api-url=https://api.exploop.io \
+  -api-url=https://api.openctem.io \
   -region=us-east-1
 ```
 

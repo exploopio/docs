@@ -6,13 +6,13 @@ nav_order: 4
 ---
 # Running Agents Guide
 
-This guide explains how to create, configure, and run Agents (runners, workers, collectors, sensors) with the Rediver platform.
+This guide explains how to create, configure, and run Agents (runners, workers, collectors, sensors) with the OpenCTEM platform.
 
 ---
 
 ## Overview
 
-Agents are distributed components that execute security scans and push findings back to Rediver. The workflow is:
+Agents are distributed components that execute security scans and push findings back to OpenCTEM. The workflow is:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
@@ -73,12 +73,12 @@ If you didn't save the API key:
 
 ---
 
-## Step 3: Install the Rediver Agent
+## Step 3: Install the OpenCTEM Agent
 
 ### Option A: Download Pre-built Binary
 ```bash
 # Download latest release
-curl -L https://github.com/exploopio/api/releases/latest/download/agent-linux-amd64 -o agent
+curl -L https://github.com/openctemio/api/releases/latest/download/agent-linux-amd64 -o agent
 chmod +x agent
 ```
 
@@ -90,7 +90,7 @@ go build -o agent ./cmd/agent
 
 ### Option C: Docker
 ```bash
-docker pull exploop/agent:latest
+docker pull openctem/agent:latest
 ```
 
 ---
@@ -124,9 +124,9 @@ agent:
   command_poll_interval: 30s         # How often to poll for commands
   heartbeat_interval: 1m             # How often to send heartbeat
 
-# Exploop Platform Connection
+# OpenCTEM Platform Connection
 server:
-  base_url: https://api.exploop.io   # Your Rediver API URL
+  base_url: https://api.openctem.io   # Your OpenCTEM API URL
   api_key: rda_xxxxxxxxxxxxxxxxxx    # API key from Step 2
   agent_id: 76d81868-25cd-...        # Optional: Agent UUID from UI
   timeout: 30s
@@ -155,7 +155,7 @@ targets:
 You can also use environment variables:
 
 ```bash
-export API_URL=https://api.exploop.io
+export API_URL=https://api.openctem.io
 export API_KEY=rda_xxxxxxxxxxxxxxxxxx
 export AGENT_ID=76d81868-25cd-45e6-ba66-6adfda4d0573
 ```
@@ -175,7 +175,7 @@ export AGENT_ID=76d81868-25cd-45e6-ba66-6adfda4d0573
 Run a single scan and exit:
 
 ```bash
-# Scan with a specific tool and push to Rediver
+# Scan with a specific tool and push to OpenCTEM
 ./agent -tool trivy -target /path/to/project -push
 
 # Scan with multiple tools
@@ -188,7 +188,7 @@ Run a single scan and exit:
 ./agent -tool semgrep -target . -output ./results.json
 ```
 
-> **IMPORTANT**: In one-shot mode, you MUST use the `-push` flag to send findings to Rediver. Without `-push`, findings are only displayed locally and not saved.
+> **IMPORTANT**: In one-shot mode, you MUST use the `-push` flag to send findings to OpenCTEM. Without `-push`, findings are only displayed locally and not saved.
 
 ### Daemon Mode (Continuous)
 Run as a long-running service. In daemon mode, findings are **automatically pushed** after each scan.
@@ -213,7 +213,7 @@ docker run -d \
   -v /opt/code:/code:ro \
   -v ./agent.yaml:/app/agent.yaml \
   -e API_KEY=rda_xxx \
-  exploop/agent:latest \
+  openctem/agent:latest \
   -daemon -config /app/agent.yaml
 ```
 
@@ -222,15 +222,15 @@ Create `/etc/systemd/system/agent.service`:
 
 ```ini
 [Unit]
-Description=Rediver Security Scanner Agent
+Description=OpenCTEM Security Scanner Agent
 After=network.target
 
 [Service]
 Type=simple
-User.exploop
-Group.exploop
-WorkingDirectory=/opt.exploop
-ExecStart=/opt/exploop/agent -daemon -config /opt/exploop/agent.yaml
+User.openctem
+Group.openctem
+WorkingDirectory=/opt.openctem
+ExecStart=/opt/openctem/agent -daemon -config /opt/openctem/agent.yaml
 Restart=always
 RestartSec=10
 Environment=API_KEY=rda_xxx
@@ -267,7 +267,7 @@ docker logs -f agent
 
 You should see:
 ```
-INFO  Connecting to Rediver platform...
+INFO  Connecting to OpenCTEM platform...
 INFO  Heartbeat sent successfully
 INFO  Status: active
 INFO  Polling for commands...
@@ -362,7 +362,7 @@ agent:
 
 ### Manually via API
 ```bash
-curl -X POST https://api.exploop.io/api/v1/commands \
+curl -X POST https://api.openctem.io/api/v1/commands \
   -H "Authorization: Bearer $JWT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -446,7 +446,7 @@ Workers are automatically marked as "Inactive" if they don't send a heartbeat wi
 # WRONG - findings only displayed locally
 ./agent -config agent.yaml
 
-# CORRECT - findings pushed to Rediver
+# CORRECT - findings pushed to OpenCTEM
 ./agent -config agent.yaml -push
 ```
 
@@ -463,7 +463,7 @@ Workers are automatically marked as "Inactive" if they don't send a heartbeat wi
 
 ### Heartbeat Timeout
 
-The Rediver server automatically marks workers as "Inactive" when they stop sending heartbeats. This is configurable via environment variables:
+The OpenCTEM server automatically marks workers as "Inactive" when they stop sending heartbeats. This is configurable via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -493,7 +493,7 @@ export WORKER_HEALTH_CHECK_ENABLED=false
 
 2. **Least Privilege**: Create separate workers for different environments (dev, staging, prod).
 
-3. **Network Security**: Workers should only have outbound access to the Rediver API and targets.
+3. **Network Security**: Workers should only have outbound access to the OpenCTEM API and targets.
 
 4. **Key Rotation**: Regularly rotate API keys using the regenerate function.
 
@@ -501,14 +501,14 @@ export WORKER_HEALTH_CHECK_ENABLED=false
 
 ---
 
-## Platform Agents (Managed by Rediver)
+## Platform Agents (Managed by OpenCTEM)
 
-For tenants who prefer not to manage their own agents, Rediver offers **Platform Agents** - shared scanning infrastructure managed by Rediver.
+For tenants who prefer not to manage their own agents, OpenCTEM offers **Platform Agents** - shared scanning infrastructure managed by OpenCTEM.
 
 ### What are Platform Agents?
 
 Platform Agents are:
-- **Managed by Rediver** - No deployment or maintenance required
+- **Managed by OpenCTEM** - No deployment or maintenance required
 - **Shared across tenants** - Fair queuing ensures equal access
 - **Regionally distributed** - Choose agents close to your targets
 - **Always available** - High availability with automatic failover
@@ -552,13 +552,13 @@ Response:
 
 ### Deploying Platform Agents (Administrators)
 
-If you're a Rediver administrator deploying platform agents, use the `exploop-admin` CLI:
+If you're a OpenCTEM administrator deploying platform agents, use the `openctem-admin` CLI:
 
 #### Step 1: Create a Bootstrap Token
 
 ```bash
 # Using CLI (recommended)
-exploop-admin create token --max-uses=5 --expires=24h
+openctem-admin create token --max-uses=5 --expires=24h
 
 # Output:
 # token/tok-abc123 created
@@ -567,7 +567,7 @@ exploop-admin create token --max-uses=5 --expires=24h
 #   abc123.xxxxxxxxxxxxxxxx
 #
 # Use this token to register a platform agent:
-#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.exploop.io
+#   ./agent -platform -bootstrap-token=abc123.xxxxxxxxxxxxxxxx -api-url=https://api.openctem.io
 ```
 
 #### Step 2: Start the Agent with Bootstrap Token
@@ -576,7 +576,7 @@ exploop-admin create token --max-uses=5 --expires=24h
 # Binary - with specific executors enabled
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.exploop.io \
+  -api-url=https://api.openctem.io \
   -region=us-east-1 \
   -enable-recon \
   -enable-vulnscan \
@@ -587,14 +587,14 @@ docker run -d \
   --name platform-agent \
   --restart unless-stopped \
   -e BOOTSTRAP_TOKEN=abc123.xxxxxxxxxxxxxxxx \
-  -e API_URL=https://api.exploop.io \
-  -v agent-data:/home/exploop/.exploop \
-  exploopio/agent:platform
+  -e API_URL=https://api.openctem.io \
+  -v agent-data:/home/openctem/.openctem \
+  openctemio/agent:platform
 
 # Hybrid build (uses Go libraries for better performance)
 ./agent -platform \
   -bootstrap-token=abc123.xxxxxxxxxxxxxxxx \
-  -api-url=https://api.exploop.io \
+  -api-url=https://api.openctem.io \
   -region=us-east-1 \
   -enable-recon
 ```
@@ -619,23 +619,23 @@ The agent will:
 For Kubernetes deployments, use the Helm chart:
 
 ```bash
-# Add Rediver Helm repo
-helm repo add.exploop https://charts.exploop.io
+# Add OpenCTEM Helm repo
+helm repo add.openctem https://charts.openctem.io
 helm repo update
 
 # Install with bootstrap token (auto-registration)
-helm install platform-agent exploop/platform-agent \
-  --namespace.exploop \
+helm install platform-agent openctem/platform-agent \
+  --namespace.openctem \
   --create-namespace \
-  --set apiUrl=https://api.exploop.io \
+  --set apiUrl=https://api.openctem.io \
   --set bootstrapToken=abc123.xxxxxxxxxxxxxxxx \
   --set replicaCount=3 \
   --set agent.region=us-east-1
 
 # Or install with pre-assigned API key
-helm install platform-agent exploop/platform-agent \
-  --namespace.exploop \
-  --set apiUrl=https://api.exploop.io \
+helm install platform-agent openctem/platform-agent \
+  --namespace.openctem \
+  --set apiUrl=https://api.openctem.io \
   --set apiKey=ragent_xxxxx \
   --set useStatefulSet=false
 ```
@@ -646,26 +646,26 @@ See [Platform Administration Guide - Kubernetes Deployment](./platform-admin.md#
 
 ```bash
 # List all platform agents
-exploop-admin get agents
+openctem-admin get agents
 
 # Watch in real-time
-exploop-admin get agents -w
+openctem-admin get agents -w
 
 # Get details
-exploop-admin describe agent <agent-name>
+openctem-admin describe agent <agent-name>
 ```
 
 #### Step 4: Maintenance Operations
 
 ```bash
 # Stop agent from accepting new jobs (for maintenance)
-exploop-admin drain agent <agent-name>
+openctem-admin drain agent <agent-name>
 
 # Resume operations
-exploop-admin uncordon agent <agent-name>
+openctem-admin uncordon agent <agent-name>
 
 # Remove agent
-exploop-admin delete agent <agent-name>
+openctem-admin delete agent <agent-name>
 ```
 
 See [Platform Administration Guide](./platform-admin.md) for complete CLI documentation.
@@ -718,7 +718,7 @@ All operations are logged for debugging:
 
 ```yaml
 audit:
-  log_file: ~/.exploop/audit.log
+  log_file: ~/.openctem/audit.log
   max_size_mb: 100
   max_age_days: 30
   verbose: true

@@ -9,7 +9,7 @@ nav_order: 1
 
 ## Overview
 
-Rediver uses a **Hybrid JWT + Redis Permission System** for authentication and authorization:
+OpenCTEM uses a **Hybrid JWT + Redis Permission System** for authentication and authorization:
 
 - **Authentication:** JWT tokens in httpOnly cookies (15-minute access tokens, 7-day refresh tokens)
 - **Authorization:** Redis-cached permissions with database fallback

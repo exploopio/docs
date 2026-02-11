@@ -1,16 +1,16 @@
 ---
 layout: default
-title: RIS Schema Reference
+title: CTIS Schema Reference
 nav_order: 20
 has_children: true
 ---
 
-# RIS Schema Reference
+# CTIS Schema Reference
 
 > **Version**: 1.0
 > **Last Updated**: 2026-01-29
 
-Rediver Ingest Schema (RIS) is the standard format for ingesting security data into Rediver. This document provides comprehensive documentation of all schema fields.
+CTEM Ingest Schema (CTIS) is the standard format for ingesting security data into OpenCTEM. This document provides comprehensive documentation of all schema fields.
 
 ---
 
@@ -18,12 +18,12 @@ Rediver Ingest Schema (RIS) is the standard format for ingesting security data i
 
 | Schema | Description | Location |
 |--------|-------------|----------|
-| [Report](ris-report.md) | Root document containing assets and findings | `schemas/ris/v1/report.json` |
-| [Asset](ris-asset.md) | Discovered assets (domains, IPs, repos, etc.) | `schemas/ris/v1/asset.json` |
-| [Finding](ris-finding.md) | Security findings (vulnerabilities, secrets, etc.) | `schemas/ris/v1/finding.json` |
-| [Dependency](ris-dependency.md) | Software dependencies (SBOM) | `schemas/ris/v1/dependency.json` |
-| [Web3 Asset](ris-web3-asset.md) | Web3/blockchain asset details | `schemas/ris/v1/web3-asset.json` |
-| [Web3 Finding](ris-web3-finding.md) | Smart contract vulnerabilities | `schemas/ris/v1/web3-finding.json` |
+| [Report](ctis-report.md) | Root document containing assets and findings | `schemas/ctis/v1/report.json` |
+| [Asset](ctis-asset.md) | Discovered assets (domains, IPs, repos, etc.) | `schemas/ctis/v1/asset.json` |
+| [Finding](ctis-finding.md) | Security findings (vulnerabilities, secrets, etc.) | `schemas/ctis/v1/finding.json` |
+| [Dependency](ctis-dependency.md) | Software dependencies (SBOM) | `schemas/ctis/v1/dependency.json` |
+| [Web3 Asset](ctis-web3-asset.md) | Web3/blockchain asset details | `schemas/ctis/v1/web3-asset.json` |
+| [Web3 Finding](ctis-web3-finding.md) | Smart contract vulnerabilities | `schemas/ctis/v1/web3-finding.json` |
 
 ---
 
@@ -189,4 +189,4 @@ Report
 
 - [Data Flow Tracking](../features/data-flow-tracking.md) - DataFlow schema usage
 - [Finding Types](../features/finding-types.md) - Finding type system
-- [SDK Quick Start](../guides/sdk-quick-start.md) - Using RIS with the SDK
+- [SDK Quick Start](../guides/sdk-quick-start.md) - Using CTIS with the SDK

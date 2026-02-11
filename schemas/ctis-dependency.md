@@ -1,15 +1,15 @@
 ---
 layout: default
-title: RIS Dependency Schema
-parent: RIS Schema Reference
+title: CTIS Dependency Schema
+parent: CTIS Schema Reference
 nav_order: 4
 ---
 
-# RIS Dependency Schema
+# CTIS Dependency Schema
 
 The Dependency schema represents software components and libraries (SBOM - Software Bill of Materials).
 
-**Schema Location**: `schemas/ris/v1/dependency.json`
+**Schema Location**: `schemas/ctis/v1/dependency.json`
 
 ---
 
@@ -293,5 +293,5 @@ The `depends_on` field creates links between dependencies:
 
 ## Related Documentation
 
-- [Finding Schema](ris-finding.md) - Vulnerability findings for dependencies
+- [Finding Schema](ctis-finding.md) - Vulnerability findings for dependencies
 - [SCA Scanning Guide](../guides/sca-scanning.md) - Software Composition Analysis

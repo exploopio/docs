@@ -7,9 +7,9 @@ nav_order: 2
 
 # API Reference
 
-Complete API reference for Exploop CTEM Platform.
+Complete API reference for OpenCTEM CTEM Platform.
 
-**Base URL:** `http://localhost:8080` (development) | `https://api.exploop.io` (production)
+**Base URL:** `http://localhost:8080` (development) | `https://api.openctem.io` (production)
 
 ---
 
@@ -519,14 +519,14 @@ Pre-compiled bundles for worker download. Bundles contain merged rules from all 
 
 **Prefix:** `/api/v1/ingest`
 
-Endpoints for pushing scan results and findings into Rediver.
+Endpoints for pushing scan results and findings into OpenCTEM.
 
-### RIS Format Ingestion
+### CTIS Format Ingestion
 
 | Method | Endpoint | Permission | Description |
 |--------|----------|------------|-------------|
-| POST | `/findings` | `ingest:write` | Push findings in RIS format |
-| POST | `/assets` | `ingest:write` | Push assets in RIS format |
+| POST | `/findings` | `ingest:write` | Push findings in CTIS format |
+| POST | `/assets` | `ingest:write` | Push assets in CTIS format |
 | POST | `/heartbeat` | `ingest:write` | Send worker heartbeat |
 
 ### SARIF Ingestion
@@ -560,7 +560,7 @@ Endpoints for pushing scan results and findings into Rediver.
 - **Web3:** Slither, Mythril, Securify, Manticore, Aderyn
 
 **SARIF Level Mapping:**
-| SARIF Level | Rediver Severity |
+| SARIF Level | OpenCTEM Severity |
 |-------------|------------------|
 | `error` | `high` |
 | `warning` | `medium` |
@@ -653,7 +653,7 @@ Capabilities represent what security tools can do (e.g., `sast`, `sca`, `dast`, 
 
 ## Platform Agent Endpoints
 
-Platform agents are Rediver-managed, shared scanning agents. See [Platform Agents Feature](../features/platform-agents.md) for details.
+Platform agents are OpenCTEM-managed, shared scanning agents. See [Platform Agents Feature](../features/platform-agents.md) for details.
 
 ### Admin Endpoints
 
@@ -729,7 +729,7 @@ Platform agents are Rediver-managed, shared scanning agents. See [Platform Agent
 **Example Poll Request:**
 ```bash
 curl -X POST /api/v1/platform-agent/poll \
-  -H "X-API-Key: rdv_agent_..." \
+  -H "X-API-Key: oc_agent_..." \
   -d '{"capabilities": ["nuclei", "trivy"], "timeout": 30}'
 ```
 
@@ -737,18 +737,18 @@ curl -X POST /api/v1/platform-agent/poll \
 ```bash
 # 1. Acknowledge job
 curl -X POST /api/v1/platform-agent/jobs/{id}/ack \
-  -H "X-API-Key: rdv_agent_..." \
+  -H "X-API-Key: oc_agent_..." \
   -H "X-Job-Token: job-token-here"
 
 # 2. Report progress (optional)
 curl -X POST /api/v1/platform-agent/jobs/{id}/progress \
-  -H "X-API-Key: rdv_agent_..." \
+  -H "X-API-Key: oc_agent_..." \
   -H "X-Job-Token: job-token-here" \
   -d '{"progress": 50, "message": "Scanning..."}'
 
 # 3. Submit result
 curl -X POST /api/v1/platform-agent/jobs/{id}/result \
-  -H "X-API-Key: rdv_agent_..." \
+  -H "X-API-Key: oc_agent_..." \
   -H "X-Job-Token: job-token-here" \
   -d '{"status": "completed", "result": {...}}'
 ```

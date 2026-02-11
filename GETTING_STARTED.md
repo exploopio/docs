@@ -4,13 +4,13 @@ title: Getting Started
 nav_order: 1
 ---
 
-# Getting Started with Exploop Platform
+# Getting Started with OpenCTEM Platform
 
 Get your security platform running in **5 minutes**.
 
-## What is Exploop?
+## What is OpenCTEM?
 
-Exploop is a **Continuous Threat Exposure Management (CTEM)** platform that helps you discover assets, scan for vulnerabilities, and prioritize remediation across your entire attack surface.
+OpenCTEM is a **Continuous Threat Exposure Management (CTEM)** platform that helps you discover assets, scan for vulnerabilities, and prioritize remediation across your entire attack surface.
 
 **Key Capabilities:**
 - 🔍 **Asset Discovery** - Auto-discover repositories, cloud resources, smart contracts
@@ -34,8 +34,8 @@ Exploop is a **Continuous Threat Exposure Management (CTEM)** platform that help
 
 ```bash
 # Clone the meta-repository
-git clone https://github.com/exploopio.exploop-platform.git.exploopio
-cd.exploopio
+git clone https://github.com/openctemio.openctem-platform.git.openctemio
+cd.openctemio
 
 # Initialize all sub-repositories (api, agent, ui, sdk)
 make setup
@@ -73,7 +73,7 @@ Open your browser:
 **URL:** [http://localhost:3000](http://localhost:3000)
 
 **Default Credentials:**
-- Email: `admin@exploop.io`
+- Email: `admin@openctem.io`
 - Password: `Admin123!`
 
 ---
@@ -95,7 +95,7 @@ docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://localhost:8080 \
   -e API_KEY=your-api-key-here \
-  exploopio/agent:latest \
+  openctemio/agent:latest \
   -tools semgrep,gitleaks,trivy -target /scan -push -verbose
 ```
 
@@ -210,9 +210,9 @@ Expected response: `{"status":"ok"}`
 
 ## Need Help?
 
-- 📚 **Documentation:** [docs.exploop.io](https://docs.exploop.io)
-- 💬 **Discord:** [discord.gg/exploopio](https://discord.gg/exploopio)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/exploopio.exploop-platform/issues)
+- 📚 **Documentation:** [docs.openctem.io](https://docs.openctem.io)
+- 💬 **Discord:** [discord.gg/openctemio](https://discord.gg/openctemio)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/openctemio.openctem-platform/issues)
 
 ---
 

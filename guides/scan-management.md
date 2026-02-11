@@ -7,13 +7,13 @@ nav_order: 7
 
 # Scan Management Guide
 
-Complete guide to managing security scans in Rediver.
+Complete guide to managing security scans in OpenCTEM.
 
 ---
 
 ## Overview
 
-Scan Management in Rediver includes:
+Scan Management in OpenCTEM includes:
 
 - **Tools**: Security scanners (Semgrep, Trivy, Gitleaks, etc.)
 - **Tool Categories**: SAST, SCA, DAST, Secrets, IaC, Container, Recon, OSINT
@@ -369,6 +369,6 @@ Check scan session details for error messages:
 
 - [Running Workers](running-workers.md) - Setup scanning agents
 - [Tools Management](tools-management.md) - Manage security tools
-- [Agent Usage](agent-usage.md) - Use the Exploop Agent
+- [Agent Usage](agent-usage.md) - Use the OpenCTEM Agent
 - [SDK Development](sdk-development.md) - Build custom tools
 - [ADR-006: Flexible Scan Target Selection](/docs/decisions/006-scan-targets-flexibility.md) - Technical decision on target selection

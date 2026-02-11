@@ -30,7 +30,7 @@ The Self-Hosted AI Agent enables enterprise customers to run AI Triage entirely 
 │                         ENTERPRISE NETWORK                                   │
 │                                                                              │
 │  ┌─────────────────────┐              ┌─────────────────────────────────┐   │
-│  │  Exploop Platform   │    HTTPS     │   Self-Hosted AI Agent          │   │
+│  │  OpenCTEM Platform   │    HTTPS     │   Self-Hosted AI Agent          │   │
 │  │  (SaaS or On-Prem)  │◀────────────▶│   (Customer Infrastructure)     │   │
 │  │                     │              │                                 │   │
 │  │  ┌───────────────┐  │              │  ┌───────────────────────────┐  │   │
@@ -74,7 +74,7 @@ The Self-Hosted AI Agent enables enterprise customers to run AI Triage entirely 
 
 | Feature | Platform | BYOK | Agent |
 |---------|----------|------|-------|
-| **Data Location** | Exploop Cloud → LLM Provider | Exploop Cloud → Your LLM Account | Your Infrastructure Only |
+| **Data Location** | OpenCTEM Cloud → LLM Provider | OpenCTEM Cloud → Your LLM Account | Your Infrastructure Only |
 | **API Keys** | Platform-managed | Tenant-provided | Agent token |
 | **Infrastructure** | None required | None required | Self-hosted agent |
 | **Setup Complexity** | None | Low | Medium |
@@ -167,7 +167,7 @@ Health check endpoint for monitoring and connection testing.
 ```yaml
 openapi: 3.0.0
 info:
-  title: Exploop AI Agent API
+  title: OpenCTEM AI Agent API
   version: 1.0.0
   description: API contract for self-hosted AI agents
 
@@ -308,17 +308,17 @@ components:
 
 ```bash
 # Pull the agent image
-docker pull ghcr.io/exploop/ai-agent:latest
+docker pull ghcr.io/openctem/ai-agent:latest
 
 # Run with Ollama backend
 docker run -d \
-  --name exploop-ai-agent \
+  --name openctem-ai-agent \
   -p 8080:8080 \
   -e AGENT_API_KEY="your-secret-key" \
   -e LLM_BACKEND="ollama" \
   -e OLLAMA_URL="http://ollama:11434" \
   -e OLLAMA_MODEL="llama2:70b" \
-  ghcr.io/exploop/ai-agent:latest
+  ghcr.io/openctem/ai-agent:latest
 ```
 
 ### Option 2: Docker Compose
@@ -328,7 +328,7 @@ version: '3.8'
 
 services:
   ai-agent:
-    image: ghcr.io/exploop/ai-agent:latest
+    image: ghcr.io/openctem/ai-agent:latest
     ports:
       - "8080:8080"
     environment:
@@ -365,16 +365,16 @@ volumes:
 ### Option 3: Kubernetes (Helm)
 
 ```bash
-# Add Exploop Helm repository
-helm repo add exploop https://charts.exploop.io
+# Add OpenCTEM Helm repository
+helm repo add openctem https://charts.openctem.io
 helm repo update
 
 # Install the AI Agent
-helm install ai-agent exploop/ai-agent \
-  --namespace exploop \
+helm install ai-agent openctem/ai-agent \
+  --namespace openctem \
   --set agent.apiKey="your-secret-key" \
   --set llm.backend="ollama" \
-  --set llm.ollamaUrl="http://ollama.exploop.svc:11434" \
+  --set llm.ollamaUrl="http://ollama.openctem.svc:11434" \
   --set llm.model="llama2:70b" \
   --set ingress.enabled=true \
   --set ingress.host="ai-agent.internal.corp.com"
@@ -543,7 +543,7 @@ docker run -d \
   -e AGENT_TLS_CERT=/certs/agent.crt \
   -e AGENT_TLS_KEY=/certs/agent.key \
   -v $PWD/certs:/certs:ro \
-  ghcr.io/exploop/ai-agent:latest
+  ghcr.io/openctem/ai-agent:latest
 ```
 
 ### Authentication
@@ -583,21 +583,21 @@ Health status is shown in tenant settings UI.
 The agent exposes Prometheus metrics at `/metrics`:
 
 ```
-# HELP exploop_agent_requests_total Total number of requests
-# TYPE exploop_agent_requests_total counter
-exploop_agent_requests_total{status="success"} 1234
-exploop_agent_requests_total{status="error"} 5
+# HELP openctem_agent_requests_total Total number of requests
+# TYPE openctem_agent_requests_total counter
+openctem_agent_requests_total{status="success"} 1234
+openctem_agent_requests_total{status="error"} 5
 
-# HELP exploop_agent_request_duration_seconds Request duration
-# TYPE exploop_agent_request_duration_seconds histogram
-exploop_agent_request_duration_seconds_bucket{le="1"} 100
-exploop_agent_request_duration_seconds_bucket{le="5"} 500
-exploop_agent_request_duration_seconds_bucket{le="10"} 600
+# HELP openctem_agent_request_duration_seconds Request duration
+# TYPE openctem_agent_request_duration_seconds histogram
+openctem_agent_request_duration_seconds_bucket{le="1"} 100
+openctem_agent_request_duration_seconds_bucket{le="5"} 500
+openctem_agent_request_duration_seconds_bucket{le="10"} 600
 
-# HELP exploop_agent_llm_tokens_total Total tokens processed
-# TYPE exploop_agent_llm_tokens_total counter
-exploop_agent_llm_tokens_total{type="prompt"} 125000
-exploop_agent_llm_tokens_total{type="completion"} 45000
+# HELP openctem_agent_llm_tokens_total Total tokens processed
+# TYPE openctem_agent_llm_tokens_total counter
+openctem_agent_llm_tokens_total{type="prompt"} 125000
+openctem_agent_llm_tokens_total{type="completion"} 45000
 ```
 
 ### Logging
@@ -687,23 +687,23 @@ curl https://ai-agent.internal/v1/health | jq .version
 
 ```bash
 # Pull new version
-docker pull ghcr.io/exploop/ai-agent:1.2.0
+docker pull ghcr.io/openctem/ai-agent:1.2.0
 
 # Stop current agent
-docker stop exploop-ai-agent
+docker stop openctem-ai-agent
 
 # Start new version
-docker run -d --name exploop-ai-agent \
+docker run -d --name openctem-ai-agent \
   # ... same configuration ...
-  ghcr.io/exploop/ai-agent:1.2.0
+  ghcr.io/openctem/ai-agent:1.2.0
 ```
 
 ### Upgrading Kubernetes
 
 ```bash
 # Update Helm release
-helm upgrade ai-agent exploop/ai-agent \
-  --namespace exploop \
+helm upgrade ai-agent openctem/ai-agent \
+  --namespace openctem \
   --set image.tag=1.2.0 \
   --reuse-values
 ```
@@ -720,7 +720,7 @@ Self-Hosted AI Agent requires an **Enterprise** license.
 | BYOK Mode | - | ✓ | ✓ |
 | Agent Mode | - | - | ✓ |
 
-Contact sales@exploop.io for Enterprise licensing.
+Contact sales@openctem.io for Enterprise licensing.
 
 ---
 

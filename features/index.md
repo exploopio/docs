@@ -8,7 +8,7 @@ permalink: /features/
 
 # Features
 
-Documentation for major features in the Exploop CTEM Platform.
+Documentation for major features in the OpenCTEM CTEM Platform.
 
 ---
 
@@ -16,7 +16,7 @@ Documentation for major features in the Exploop CTEM Platform.
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| [Platform Agents](platform-agents.md) | Shared scanning infrastructure managed by Rediver | ✅ Implemented |
+| [Platform Agents](platform-agents.md) | Shared scanning infrastructure managed by OpenCTEM | ✅ Implemented |
 | [Scan Profiles](scan-profiles.md) | Reusable scan configs with Quality Gates | ✅ Implemented |
 | [Scanner Templates](scanner-templates.md) | Custom detection rules for Nuclei, Semgrep, Gitleaks | ✅ Implemented |
 | [Quality Gates](quality-gates.md) | CI/CD pass/fail decisions based on finding thresholds | ✅ Implemented |
@@ -118,4 +118,3 @@ Documentation for major features in the Exploop CTEM Platform.
 
 - [Architecture Overview](../architecture/overview.md)
 - [Scan Pipeline Design](../architecture/scan-pipeline-design.md)
-- [Platform Agents Implementation](../architecture/platform-agents-implementation-plan.md)

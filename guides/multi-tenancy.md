@@ -6,13 +6,13 @@ nav_order: 2
 ---
 # Multi-Tenancy Guide
 
-Guide to multi-tenant architecture in the Exploop CTEM Platform.
+Guide to multi-tenant architecture in the OpenCTEM CTEM Platform.
 
 ---
 
 ## Overview
 
-Rediver uses a **multi-tenant architecture** with:
+OpenCTEM uses a **multi-tenant architecture** with:
 - **Tenant** (API) = **Team** (UI)
 - Each user can belong to multiple tenants
 - Each tenant has isolated data
@@ -146,7 +146,7 @@ The access token contains the `tenant_id`:
 
 ## Data Isolation
 
-Exploop implements **Defense in Depth** with 3 layers of tenant isolation:
+OpenCTEM implements **Defense in Depth** with 3 layers of tenant isolation:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -252,8 +252,8 @@ refresh_token + tenant_id → access_token
 ### 2. URL Structure
 Use tenant slug in URLs for SEO and UX:
 ```
-https://app.exploop.io/{tenant-slug}/dashboard
-https://app.exploop.io/{tenant-slug}/assets
+https://app.openctem.io/{tenant-slug}/dashboard
+https://app.openctem.io/{tenant-slug}/assets
 ```
 
 ### 3. Default Tenant

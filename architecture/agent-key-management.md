@@ -12,7 +12,7 @@ nav_order: 5
 
 ## Overview
 
-This document outlines the architecture for managing agents (scanners, collectors, runners) and their API keys in Rediver, based on best practices from enterprise security tools like Snyk, SonarQube, Datadog, and HashiCorp Vault.
+This document outlines the architecture for managing agents (scanners, collectors, runners) and their API keys in OpenCTEM, based on best practices from enterprise security tools like Snyk, SonarQube, Datadog, and HashiCorp Vault.
 
 ## Design Principles
 
@@ -195,7 +195,7 @@ CREATE TABLE agent_api_keys (
     -- Key identification
     name VARCHAR(255) NOT NULL,        -- "Primary", "Rotation", "CI/CD"
     key_hash VARCHAR(64) NOT NULL,     -- SHA-256 hash
-    key_prefix VARCHAR(12) NOT NULL,   -- First 12 chars for display (rdv_xxx...)
+    key_prefix VARCHAR(12) NOT NULL,   -- First 12 chars for display (ct_xxx...)
 
     -- Permissions
     scopes TEXT[] NOT NULL DEFAULT '{}',
@@ -332,8 +332,8 @@ DELETE /api/v1/registration-tokens/{id}  # Revoke token
 
 ```
 POST   /api/v1/register                  # Register using registration token
-       Request:  { "token": "rdv_reg_xxx...", "name": "my-scanner", "capabilities": [...] }
-       Response: { "agent_id": "...", "api_key": "rdv_xxx..." }  # Key shown only once!
+       Request:  { "token": "oc_reg_xxx...", "name": "my-scanner", "capabilities": [...] }
+       Response: { "agent_id": "...", "api_key": "oc_live_xxx..." }  # Key shown only once!
 ```
 
 ### Agent API (Authenticated with Agent API Key)
@@ -353,19 +353,19 @@ GET    /api/v1/agent/config              # Get agent config (if scoped)
 
 ### Agent API Keys
 ```
-rdv_[type]_[random_32_chars]
+oc_[type]_[random_32_chars]
 
 Examples:
-rdv_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6  # Production key
-rdv_test_x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4  # Test/development key
+oc_live_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6  # Production key
+oc_test_x9y8z7w6v5u4t3s2r1q0p9o8n7m6l5k4  # Test/development key
 ```
 
 ### Registration Tokens
 ```
-rdv_reg_[random_32_chars]
+oc_reg_[random_32_chars]
 
 Example:
-rdv_reg_abc123def456ghi789jkl012mno345pqr
+oc_reg_abc123def456ghi789jkl012mno345pqr
 ```
 
 ## Key Rotation Flow

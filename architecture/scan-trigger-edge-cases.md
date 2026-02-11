@@ -700,7 +700,7 @@ Tests that `Clone()` properly copies all target fields.
 
 ```bash
 # Run all command recovery tests
-DATABASE_URL="postgres://exploop:exploop@localhost:5432/exploop?sslmode=disable" \
+DATABASE_URL="postgres://openctem:openctem@localhost:5432/openctem?sslmode=disable" \
   go test ./api/tests/integration -run "TestRecoverStuck\|TestFailExhausted\|TestRecoveryAndFail" -v
 
 # Run all scan entity unit tests

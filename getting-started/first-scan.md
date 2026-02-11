@@ -47,7 +47,7 @@ After creating the agent, you'll see a dialog with the **API Key**.
 ⚠️ **Important:** Copy this key now! It's only shown once.
 
 ```
-API Key: rdv_xxxxxxxxxxxxxxxxxxxxxx
+API Key: oc_live_xxxxxxxxxxxxxxxxxxxxxx
 ```
 
 ---
@@ -64,8 +64,8 @@ cd /path/to/your/project
 docker run --rm \
   -v $(pwd):/scan \
   -e API_URL=http://host.docker.internal:8080 \
-  -e API_KEY=rdv_your_key_here \
-  exploopio/agent:latest \
+  -e API_KEY=oc_live_your_key_here \
+  openctemio/agent:latest \
   -tools semgrep,gitleaks,trivy \
   -target /scan \
   -push \
@@ -85,13 +85,13 @@ docker run --rm \
 
 ```bash
 # Download the agent binary
-curl -LO https://github.com/exploopio/agent/releases/latest/download/agent-linux-amd64
+curl -LO https://github.com/openctemio/agent/releases/latest/download/agent-linux-amd64
 chmod +x agent-linux-amd64
 
 # Run scan
 ./agent-linux-amd64 \
   -api-url http://localhost:8080 \
-  -api-key rdv_your_key_here \
+  -api-key oc_live_your_key_here \
   -tools semgrep,gitleaks,trivy \
   -target . \
   -push

@@ -5,7 +5,7 @@ nav_order: 8
 ---
 # Troubleshooting Guide
 
-Common issues and their solutions for ReDiver development and deployment.
+Common issues and their solutions for OpenCTEM development and deployment.
 
 ## Quick Diagnosis
 
@@ -20,7 +20,7 @@ docker compose logs -f [service_name]
 curl http://localhost:8080/health
 
 # Database connection
-docker compose exec postgres pg_isready -U.exploop
+docker compose exec postgres pg_isready -U.openctem
 
 # Redis connection
 docker compose exec redis redis-cli ping
@@ -117,14 +117,14 @@ failed to connect to database: dial tcp 127.0.0.1:5432: connect: connection refu
    # In .env file
    DB_HOST=localhost      # Use 'postgres' if running in Docker network
    DB_PORT=5432
-   DB_USER.exploop
+   DB_USER.openctem
    DB_PASSWORD=secret
-   DB_NAME.exploop
+   DB_NAME.openctem
    ```
 
 3. **Test connection manually:**
    ```bash
-   docker compose exec postgres psql -U.exploop -d.exploop -c "SELECT 1"
+   docker compose exec postgres psql -U.openctem -d.openctem -c "SELECT 1"
    ```
 
 4. **Restart PostgreSQL:**
@@ -180,7 +180,7 @@ migration failed: error executing migration
 
 3. **Drop and recreate (development only):**
    ```bash
-   docker compose exec postgres psql -U.exploop -c "DROP DATABASE.exploop; CREATE DATABASE.exploop;"
+   docker compose exec postgres psql -U.openctem -c "DROP DATABASE.openctem; CREATE DATABASE.openctem;"
    make migrate-up
    ```
 
@@ -585,7 +585,7 @@ DEBUG=* npm run dev
 
 ```bash
 # Connect to database
-docker compose exec postgres psql -U.exploop -d.exploop
+docker compose exec postgres psql -U.openctem -d.openctem
 
 # View active connections
 SELECT * FROM pg_stat_activity;
@@ -601,7 +601,7 @@ SELECT * FROM pg_stat_statements ORDER BY total_time DESC LIMIT 10;
 If you can't resolve the issue:
 
 1. **Search existing issues:**
-   - [GitHub Issues](https://github.com/exploopio/api/issues)
+   - [GitHub Issues](https://github.com/openctemio/api/issues)
 
 2. **Create a new issue with:**
    - OS and version

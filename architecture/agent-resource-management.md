@@ -94,7 +94,7 @@ Storage > MaxMB → Aggressive cleanup (oldest first)
 ### Configuration
 
 ```go
-import "github.com/exploopio/sdk/pkg/chunk"
+import "github.com/openctemio/sdk/pkg/chunk"
 
 cfg := &chunk.Config{
     // Auto-cleanup (all enabled by default)
@@ -155,7 +155,7 @@ Scanner → Pipeline.Submit() → Queue → Workers → Uploader → API
 ### Configuration
 
 ```go
-import "github.com/exploopio/sdk/pkg/pipeline"
+import "github.com/openctemio/sdk/pkg/pipeline"
 
 cfg := &pipeline.PipelineConfig{
     QueueSize:     1000,             // Max pending uploads
@@ -228,7 +228,7 @@ Agents consuming too much CPU/memory can destabilize the host system or degrade 
 Resource monitoring with job admission control.
 
 ```go
-import "github.com/exploopio/sdk/pkg/resource"
+import "github.com/openctemio/sdk/pkg/resource"
 
 cfg := &resource.ControllerConfig{
     CPUThreshold:      85.0,              // Pause above 85% CPU
@@ -315,12 +315,12 @@ Agent errors and state changes need to be logged for debugging and compliance.
 Structured audit logging with buffered writes and optional remote collection.
 
 ```go
-import "github.com/exploopio/sdk/pkg/audit"
+import "github.com/openctemio/sdk/pkg/audit"
 
 cfg := &audit.LoggerConfig{
     AgentID:       "agent-001",
     TenantID:      "tenant-123",
-    LogFile:       "~/.exploop/audit.log",
+    LogFile:       "~/.openctem/audit.log",
     MaxSizeMB:     100,           // Rotate at 100MB
     MaxAgeDays:    30,            // Keep logs for 30 days
     BufferSize:    100,           // Buffer 100 events
@@ -443,10 +443,10 @@ import (
     "os/signal"
     "syscall"
 
-    "github.com/exploopio/sdk/pkg/audit"
-    "github.com/exploopio/sdk/pkg/chunk"
-    "github.com/exploopio/sdk/pkg/pipeline"
-    "github.com/exploopio/sdk/pkg/resource"
+    "github.com/openctemio/sdk/pkg/audit"
+    "github.com/openctemio/sdk/pkg/chunk"
+    "github.com/openctemio/sdk/pkg/pipeline"
+    "github.com/openctemio/sdk/pkg/resource"
 )
 
 func main() {
@@ -464,7 +464,7 @@ func main() {
     // 1. Initialize audit logger
     auditLogger, _ := audit.NewLogger(&audit.LoggerConfig{
         AgentID:  "agent-001",
-        LogFile:  "~/.exploop/audit.log",
+        LogFile:  "~/.openctem/audit.log",
         Verbose:  true,
     })
     auditLogger.Start()
@@ -562,7 +562,7 @@ func main() {
 | `UploadDelayMs` | 100 | Delay between chunk uploads |
 | `MaxConcurrentUploads` | 2 | Max concurrent upload workers |
 | `MaxRetries` | 3 | Max retries per chunk |
-| `DatabasePath` | `~/.exploop/chunks.db` | SQLite database path |
+| `DatabasePath` | `~/.openctem/chunks.db` | SQLite database path |
 | `RetentionHours` | 24 | Keep completed chunks for N hours |
 | `MaxStorageMB` | 500 | Max storage for chunk DB |
 | `CompressionLevel` | 3 | ZSTD compression level (1-9) |
@@ -600,7 +600,7 @@ func main() {
 |--------|---------|-------------|
 | `AgentID` | "" | Agent identifier for all events |
 | `TenantID` | "" | Tenant identifier |
-| `LogFile` | `~/.exploop/audit.log` | Audit log file path |
+| `LogFile` | `~/.openctem/audit.log` | Audit log file path |
 | `MaxSizeMB` | 100 | Max log file size before rotation |
 | `MaxAgeDays` | 30 | Max age before deletion |
 | `BufferSize` | 100 | Events to buffer before flush |

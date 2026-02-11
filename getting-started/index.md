@@ -6,9 +6,9 @@ has_children: true
 permalink: /getting-started/
 ---
 
-# Getting Started with Rediver
+# Getting Started with OpenCTEM
 
-Get your Exploop CTEM platform up and running quickly.
+Get your OpenCTEM CTEM platform up and running quickly.
 
 ---
 
@@ -18,7 +18,6 @@ Get your Exploop CTEM platform up and running quickly.
 |-------|-------------|
 | [**Quick Start**](./quick-start) | Get the platform running in 5 minutes |
 | [**First Scan Tutorial**](./first-scan) | Set up an agent and scan your first repository |
-| [**Enterprise Setup**](./enterprise-setup) | Deploy Rediver with multi-tenancy and SSO |
 
 ---
 
@@ -52,5 +51,5 @@ After completing the getting started guides:
 ## Need Help?
 
 - **Documentation**: Browse the sections in the left sidebar
-- **API Reference**: [api.exploop.io/docs](https://api.exploop.io/docs)
-- **GitHub Issues**: [github.com/exploopio](https://github.com/exploopio)
+- **API Reference**: [api.openctem.io/docs](https://api.openctem.io/docs)
+- **GitHub Issues**: [github.com/openctemio](https://github.com/openctemio)

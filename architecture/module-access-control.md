@@ -7,19 +7,19 @@ nav_order: 15
 
 # Module Access Control
 
-This document describes the module-based access control system that restricts API and UI access based on tenant subscription plans.
+This document describes the module-based access control system that restricts API and UI access based on tenant module configuration.
 
 ---
 
 ## Overview
 
-Rediver implements a **3-layer access control architecture**:
+OpenCTEM implements a **3-layer access control architecture**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    LAYER 1: LICENSING (Tenant)                   │
+│                    LAYER 1: MODULES (Tenant)                     │
 ├─────────────────────────────────────────────────────────────────┤
-│  Tenant → Plan → Modules                                        │
+│  Tenant → Enabled Modules                                        │
 │  "What modules can this tenant access?"                         │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
@@ -38,7 +38,7 @@ Rediver implements a **3-layer access control architecture**:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Layer 1 (Module Access Control)** ensures that tenants can only access features included in their subscription plan.
+**Layer 1 (Module Access Control)** ensures that tenants can only access features included in their enabled modules.
 
 ---
 
@@ -63,7 +63,7 @@ Modules are defined in `api/internal/domain/licensing/module.go`:
 ### Core vs Feature Modules
 
 - **Core modules** (dashboard, team, groups, roles, settings) are always available to all tenants
-- **Feature modules** require subscription plan activation
+- **Feature modules** require explicit activation for the tenant
 
 ---
 
@@ -109,14 +109,14 @@ func registerAssetRoutes(
     h *handler.AssetHandler,
     authMiddleware Middleware,
     userSyncMiddleware Middleware,
-    licensingService *app.LicensingService,
+    moduleService *app.ModuleService,
 ) {
     middlewares := buildTokenTenantMiddlewares(authMiddleware, userSyncMiddleware)
 
     // Add module check middleware
-    if licensingService != nil {
+    if moduleService != nil {
         middlewares = append(middlewares,
-            middleware.RequireModule(licensingService, licensing.ModuleAssets))
+            middleware.RequireModule(moduleService, licensing.ModuleAssets))
     }
 
     router.Group("/api/v1/assets", func(r Router) {
@@ -214,7 +214,7 @@ Content-Type: application/json
 
 ```go
 // Check if tenant has module
-hasModule, err := licensingService.TenantHasModule(ctx, tenantID, "assets")
+hasModule, err := moduleService.TenantHasModule(ctx, tenantID, "assets")
 if !hasModule {
     return ErrModuleNotEnabled
 }
@@ -247,4 +247,3 @@ const { hasModule, isLoading } = useModuleAccess('assets')
 
 - [Route-Level Permission Protection](route-level-permission-protection.md)
 - [Permission Realtime Sync](permission-realtime-sync.md)
-- [Plans & Licensing](../operations/plans-licensing.md)

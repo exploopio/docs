@@ -7,13 +7,13 @@ nav_order: 6
 
 # Group-Based Access Control Guide
 
-Complete guide to the Group-based Access Control system in Exploop CTEM platform.
+Complete guide to the Group-based Access Control system in OpenCTEM CTEM platform.
 
 ---
 
 ## Overview
 
-Rediver uses a **Two-Layer Role Model** for access control:
+OpenCTEM uses a **Two-Layer Role Model** for access control:
 
 1. **Layer 1: Tenant Membership** (`tenant_members.role`) - Who can administer the tenant
 2. **Layer 2: Groups + Permission Sets** - What features users can access

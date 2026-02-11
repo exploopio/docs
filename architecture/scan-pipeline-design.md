@@ -665,7 +665,7 @@ in ['a', 'b', 'c']
       "commit": "abc123"
     },
     "output": {
-      "format": "ris",
+      "format": "ctis",
       "include_assets": true
     }
   }

@@ -8,7 +8,7 @@ permalink: /architecture/
 
 # Architecture
 
-Technical architecture and design documentation for the Exploop CTEM Platform.
+Technical architecture and design documentation for the OpenCTEM CTEM Platform.
 
 ---
 
@@ -48,7 +48,6 @@ Agent communication and management:
 | [Server-Agent Communication](server-agent-command.md) | Command & control protocol |
 | [Agent Key Management](agent-key-management.md) | Authentication and key handling |
 | [Agent Resource Management](agent-resource-management.md) | Auto-cleanup, async pipeline, throttling |
-| [Platform Agents](platform-agents-implementation-plan.md) | Hybrid agent model |
 | [Platform Agents Feature](../features/platform-agents.md) | User-facing documentation |
 
 ---
@@ -137,13 +136,13 @@ Agents and scanners integrate via:
 
 1. **REST API** - Push findings and assets
 2. **Go SDK** - Build custom tools
-3. **RIS Schema** - Standardized data format
+3. **CTIS Schema** - Standardized data format
 
 ### Platform Agent Model
 
 | Model | Description | Use Case |
 |-------|-------------|----------|
 | **Tenant Agents** | Customer-deployed | Full control, private networks |
-| **Platform Agents** | Rediver-managed | Quick start, no deployment |
+| **Platform Agents** | OpenCTEM-managed | Quick start, no deployment |
 
-See [Platform Agents](platform-agents-implementation-plan.md) for details.
+See [Platform Agents](../features/platform-agents.md) for details.
